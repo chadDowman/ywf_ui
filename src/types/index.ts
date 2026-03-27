@@ -1,47 +1,45 @@
-export { default as YButton } from "./components/buttons/YButton.vue";
-export { default as YCard } from "./components/cards/YCard.vue";
-export { default as YModal } from "./components/modals/YModal.vue";
-export { default as YDropdown } from "./components/dropdowns/YDropdown.vue";
-export { default as YNavbar } from "./components/navbars/YNavbar.vue";
-export { default as YSidebar } from "./components/sidebars/YSidebar.vue";
-export { default as YBadge } from "./components/badges/YBadge.vue";
-export { default as YInput } from "./components/inputs/YInput.vue";
-export { default as YAlert } from "./components/alerts/YAlert.vue";
-export { default as YTooltip } from "./components/tooltips/YTooltip.vue";
-export { default as YAvatar } from "./components/avatars/YAvatar.vue";
-export { default as YTabs } from "./components/tabs/YTabs.vue";
-export { YwfUIPlugin } from "./plugin";
+export type { ComponentSize } from "./common";
+
 export type {
-  ComponentSize,
+  YButtonPreset,
   YButtonAnimation,
   YButtonEffect,
   YButtonIntensity,
-  YButtonPreset,
   YButtonProps,
+} from "./button";
+export type {
   YCardPreset,
   YCardStat,
   YCardTimelineItem,
   YCardNotificationType,
   YCardPriority,
   YCardProps,
+} from "./card";
+export type {
   YModalSize,
   YModalVariant,
   YModalPosition,
   YModalBackdrop,
   YModalPadding,
   YModalProps,
+} from "./modal";
+export type {
   YDropdownVariant,
   YDropdownSize,
   YDropdownPlacement,
   YDropdownItem,
   YDropdownProps,
   YDropdownEmits,
+} from "./dropdown";
+export type {
   YNavbarVariant,
   YNavbarAlign,
   YNavbarLink,
   YNavbarAction,
   YNavbarProps,
   YNavbarEmits,
+} from "./navbar";
+export type {
   YSidebarVariant,
   YSidebarSize,
   YSidebarBehavior,
@@ -49,17 +47,23 @@ export type {
   YSidebarItem,
   YSidebarGroup,
   YSidebarProps,
+} from "./sidebar";
+export type {
   YBadgeVariant,
   YBadgeSize,
   YBadgeColor,
   YBadgeRadius,
   YBadgeProps,
+} from "./badge";
+export type {
   YInputVariant,
   YInputSize,
   YInputType,
   YInputRadius,
   YInputState,
   YInputProps,
+} from "./input";
+export type {
   YAlertType,
   YAlertVariant,
   YAlertSize,
@@ -67,16 +71,18 @@ export type {
   YAlertRadius,
   YAlertAction,
   YAlertProps,
+} from "./alert";
+export type {
   YTooltipPlacement,
   YTooltipVariant,
   YTooltipProps,
+} from "./tooltip";
+export type {
   YAvatarPreset,
   YAvatarSize,
   YAvatarShape,
   YAvatarStatus,
   YAvatarRing,
   YAvatarProps,
-  YTabsVariant,
-  YTabsAlign,
-  YTabsProps,
-} from "./types";
+} from "./avatar";
+export type { YTabsVariant, YTabsAlign, YTabsProps } from "./tabs";

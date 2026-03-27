@@ -1,2 +1,33 @@
 @import "tailwindcss";
 @source "../src";
+
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+:root {
+  --ywf-font-sans: "Manrope", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --ywf-font-mono: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--ywf-font-sans);
+  background:
+    radial-gradient(
+      circle at 14% 16%,
+      rgba(14, 165, 233, 0.08),
+      transparent 34%
+    ),
+    radial-gradient(
+      circle at 82% 4%,
+      rgba(99, 102, 241, 0.08),
+      transparent 32%
+    ),
+    linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+  color: #0f172a;
+}

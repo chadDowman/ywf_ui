@@ -1,919 +1,960 @@
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
-import { YButton, YCard } from "@/index";
-import type { ComponentSize } from "@/types";
-import {
-  resolveColor,
-  resolveColorHex,
-  isTailwindColor,
-} from "./tailwind-colors";
+import { computed, ref, watch } from "vue";
+import AutoPropsControls from "./controls/AutoPropsControls.vue";
+import type {
+  PlaygroundInspectorConfig,
+  PlaygroundQuickConfig,
+} from "./config/types";
 
-// ── Component registry (scales to 100+) ──────────────────────────────
-interface ComponentEntry {
+type VueComponent = {
+  name?: string;
+  props?: Record<string, unknown> | string[];
+};
+
+type ComponentEntry = {
   id: string;
   label: string;
-  icon: string;
+  category: string;
+  component: VueComponent;
+  props: string[];
+  defaults: Record<string, unknown>;
+  propTypes: Record<string, string[]>;
+};
+
+const modules = import.meta.glob("../src/components/*/*.vue", {
+  eager: true,
+  import: "default",
+}) as Record<string, VueComponent>;
+
+const configModules = import.meta.glob("./config/*.ts", {
+  eager: true,
+}) as Record<
+  string,
+  {
+    playgroundQuickConfig?: PlaygroundQuickConfig;
+    playgroundInspectorConfig?: PlaygroundInspectorConfig;
+    playgroundInspectorConfigs?: PlaygroundInspectorConfig[];
+  }
+>;
+
+function titleCase(input: string): string {
+  return input
+    .replace(/[-_]/g, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-const components: ComponentEntry[] = [
-  { id: "button", label: "YButton", icon: "🔘" },
-  { id: "card", label: "YCard", icon: "🃏" },
-];
+function readDefaultValue(value: unknown): unknown {
+  if (typeof value === "function") {
+    try {
+      return (value as () => unknown)();
+    } catch {
+      return undefined;
+    }
+  }
+  return value;
+}
 
-const activeComponent = ref("button");
-const navSearch = ref("");
+function readProps(component: VueComponent): {
+  names: string[];
+  defaults: Record<string, unknown>;
+  types: Record<string, string[]>;
+} {
+  const defaults: Record<string, unknown> = {};
+  const types: Record<string, string[]> = {};
 
-const filteredComponents = computed(() => {
-  const q = navSearch.value.toLowerCase();
-  if (!q) return components;
-  return components.filter(
-    (c) => c.label.toLowerCase().includes(q) || c.id.includes(q),
-  );
+  function mapCtorToTypeName(ctor: unknown): string {
+    if (ctor === String) return "string";
+    if (ctor === Number) return "number";
+    if (ctor === Boolean) return "boolean";
+    if (ctor === Array) return "array";
+    if (ctor === Object) return "object";
+    return "unknown";
+  }
+
+  function readTypeInfo(raw: unknown): string[] {
+    if (!raw || typeof raw !== "object") return [];
+    const propObj = raw as { type?: unknown };
+    const t = propObj.type;
+    if (Array.isArray(t)) {
+      return t.map((entry) => mapCtorToTypeName(entry));
+    }
+    if (t) {
+      return [mapCtorToTypeName(t)];
+    }
+    return [];
+  }
+
+  if (!component?.props) {
+    return { names: [], defaults, types };
+  }
+
+  if (Array.isArray(component.props)) {
+    return { names: [...component.props], defaults, types };
+  }
+
+  const names = Object.keys(component.props);
+  for (const name of names) {
+    const raw = component.props[name] as unknown;
+    const typeInfo = readTypeInfo(raw);
+    if (typeInfo.length) {
+      types[name] = typeInfo;
+    }
+    if (
+      raw &&
+      typeof raw === "object" &&
+      Object.prototype.hasOwnProperty.call(raw, "default")
+    ) {
+      const defaultValue = readDefaultValue(
+        (raw as { default?: unknown }).default,
+      );
+      if (defaultValue !== undefined) {
+        defaults[name] = defaultValue;
+      }
+    }
+  }
+
+  return { names, defaults, types };
+}
+
+const components = computed<ComponentEntry[]>(() => {
+  return Object.entries(modules)
+    .map(([path, component]) => {
+      const segments = path.split("/");
+      const fileName = segments[segments.length - 1]?.replace(".vue", "") ?? "";
+      const category = segments[segments.length - 2] ?? "components";
+      const id = fileName || path;
+      const label = fileName.startsWith("Y") ? fileName.slice(1) : fileName;
+      const normalizedLabel =
+        fileName === "YButton"
+          ? "Buttons"
+          : fileName === "YCard"
+            ? "Cards"
+            : titleCase(label);
+      const propInfo = readProps(component);
+      return {
+        id,
+        label: normalizedLabel,
+        category: titleCase(category),
+        component,
+        props: propInfo.names,
+        defaults: propInfo.defaults,
+        propTypes: propInfo.types,
+      };
+    })
+    .sort((a, b) => a.label.localeCompare(b.label));
 });
 
-// ── Layout state ──────────────────────────────────────────────────────
+const quickConfigByComponent = computed<Record<string, PlaygroundQuickConfig>>(
+  () => {
+    const out: Record<string, PlaygroundQuickConfig> = {};
+    for (const mod of Object.values(configModules)) {
+      const cfg = mod.playgroundQuickConfig;
+      if (cfg?.componentId) {
+        out[cfg.componentId] = cfg;
+      }
+    }
+    return out;
+  },
+);
+
+const inspectorConfigByComponent = computed<
+  Record<string, PlaygroundInspectorConfig>
+>(() => {
+  const out: Record<string, PlaygroundInspectorConfig> = {};
+  for (const mod of Object.values(configModules)) {
+    const single = mod.playgroundInspectorConfig;
+    if (single?.componentId) {
+      out[single.componentId] = single;
+    }
+    for (const cfg of mod.playgroundInspectorConfigs ?? []) {
+      if (cfg.componentId) {
+        out[cfg.componentId] = cfg;
+      }
+    }
+  }
+  return out;
+});
+
+const search = ref("");
+const activeId = ref("");
 const navCollapsed = ref(false);
 const darkMode = ref(localStorage.getItem("ywf-dark-mode") === "true");
+
 watch(darkMode, (v) => localStorage.setItem("ywf-dark-mode", String(v)));
 
-// ── Shared option lists ──────────────────────────────────────────────
-const sizes: ComponentSize[] = ["xs", "sm", "md", "lg", "xl"];
-const variants = ["solid", "outline", "ghost"] as const;
-const shadowOptions = ["none", "sm", "md", "lg", "xl"] as const;
-const roundedOptions = ["none", "sm", "md", "lg", "xl", "full"] as const;
-const animationOptions = [
-  "none",
-  "pulse",
-  "bounce",
-  "shake",
-  "glow",
-  "spin",
-] as const;
-const effectOptions = [
-  "none",
-  "ripple",
-  "scale",
-  "lift",
-  "neon",
-  "glassmorphism",
-] as const;
-const intensityOptions = ["subtle", "moderate", "strong"] as const;
-
-// ── Button controls ──────────────────────────────────────────────────
-const btnSize = ref<ComponentSize>("md");
-const btnColor = ref("#3b82f6");
-const btnTextColor = ref("#ffffff");
-const btnVariant = ref<"solid" | "outline" | "ghost">("solid");
-const btnDisabled = ref(false);
-const btnLabel = ref("Click Me");
-const btnShadow = ref<"none" | "sm" | "md" | "lg" | "xl">("none");
-const btnRounded = ref<"none" | "sm" | "md" | "lg" | "xl" | "full">("md");
-const btnPadding = ref<ComponentSize>("md");
-const btnAnimation = ref<
-  "none" | "pulse" | "bounce" | "shake" | "glow" | "spin"
->("none");
-const btnEffect = ref<
-  "none" | "ripple" | "scale" | "lift" | "neon" | "glassmorphism"
->("none");
-const btnIntensity = ref<"subtle" | "moderate" | "strong">("moderate");
-const btnEffectIntensity = ref<"subtle" | "moderate" | "strong">("moderate");
-
-// ── Card controls ────────────────────────────────────────────────────
-const cardPadding = ref<ComponentSize>("md");
-const cardBgColor = ref("#ffffff");
-const cardBorderColor = ref("#e5e7eb");
-const cardTextColor = ref("#1f2937");
-const cardShadow = ref<"none" | "sm" | "md" | "lg" | "xl">("md");
-const cardBordered = ref(true);
-const cardRounded = ref<"none" | "sm" | "md" | "lg" | "xl" | "full">("lg");
-
-// ── Resolved colors ──────────────────────────────────────────────────
-const resolvedBtnColor = computed(() => resolveColor(btnColor.value));
-const resolvedBtnTextColor = computed(() => resolveColor(btnTextColor.value));
-const resolvedCardBgColor = computed(() => resolveColor(cardBgColor.value));
-const resolvedCardBorderColor = computed(() =>
-  resolveColor(cardBorderColor.value),
+watch(
+  components,
+  (list) => {
+    if (!list.length) {
+      activeId.value = "";
+      return;
+    }
+    if (!activeId.value || !list.some((c) => c.id === activeId.value)) {
+      activeId.value = list[0].id;
+    }
+  },
+  { immediate: true },
 );
-const resolvedCardTextColor = computed(() => resolveColor(cardTextColor.value));
 
-const hexBtnColor = computed(() => resolveColorHex(btnColor.value));
-const hexBtnTextColor = computed(() => resolveColorHex(btnTextColor.value));
-const hexCardBgColor = computed(() => resolveColorHex(cardBgColor.value));
-const hexCardBorderColor = computed(() =>
-  resolveColorHex(cardBorderColor.value),
-);
-const hexCardTextColor = computed(() => resolveColorHex(cardTextColor.value));
-
-// ── Code snippets ────────────────────────────────────────────────────
-const btnSnippet = computed(() => {
-  const lines = [
-    `<YButton`,
-    `  size="${btnSize.value}"`,
-    `  color="${hexBtnColor.value}"`,
-    `  text-color="${hexBtnTextColor.value}"`,
-    `  variant="${btnVariant.value}"`,
-    `  padding="${btnPadding.value}"`,
-    `  shadow="${btnShadow.value === "none" ? "false" : btnShadow.value}"`,
-    `  rounded="${btnRounded.value === "none" ? "false" : btnRounded.value}"`,
-  ];
-  if (btnAnimation.value !== "none")
-    lines.push(`  animation="${btnAnimation.value}"`);
-  if (btnEffect.value !== "none") lines.push(`  effect="${btnEffect.value}"`);
-  if (btnIntensity.value !== "moderate")
-    lines.push(`  intensity="${btnIntensity.value}"`);
-  if (btnDisabled.value) lines.push(`  disabled`);
-  lines.push(`  label="${btnLabel.value}"`, `/>`);
-  return lines.join("\n");
+const filteredComponents = computed(() => {
+  const q = search.value.trim().toLowerCase();
+  if (!q) return components.value;
+  return components.value.filter((c) => {
+    return (
+      c.label.toLowerCase().includes(q) ||
+      c.category.toLowerCase().includes(q) ||
+      c.id.toLowerCase().includes(q) ||
+      c.props.some((p) => p.toLowerCase().includes(q))
+    );
+  });
 });
 
-const cardSnippet = computed(() => {
-  const lines = [
-    `<YCard`,
-    `  padding="${cardPadding.value}"`,
-    `  bg-color="${hexCardBgColor.value}"`,
-    `  border-color="${hexCardBorderColor.value}"`,
-    `  text-color="${hexCardTextColor.value}"`,
-    `  shadow="${cardShadow.value === "none" ? "false" : cardShadow.value}"`,
-  ];
-  if (!cardBordered.value) lines.push(`  :bordered="false"`);
-  lines.push(
-    `  rounded="${cardRounded.value === "none" ? "false" : cardRounded.value}"`,
-    `>`,
-    `  <template #header>`,
-    `    <h3>Card Title</h3>`,
-    `  </template>`,
-    `  Content goes here`,
-    `  <template #footer>`,
-    `    <YButton size="sm" label="Action" />`,
-    `  </template>`,
-    `</YCard>`,
-  );
-  return lines.join("\n");
+const groupedFilteredComponents = computed(() => {
+  const groups = new Map<string, ComponentEntry[]>();
+  for (const item of filteredComponents.value) {
+    const list = groups.get(item.category) ?? [];
+    list.push(item);
+    groups.set(item.category, list);
+  }
+  return Array.from(groups.entries()).map(([category, items]) => ({
+    category,
+    items,
+  }));
 });
+
+const openCategories = ref<string[]>([]);
+
+watch(
+  groupedFilteredComponents,
+  (groups) => {
+    const available = new Set(groups.map((g) => g.category));
+    const kept = openCategories.value.filter((category) =>
+      available.has(category),
+    );
+    const missing = groups
+      .map((g) => g.category)
+      .filter((category) => !kept.includes(category));
+    openCategories.value = [...kept, ...missing];
+  },
+  { immediate: true },
+);
+
+function isCategoryOpen(category: string): boolean {
+  return openCategories.value.includes(category);
+}
+
+function toggleCategory(category: string): void {
+  if (isCategoryOpen(category)) {
+    openCategories.value = openCategories.value.filter((c) => c !== category);
+    return;
+  }
+  openCategories.value = [...openCategories.value, category];
+}
+
+function handleNavClick(componentId: string): void {
+  activeId.value = componentId;
+}
+
+function getQuickConfig(componentId: string): PlaygroundQuickConfig | null {
+  return quickConfigByComponent.value[componentId] ?? null;
+}
+
+function getInspectorConfig(
+  componentId: string,
+): PlaygroundInspectorConfig | null {
+  return inspectorConfigByComponent.value[componentId] ?? null;
+}
+
+function getQuickOptions(componentId: string): string[] {
+  const cfg = getQuickConfig(componentId);
+  if (!cfg) return [];
+  return [...cfg.options];
+}
+
+function getQuickSelected(componentId: string): string {
+  const cfg = getQuickConfig(componentId);
+  if (!cfg) return "";
+  const current = parsedProps.value[cfg.propKey];
+  return typeof current === "string" ? current : "";
+}
+
+function applyQuickOption(componentId: string, option: string): void {
+  const cfg = getQuickConfig(componentId);
+  if (!cfg) return;
+  activeId.value = componentId;
+  updatePropsJson((next) => {
+    next[cfg.propKey] = option;
+    cfg.applyOption?.(next, option);
+  });
+}
+
+const activeComponent = computed(
+  () => components.value.find((c) => c.id === activeId.value) ?? null,
+);
+
+const activeInspectorConfig = computed<PlaygroundInspectorConfig | null>(() => {
+  if (!activeComponent.value) return null;
+  return getInspectorConfig(activeComponent.value.id);
+});
+
+const propsJson = ref("{}");
+const slotContent = ref('<div class="p-3 text-sm">Default slot content</div>');
+const copied = ref(false);
+
+function updatePropsJson(
+  updater: (value: Record<string, unknown>) => void,
+): void {
+  let next: Record<string, unknown> = {};
+  try {
+    const parsed = JSON.parse(propsJson.value) as unknown;
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      next = { ...(parsed as Record<string, unknown>) };
+    }
+  } catch {
+    next = {};
+  }
+  updater(next);
+  propsJson.value = JSON.stringify(next, null, 2);
+}
+
+watch(
+  activeComponent,
+  (c) => {
+    if (!c) {
+      propsJson.value = "{}";
+      return;
+    }
+    const defaults = { ...c.defaults };
+    const quickCfg = getQuickConfig(c.id);
+    if (quickCfg?.init) {
+      quickCfg.init(defaults);
+    }
+    const inspectorCfg = getInspectorConfig(c.id);
+    if (inspectorCfg?.init) {
+      inspectorCfg.init(defaults);
+    }
+    propsJson.value = JSON.stringify(defaults, null, 2);
+  },
+  { immediate: true },
+);
+
+const parsedProps = computed<Record<string, unknown>>(() => {
+  try {
+    const parsed = JSON.parse(propsJson.value) as unknown;
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      return parsed as Record<string, unknown>;
+    }
+    return {};
+  } catch {
+    return {};
+  }
+});
+
+const hasPropsError = computed(() => {
+  try {
+    JSON.parse(propsJson.value);
+    return false;
+  } catch {
+    return true;
+  }
+});
+
+const topBarTitle = computed(() => {
+  if (!activeComponent.value) return "No Components";
+  return `${activeComponent.value.label} Preview`;
+});
+
+const topBarSubtitle = computed(() => {
+  if (!activeComponent.value) return "Add components in src/components/*/*.vue";
+  return `${activeComponent.value.category} component`;
+});
+
+const activeQuickOptions = computed<string[]>(() => {
+  if (!activeComponent.value) return [];
+  const cfg = getQuickConfig(activeComponent.value.id);
+  if (!cfg) return [];
+  return [...cfg.options];
+});
+
+const isNavbarActive = computed(() => activeComponent.value?.id === "YNavbar");
+
+const previewSnippet = computed(() => {
+  if (!activeComponent.value) return "";
+  const name = activeComponent.value.component.name ?? activeComponent.value.id;
+  const props = Object.entries(parsedProps.value)
+    .map(([k, v]) => {
+      if (typeof v === "string") return `  ${k}=${JSON.stringify(v)}`;
+      return `  :${k}='${JSON.stringify(v)}'`;
+    })
+    .join("\n");
+
+  if (!slotContent.value.trim()) {
+    return `<${name}${props ? "\n" + props : ""}\n/>`;
+  }
+
+  return `<${name}${props ? "\n" + props : ""}>\n${slotContent.value}\n</${name}>`;
+});
+
+function copySnippet(): void {
+  if (!previewSnippet.value) return;
+  navigator.clipboard.writeText(previewSnippet.value);
+  copied.value = true;
+  setTimeout(() => {
+    copied.value = false;
+  }, 1600);
+}
 </script>
 
 <template>
   <div
-    class="flex h-screen overflow-hidden transition-colors duration-200"
-    :class="darkMode ? 'bg-gray-900' : 'bg-gray-50'"
+    class="playground-root flex h-screen overflow-hidden font-sans transition-colors duration-300"
+    :class="darkMode ? 'dark-scheme' : 'light-scheme'"
   >
-    <!-- ═══ LEFT NAV ═══ -->
     <nav
-      class="flex shrink-0 flex-col border-r transition-all duration-200"
-      :class="[
-        navCollapsed ? 'w-14' : 'w-56',
-        darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white',
-      ]"
+      class="nav-panel flex shrink-0 flex-col transition-all duration-300 ease-out"
+      :class="navCollapsed ? 'w-14' : 'w-64'"
     >
-      <!-- Nav header -->
-      <div
-        class="flex h-14 items-center border-b px-3"
-        :class="darkMode ? 'border-gray-700' : 'border-gray-200'"
-      >
+      <div class="nav-header flex h-14 items-center px-3">
         <button
-          class="p-1.5 rounded-md cursor-pointer transition-colors"
-          :class="
-            darkMode
-              ? 'text-gray-400 hover:bg-gray-700 hover:text-gray-200'
-              : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
-          "
-          title="Toggle navigation"
+          class="nav-toggle flex h-7 w-7 items-center justify-center rounded-lg transition-all duration-200"
           @click="navCollapsed = !navCollapsed"
         >
           <svg
-            class="h-5 w-5"
+            class="h-4 w-4 transition-transform duration-300"
+            :style="{
+              transform: navCollapsed ? 'rotate(0deg)' : 'rotate(90deg)',
+            }"
             fill="none"
             stroke="currentColor"
+            stroke-width="1.8"
             viewBox="0 0 24 24"
           >
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 6h16M4 12h16M4 18h16"
+              d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
             />
           </svg>
         </button>
         <span
           v-if="!navCollapsed"
-          class="ml-2 text-sm font-bold truncate"
-          :class="darkMode ? 'text-gray-100' : 'text-gray-900'"
+          class="ml-2 text-xs font-semibold uppercase tracking-wide"
+          >YWF UI</span
         >
-          YWF UI
-        </span>
       </div>
 
-      <!-- Search (expanded only) -->
-      <div v-if="!navCollapsed" class="px-2 pt-2">
+      <div v-if="!navCollapsed" class="px-3 pb-2">
         <input
-          v-model="navSearch"
+          v-model="search"
           type="text"
-          placeholder="Search…"
-          class="w-full rounded-md border px-2.5 py-1.5 text-xs"
-          :class="
-            darkMode
-              ? 'bg-gray-700 border-gray-600 text-gray-100 placeholder:text-gray-500'
-              : 'border-gray-200 placeholder:text-gray-400'
-          "
+          class="search-input w-full rounded-lg px-3 py-2 text-xs"
+          placeholder="Search components or props"
         />
       </div>
 
-      <!-- Component list -->
-      <ul class="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
-        <li v-for="comp in filteredComponents" :key="comp.id">
+      <ul
+        v-if="navCollapsed"
+        class="flex-1 space-y-1 overflow-y-auto px-2 pb-3"
+      >
+        <li v-for="item in filteredComponents" :key="item.id">
           <button
-            class="flex w-full items-center rounded-md px-2.5 py-2 text-sm cursor-pointer transition-colors"
-            :class="[
-              activeComponent === comp.id
-                ? darkMode
-                  ? 'bg-blue-600/20 text-blue-400'
-                  : 'bg-blue-50 text-blue-700'
-                : darkMode
-                  ? 'text-gray-400 hover:bg-gray-700 hover:text-gray-200'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
-              navCollapsed ? 'justify-center' : '',
-            ]"
-            :title="comp.label"
-            @click="activeComponent = comp.id"
+            class="nav-item flex w-full items-center justify-center rounded-lg px-2.5 py-2 text-left text-xs transition-all"
+            :class="activeId === item.id ? 'nav-item--active' : ''"
+            :title="`${item.label} (${item.category})`"
+            @click="handleNavClick(item.id)"
           >
-            <span class="text-base">{{ comp.icon }}</span>
-            <span v-if="!navCollapsed" class="ml-2.5 truncate font-medium">
-              {{ comp.label }}
-            </span>
+            <span class="nav-item-dot h-2 w-2 shrink-0 rounded-full" />
           </button>
         </li>
       </ul>
+
+      <div v-else class="flex-1 overflow-y-auto px-2 pb-3 space-y-2">
+        <section
+          v-for="group in groupedFilteredComponents"
+          :key="group.category"
+          class="space-y-1"
+        >
+          <button
+            class="nav-category flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wide"
+            @click="toggleCategory(group.category)"
+          >
+            <span>{{ group.category }}</span>
+            <svg
+              class="h-3.5 w-3.5 transition-transform duration-150"
+              :style="{
+                transform: isCategoryOpen(group.category)
+                  ? 'rotate(90deg)'
+                  : 'rotate(0deg)',
+              }"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </button>
+
+          <ul v-if="isCategoryOpen(group.category)" class="space-y-1">
+            <li v-for="item in group.items" :key="item.id">
+              <button
+                class="nav-item flex w-full items-center rounded-lg px-2.5 py-2 text-left text-xs transition-all"
+                :class="activeId === item.id ? 'nav-item--active' : ''"
+                :title="`${item.label} (${item.category})`"
+                @click="handleNavClick(item.id)"
+              >
+                <span class="nav-item-dot h-2 w-2 shrink-0 rounded-full" />
+                <div class="ml-2 min-w-0">
+                  <div class="truncate font-medium">{{ item.label }}</div>
+                </div>
+              </button>
+
+              <ul
+                v-if="activeId === item.id && getQuickOptions(item.id).length"
+                class="nav-sublist mt-1 mb-2 ml-6 mr-2 space-y-1"
+              >
+                <li v-for="option in getQuickOptions(item.id)" :key="option">
+                  <button
+                    class="nav-subitem w-full rounded-md px-2 py-1.5 text-left text-[11px] transition-all duration-150"
+                    :class="
+                      getQuickSelected(item.id) === option
+                        ? 'nav-subitem--active'
+                        : ''
+                    "
+                    @click="applyQuickOption(item.id, option)"
+                  >
+                    {{ option }}
+                  </button>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+      </div>
+
+      <div class="border-t border-(--border-panel) p-3">
+        <button
+          class="theme-toggle w-full rounded-lg py-1.5 text-xs"
+          @click="darkMode = !darkMode"
+        >
+          {{ darkMode ? "Light" : "Dark" }}
+        </button>
+      </div>
     </nav>
 
-    <!-- ═══ CENTER PREVIEW ═══ -->
-    <main class="flex flex-1 flex-col overflow-hidden">
-      <!-- Top bar -->
+    <main class="flex min-w-0 flex-1 flex-col overflow-hidden">
       <header
-        class="flex h-14 shrink-0 items-center justify-between border-b px-6"
-        :class="darkMode ? 'border-gray-700' : 'border-gray-200'"
+        class="top-bar flex h-14 shrink-0 items-center justify-between px-6"
       >
-        <h2
-          class="text-lg font-semibold"
-          :class="darkMode ? 'text-gray-100' : 'text-gray-900'"
-        >
-          {{
-            components.find((c) => c.id === activeComponent)?.label ??
-            "Component"
-          }}
-        </h2>
-        <div class="flex items-center gap-2">
-          <!-- Dark mode toggle -->
-          <button
-            class="p-2 rounded-md cursor-pointer text-lg transition-colors"
-            :class="
-              darkMode
-                ? 'bg-gray-700 text-yellow-300 hover:bg-gray-600'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            "
-            :title="darkMode ? 'Switch to light mode' : 'Switch to dark mode'"
-            @click="darkMode = !darkMode"
-          >
-            {{ darkMode ? "☀️" : "🌙" }}
-          </button>
+        <div>
+          <h2 class="text-base font-semibold">{{ topBarTitle }}</h2>
+          <p class="text-[11px] opacity-70">{{ topBarSubtitle }}</p>
         </div>
+        <button
+          class="copy-btn rounded-lg px-3 py-1.5 text-xs"
+          @click="copySnippet"
+        >
+          {{ copied ? "Copied" : "Copy code" }}
+        </button>
       </header>
 
-      <!-- Preview content -->
-      <div class="flex-1 overflow-y-auto p-8">
-        <!-- ── Button Preview ── -->
-        <div v-if="activeComponent === 'button'" class="space-y-8">
+      <div class="flex-1 overflow-y-auto p-6">
+        <div class="space-y-5">
           <div
-            class="flex items-center justify-center rounded-xl border border-dashed p-16 transition-colors duration-200"
+            class="preview-stage min-h-72 rounded-2xl p-6"
             :class="
-              darkMode
-                ? 'border-gray-600 bg-gray-800'
-                : 'border-gray-300 bg-white'
+              ['YButton', 'YAvatar'].includes(activeComponent?.id ?? '')
+                ? 'flex items-center justify-center'
+                : ''
             "
           >
-            <YButton
-              :size="btnSize"
-              :color="resolvedBtnColor"
-              :text-color="resolvedBtnTextColor"
-              :variant="btnVariant"
-              :disabled="btnDisabled"
-              :label="btnLabel"
-              :shadow="btnShadow === 'none' ? false : btnShadow"
-              :rounded="btnRounded === 'none' ? false : btnRounded"
-              :padding="btnPadding"
-              :animation="btnAnimation === 'none' ? false : btnAnimation"
-              :animation-intensity="btnIntensity"
-              :effect="btnEffect === 'none' ? false : btnEffect"
-              :effect-intensity="btnEffectIntensity"
-            />
-          </div>
-
-          <div
-            class="rounded-lg bg-gray-900 p-4 border"
-            :class="darkMode ? 'border-gray-600' : 'border-transparent'"
-          >
-            <pre
-              class="text-sm text-green-400 whitespace-pre-wrap"
-            ><code>{{ btnSnippet }}</code></pre>
-          </div>
-        </div>
-
-        <!-- ── Card Preview ── -->
-        <div v-if="activeComponent === 'card'" class="space-y-8">
-          <div
-            class="flex items-center justify-center rounded-xl border border-dashed p-16 transition-colors duration-200"
-            :class="
-              darkMode
-                ? 'border-gray-600 bg-gray-800'
-                : 'border-gray-300 bg-white'
-            "
-          >
-            <div class="w-full max-w-md">
-              <YCard
-                :padding="cardPadding"
-                :bg-color="resolvedCardBgColor"
-                :border-color="resolvedCardBorderColor"
-                :text-color="resolvedCardTextColor"
-                :shadow="cardShadow === 'none' ? false : cardShadow"
-                :bordered="cardBordered"
-                :rounded="cardRounded === 'none' ? false : cardRounded"
-              >
-                <template #header>
-                  <h3 class="text-lg font-semibold">Card Title</h3>
-                </template>
-                <p>
-                  This is the card body content. Adjust the controls on the
-                  right to customise.
-                </p>
-                <template #footer>
-                  <YButton size="sm" color="#3b82f6" label="Action" />
-                </template>
-              </YCard>
+            <div v-if="!activeComponent" class="text-sm opacity-70">
+              No components found. Add one under
+              src/components/&lt;category&gt;/YName.vue.
             </div>
+            <div v-else-if="isNavbarActive" class="navbar-preview-shell">
+              <component :is="activeComponent.component" v-bind="parsedProps">
+                <div v-html="slotContent" />
+              </component>
+              <div class="navbar-preview-content">
+                <h3>Navbar Preview Context</h3>
+                <p>
+                  This area simulates page content so sticky and floating navbar
+                  variants are easier to evaluate.
+                </p>
+              </div>
+            </div>
+            <component
+              :is="activeComponent?.component"
+              v-else
+              v-bind="parsedProps"
+            >
+              <div v-html="slotContent" />
+            </component>
           </div>
 
-          <div
-            class="rounded-lg bg-gray-900 p-4 border"
-            :class="darkMode ? 'border-gray-600' : 'border-transparent'"
-          >
+          <div class="code-block overflow-hidden rounded-xl">
+            <div
+              class="code-block-header px-4 py-2 text-[11px] uppercase tracking-wide"
+            >
+              Vue Template
+            </div>
             <pre
-              class="text-sm text-green-400 whitespace-pre-wrap"
-            ><code>{{ cardSnippet }}</code></pre>
+              class="code-block-body px-4 py-3 text-[13px]"
+            ><code>{{ previewSnippet }}</code></pre>
           </div>
         </div>
       </div>
     </main>
 
-    <!-- ═══ RIGHT PROPS PANEL ═══ -->
-    <aside
-      class="w-80 shrink-0 overflow-y-auto border-l p-5 space-y-5 transition-colors duration-200"
-      :class="
-        darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'
-      "
-    >
-      <h3
-        class="text-xs font-semibold uppercase tracking-wider"
-        :class="darkMode ? 'text-gray-500' : 'text-gray-400'"
+    <aside class="props-panel w-96 shrink-0 space-y-4 overflow-y-auto p-4">
+      <div class="props-panel-head">
+        <p class="props-kicker">Inspector</p>
+        <h2 class="props-title">
+          {{ activeComponent?.label ?? "Properties" }}
+        </h2>
+      </div>
+
+      <section
+        v-if="activeComponent && activeQuickOptions.length"
+        class="props-section"
       >
-        Props
-      </h3>
-
-      <!-- ── Button Props ── -->
-      <div v-if="activeComponent === 'button'" class="space-y-4">
-        <div>
-          <label
-            class="block text-xs font-medium mb-1"
-            :class="darkMode ? 'text-gray-400' : 'text-gray-500'"
-            >Label</label
-          >
-          <input
-            v-model="btnLabel"
-            type="text"
-            class="w-full rounded-md border px-3 py-1.5 text-sm"
+        <h3 class="props-section-title">Quick Variations</h3>
+        <div class="flex flex-wrap gap-1.5">
+          <button
+            v-for="option in activeQuickOptions"
+            :key="option"
+            class="chip chip-button"
             :class="
-              darkMode
-                ? 'bg-gray-700 border-gray-600 text-gray-100'
-                : 'border-gray-300'
+              getQuickSelected(activeComponent.id) === option
+                ? 'chip-button--active'
+                : ''
             "
-          />
+            @click="applyQuickOption(activeComponent.id, option)"
+          >
+            {{ option }}
+          </button>
         </div>
+      </section>
 
-        <div>
-          <label
-            class="block text-xs font-medium mb-1"
-            :class="darkMode ? 'text-gray-400' : 'text-gray-500'"
-            >Size</label
-          >
-          <div class="flex gap-1">
-            <button
-              v-for="s in sizes"
-              :key="s"
-              class="px-2 py-1 text-xs rounded cursor-pointer transition-colors"
-              :class="
-                btnSize === s
-                  ? 'bg-blue-600 text-white'
-                  : darkMode
-                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              "
-              @click="btnSize = s"
-            >
-              {{ s }}
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <label
-            class="block text-xs font-medium mb-1"
-            :class="darkMode ? 'text-gray-400' : 'text-gray-500'"
-            >Variant</label
-          >
-          <div class="flex gap-1">
-            <button
-              v-for="v in variants"
-              :key="v"
-              class="px-2 py-1 text-xs rounded cursor-pointer transition-colors"
-              :class="
-                btnVariant === v
-                  ? 'bg-blue-600 text-white'
-                  : darkMode
-                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              "
-              @click="btnVariant = v"
-            >
-              {{ v }}
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <label
-            class="block text-xs font-medium mb-1"
-            :class="darkMode ? 'text-gray-400' : 'text-gray-500'"
-            >Padding</label
-          >
-          <div class="flex gap-1">
-            <button
-              v-for="s in sizes"
-              :key="s"
-              class="px-2 py-1 text-xs rounded cursor-pointer transition-colors"
-              :class="
-                btnPadding === s
-                  ? 'bg-blue-600 text-white'
-                  : darkMode
-                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              "
-              @click="btnPadding = s"
-            >
-              {{ s }}
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <label
-            class="block text-xs font-medium mb-1"
-            :class="darkMode ? 'text-gray-400' : 'text-gray-500'"
-            >Shadow</label
-          >
-          <div class="flex flex-wrap gap-1">
-            <button
-              v-for="s in shadowOptions"
-              :key="s"
-              class="px-2 py-1 text-xs rounded cursor-pointer transition-colors"
-              :class="
-                btnShadow === s
-                  ? 'bg-blue-600 text-white'
-                  : darkMode
-                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              "
-              @click="btnShadow = s"
-            >
-              {{ s }}
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <label
-            class="block text-xs font-medium mb-1"
-            :class="darkMode ? 'text-gray-400' : 'text-gray-500'"
-            >Rounded</label
-          >
-          <div class="flex flex-wrap gap-1">
-            <button
-              v-for="r in roundedOptions"
-              :key="r"
-              class="px-2 py-1 text-xs rounded cursor-pointer transition-colors"
-              :class="
-                btnRounded === r
-                  ? 'bg-blue-600 text-white'
-                  : darkMode
-                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              "
-              @click="btnRounded = r"
-            >
-              {{ r }}
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <label
-            class="block text-xs font-medium mb-1"
-            :class="darkMode ? 'text-gray-400' : 'text-gray-500'"
-            >Color</label
-          >
-          <div class="flex items-center gap-2">
-            <input
-              type="color"
-              :value="hexBtnColor"
-              class="h-8 w-8 cursor-pointer rounded"
-              @input="btnColor = ($event.target as HTMLInputElement).value"
-            />
-            <input
-              v-model="btnColor"
-              type="text"
-              placeholder="#3b82f6 or blue-500"
-              class="flex-1 rounded-md border px-3 py-1.5 text-sm font-mono"
-              :class="
-                darkMode
-                  ? 'bg-gray-700 border-gray-600 text-gray-100'
-                  : 'border-gray-300'
-              "
-            />
-          </div>
-          <p
-            v-if="isTailwindColor(btnColor)"
-            class="mt-1 text-xs"
-            :class="darkMode ? 'text-gray-500' : 'text-gray-400'"
-          >
-            → {{ hexBtnColor }}
-          </p>
-        </div>
-
-        <div>
-          <label
-            class="block text-xs font-medium mb-1"
-            :class="darkMode ? 'text-gray-400' : 'text-gray-500'"
-            >Text Color</label
-          >
-          <div class="flex items-center gap-2">
-            <input
-              type="color"
-              :value="hexBtnTextColor"
-              class="h-8 w-8 cursor-pointer rounded"
-              @input="btnTextColor = ($event.target as HTMLInputElement).value"
-            />
-            <input
-              v-model="btnTextColor"
-              type="text"
-              placeholder="#ffffff or white"
-              class="flex-1 rounded-md border px-3 py-1.5 text-sm font-mono"
-              :class="
-                darkMode
-                  ? 'bg-gray-700 border-gray-600 text-gray-100'
-                  : 'border-gray-300'
-              "
-            />
-          </div>
-          <p
-            v-if="isTailwindColor(btnTextColor)"
-            class="mt-1 text-xs"
-            :class="darkMode ? 'text-gray-500' : 'text-gray-400'"
-          >
-            → {{ hexBtnTextColor }}
-          </p>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <input
-            v-model="btnDisabled"
-            type="checkbox"
-            id="btn-disabled"
-            class="cursor-pointer"
-          />
-          <label
-            for="btn-disabled"
-            class="text-sm cursor-pointer"
-            :class="darkMode ? 'text-gray-300' : 'text-gray-600'"
-            >Disabled</label
-          >
-        </div>
-
-        <!-- Divider -->
-        <hr
-          class="border-t"
-          :class="darkMode ? 'border-gray-700' : 'border-gray-200'"
+      <section v-if="activeComponent" class="props-section">
+        <AutoPropsControls
+          :prop-names="activeComponent.props"
+          :prop-types="activeComponent.propTypes"
+          :parsed-props="parsedProps"
+          :inspector-config="activeInspectorConfig"
+          :update-props-json="updatePropsJson"
         />
-        <h4
-          class="text-xs font-semibold uppercase tracking-wider"
-          :class="darkMode ? 'text-gray-500' : 'text-gray-400'"
-        >
-          Animations &amp; Effects
-        </h4>
+      </section>
 
-        <div>
-          <label
-            class="block text-xs font-medium mb-1"
-            :class="darkMode ? 'text-gray-400' : 'text-gray-500'"
-            >Animation</label
-          >
-          <div class="flex flex-wrap gap-1">
-            <button
-              v-for="a in animationOptions"
-              :key="a"
-              class="px-2 py-1 text-xs rounded cursor-pointer transition-colors"
-              :class="
-                btnAnimation === a
-                  ? 'bg-blue-600 text-white'
-                  : darkMode
-                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              "
-              @click="btnAnimation = a"
-            >
-              {{ a }}
-            </button>
-          </div>
-        </div>
+      <section class="props-section">
+        <h3 class="props-section-title">Props JSON</h3>
+        <textarea
+          v-model="propsJson"
+          class="prop-input min-h-64 w-full font-mono text-xs"
+          :class="hasPropsError ? 'border-red-500' : ''"
+          spellcheck="false"
+        />
+        <p v-if="hasPropsError" class="text-xs text-red-500">
+          Invalid JSON. Preview is using empty props.
+        </p>
+      </section>
 
-        <div>
-          <label
-            class="block text-xs font-medium mb-1"
-            :class="darkMode ? 'text-gray-400' : 'text-gray-500'"
-            >Animation Intensity</label
-          >
-          <div class="flex gap-1">
-            <button
-              v-for="i in intensityOptions"
-              :key="i"
-              class="px-2 py-1 text-xs rounded cursor-pointer transition-colors"
-              :class="
-                btnIntensity === i
-                  ? 'bg-blue-600 text-white'
-                  : darkMode
-                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              "
-              @click="btnIntensity = i"
-            >
-              {{ i }}
-            </button>
-          </div>
-        </div>
+      <section class="props-section">
+        <h3 class="props-section-title">Default Slot HTML</h3>
+        <textarea
+          v-model="slotContent"
+          class="prop-input min-h-32 w-full font-mono text-xs"
+          spellcheck="false"
+        />
+      </section>
 
-        <div>
-          <label
-            class="block text-xs font-medium mb-1"
-            :class="darkMode ? 'text-gray-400' : 'text-gray-500'"
-            >Effect</label
-          >
-          <div class="flex flex-wrap gap-1">
-            <button
-              v-for="e in effectOptions"
-              :key="e"
-              class="px-2 py-1 text-xs rounded cursor-pointer transition-colors"
-              :class="
-                btnEffect === e
-                  ? 'bg-blue-600 text-white'
-                  : darkMode
-                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              "
-              @click="btnEffect = e"
-            >
-              {{ e }}
-            </button>
-          </div>
+      <section class="props-section">
+        <h3 class="props-section-title">Detected Props</h3>
+        <div v-if="activeComponent?.props.length" class="flex flex-wrap gap-1">
+          <span v-for="p in activeComponent.props" :key="p" class="chip">{{
+            p
+          }}</span>
         </div>
-
-        <div>
-          <label
-            class="block text-xs font-medium mb-1"
-            :class="darkMode ? 'text-gray-400' : 'text-gray-500'"
-            >Effect Intensity</label
-          >
-          <div class="flex gap-1">
-            <button
-              v-for="i in intensityOptions"
-              :key="i"
-              class="px-2 py-1 text-xs rounded cursor-pointer transition-colors"
-              :class="
-                btnEffectIntensity === i
-                  ? 'bg-blue-600 text-white'
-                  : darkMode
-                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              "
-              @click="btnEffectIntensity = i"
-            >
-              {{ i }}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── Card Props ── -->
-      <div v-if="activeComponent === 'card'" class="space-y-4">
-        <div>
-          <label
-            class="block text-xs font-medium mb-1"
-            :class="darkMode ? 'text-gray-400' : 'text-gray-500'"
-            >Padding</label
-          >
-          <div class="flex gap-1">
-            <button
-              v-for="s in sizes"
-              :key="s"
-              class="px-2 py-1 text-xs rounded cursor-pointer transition-colors"
-              :class="
-                cardPadding === s
-                  ? 'bg-blue-600 text-white'
-                  : darkMode
-                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              "
-              @click="cardPadding = s"
-            >
-              {{ s }}
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <label
-            class="block text-xs font-medium mb-1"
-            :class="darkMode ? 'text-gray-400' : 'text-gray-500'"
-            >Shadow</label
-          >
-          <div class="flex flex-wrap gap-1">
-            <button
-              v-for="s in shadowOptions"
-              :key="s"
-              class="px-2 py-1 text-xs rounded cursor-pointer transition-colors"
-              :class="
-                cardShadow === s
-                  ? 'bg-blue-600 text-white'
-                  : darkMode
-                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              "
-              @click="cardShadow = s"
-            >
-              {{ s }}
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <label
-            class="block text-xs font-medium mb-1"
-            :class="darkMode ? 'text-gray-400' : 'text-gray-500'"
-            >Rounded</label
-          >
-          <div class="flex flex-wrap gap-1">
-            <button
-              v-for="r in roundedOptions"
-              :key="r"
-              class="px-2 py-1 text-xs rounded cursor-pointer transition-colors"
-              :class="
-                cardRounded === r
-                  ? 'bg-blue-600 text-white'
-                  : darkMode
-                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              "
-              @click="cardRounded = r"
-            >
-              {{ r }}
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <label
-            class="block text-xs font-medium mb-1"
-            :class="darkMode ? 'text-gray-400' : 'text-gray-500'"
-            >Background Color</label
-          >
-          <div class="flex items-center gap-2">
-            <input
-              type="color"
-              :value="hexCardBgColor"
-              class="h-8 w-8 cursor-pointer rounded"
-              @input="cardBgColor = ($event.target as HTMLInputElement).value"
-            />
-            <input
-              v-model="cardBgColor"
-              type="text"
-              placeholder="#ffffff or white"
-              class="flex-1 rounded-md border px-3 py-1.5 text-sm font-mono"
-              :class="
-                darkMode
-                  ? 'bg-gray-700 border-gray-600 text-gray-100'
-                  : 'border-gray-300'
-              "
-            />
-          </div>
-          <p
-            v-if="isTailwindColor(cardBgColor)"
-            class="mt-1 text-xs"
-            :class="darkMode ? 'text-gray-500' : 'text-gray-400'"
-          >
-            → {{ hexCardBgColor }}
-          </p>
-        </div>
-
-        <div>
-          <label
-            class="block text-xs font-medium mb-1"
-            :class="darkMode ? 'text-gray-400' : 'text-gray-500'"
-            >Border Color</label
-          >
-          <div class="flex items-center gap-2">
-            <input
-              type="color"
-              :value="hexCardBorderColor"
-              class="h-8 w-8 cursor-pointer rounded"
-              @input="
-                cardBorderColor = ($event.target as HTMLInputElement).value
-              "
-            />
-            <input
-              v-model="cardBorderColor"
-              type="text"
-              placeholder="#e5e7eb or gray-200"
-              class="flex-1 rounded-md border px-3 py-1.5 text-sm font-mono"
-              :class="
-                darkMode
-                  ? 'bg-gray-700 border-gray-600 text-gray-100'
-                  : 'border-gray-300'
-              "
-            />
-          </div>
-          <p
-            v-if="isTailwindColor(cardBorderColor)"
-            class="mt-1 text-xs"
-            :class="darkMode ? 'text-gray-500' : 'text-gray-400'"
-          >
-            → {{ hexCardBorderColor }}
-          </p>
-        </div>
-
-        <div>
-          <label
-            class="block text-xs font-medium mb-1"
-            :class="darkMode ? 'text-gray-400' : 'text-gray-500'"
-            >Text Color</label
-          >
-          <div class="flex items-center gap-2">
-            <input
-              type="color"
-              :value="hexCardTextColor"
-              class="h-8 w-8 cursor-pointer rounded"
-              @input="cardTextColor = ($event.target as HTMLInputElement).value"
-            />
-            <input
-              v-model="cardTextColor"
-              type="text"
-              placeholder="#1f2937 or gray-800"
-              class="flex-1 rounded-md border px-3 py-1.5 text-sm font-mono"
-              :class="
-                darkMode
-                  ? 'bg-gray-700 border-gray-600 text-gray-100'
-                  : 'border-gray-300'
-              "
-            />
-          </div>
-          <p
-            v-if="isTailwindColor(cardTextColor)"
-            class="mt-1 text-xs"
-            :class="darkMode ? 'text-gray-500' : 'text-gray-400'"
-          >
-            → {{ hexCardTextColor }}
-          </p>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <input
-            v-model="cardBordered"
-            type="checkbox"
-            id="card-bordered"
-            class="cursor-pointer"
-          />
-          <label
-            for="card-bordered"
-            class="text-sm cursor-pointer"
-            :class="darkMode ? 'text-gray-300' : 'text-gray-600'"
-            >Bordered</label
-          >
-        </div>
-      </div>
+        <p v-else class="text-xs opacity-70">
+          No runtime props detected for this component.
+        </p>
+      </section>
     </aside>
   </div>
 </template>
+
+<style scoped>
+.light-scheme {
+  --bg-root: #eef3f8;
+  --bg-panel: #ffffff;
+  --bg-panel-hover: #f6f8fb;
+  --bg-stage: #ffffff;
+  --bg-input: #f3f6fa;
+  --bg-chip: #edf2f8;
+  --bg-chip-active: #1f3556;
+  --bg-code: #111827;
+  --bg-code-header: #0b1220;
+  --border-panel: #dce4ef;
+  --border-input: #d4deea;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --text-code: #86efac;
+  --text-accent: #2563eb;
+}
+.dark-scheme {
+  --bg-root: #090d15;
+  --bg-panel: #0f1726;
+  --bg-panel-hover: #151f31;
+  --bg-stage: #0e1626;
+  --bg-input: #162135;
+  --bg-chip: #1b2a43;
+  --bg-chip-active: #3b82f6;
+  --bg-code: #070b12;
+  --bg-code-header: #05080e;
+  --border-panel: #1f2f4a;
+  --border-input: #2a3f62;
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-code: #86efac;
+  --text-accent: #60a5fa;
+}
+.playground-root {
+  background: var(--bg-root);
+  color: var(--text-primary);
+  font-family: var(--ywf-font-sans);
+}
+.nav-panel {
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border-panel);
+}
+.nav-header {
+  border-bottom: 1px solid var(--border-panel);
+}
+.nav-toggle:hover {
+  background: var(--bg-panel-hover);
+}
+.search-input {
+  background: var(--bg-input);
+  border: 1px solid var(--border-input);
+}
+.nav-item {
+  color: var(--text-secondary);
+}
+.nav-category {
+  color: var(--text-secondary);
+}
+.nav-category:hover {
+  background: var(--bg-panel-hover);
+  color: var(--text-primary);
+}
+.nav-item:hover {
+  background: var(--bg-panel-hover);
+  color: var(--text-primary);
+}
+.nav-item--active {
+  background: color-mix(in srgb, var(--text-accent) 12%, transparent);
+  color: var(--text-accent);
+}
+.nav-subitem {
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+  text-transform: capitalize;
+}
+.nav-subitem:hover {
+  background: var(--bg-panel-hover);
+  color: var(--text-primary);
+}
+.nav-subitem--active {
+  background: color-mix(in srgb, var(--text-accent) 12%, transparent);
+  color: var(--text-accent);
+  border-color: color-mix(in srgb, var(--text-accent) 20%, transparent);
+}
+.nav-item-dot {
+  background: var(--border-input);
+}
+.nav-item--active .nav-item-dot {
+  background: var(--text-accent);
+}
+.theme-toggle {
+  background: var(--bg-input);
+  border: 1px solid var(--border-input);
+}
+.top-bar {
+  border-bottom: 1px solid var(--border-panel);
+}
+.copy-btn {
+  background: var(--bg-input);
+  border: 1px solid var(--border-input);
+}
+.preview-stage {
+  background: var(--bg-stage);
+  border: 1px solid var(--border-panel);
+  box-shadow:
+    0 12px 28px color-mix(in srgb, var(--text-accent) 8%, transparent),
+    0 2px 6px color-mix(in srgb, #0f172a 7%, transparent);
+}
+.code-block {
+  border: 1px solid var(--border-panel);
+}
+.code-block-header {
+  background: var(--bg-code-header);
+  color: var(--text-secondary);
+}
+.code-block-body {
+  margin: 0;
+  overflow-x: auto;
+  background: var(--bg-code);
+  color: var(--text-code);
+  font-family: "JetBrains Mono", "Cascadia Code", monospace;
+}
+.props-panel {
+  background: var(--bg-panel);
+  border-left: 1px solid var(--border-panel);
+}
+.props-panel-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 8px;
+}
+.props-kicker {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+.props-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.props-section {
+  border: 1px solid var(--border-panel);
+  background: color-mix(in srgb, var(--bg-panel) 88%, var(--bg-input));
+  border-radius: 12px;
+  padding: 10px;
+}
+.props-section-title {
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+.prop-input {
+  background: var(--bg-input);
+  border: 1px solid var(--border-input);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--text-primary);
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    background-color 120ms ease;
+}
+.prop-input:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--text-accent) 45%, var(--border-input));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--text-accent) 16%, transparent);
+}
+.prop-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.prop-divider {
+  height: 1px;
+  background: var(--border-panel);
+  margin-top: 8px;
+}
+.color-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.color-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 2px solid var(--border-input);
+  cursor: pointer;
+  padding: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  flex-shrink: 0;
+}
+.color-swatch::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+.color-swatch::-webkit-color-swatch {
+  border: none;
+  border-radius: 6px;
+}
+.chip {
+  border-radius: 999px;
+  background: var(--bg-chip);
+  border: 1px solid color-mix(in srgb, var(--border-input) 65%, transparent);
+  padding: 4px 9px;
+  font-size: 11px;
+}
+.chip-button {
+  border: 1px solid color-mix(in srgb, var(--border-input) 80%, transparent);
+  cursor: pointer;
+  text-transform: capitalize;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease,
+    transform 120ms ease,
+    border-color 120ms ease;
+}
+.chip-button:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--text-accent) 28%, transparent);
+}
+.chip-button--active {
+  background: var(--bg-chip-active);
+  color: #fff;
+}
+
+.navbar-preview-shell {
+  width: 100%;
+  min-height: 360px;
+  border: 1px solid var(--border-panel);
+  border-radius: 14px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top right, #e0e7ff 0%, transparent 42%),
+    radial-gradient(circle at 15% 100%, #bfdbfe 0%, transparent 35%),
+    linear-gradient(180deg, #f8fafc 0%, #edf3fb 100%);
+}
+
+.navbar-preview-content {
+  padding: 22px;
+  color: #334155;
+}
+
+.navbar-preview-content h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.navbar-preview-content p {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+}
+</style>

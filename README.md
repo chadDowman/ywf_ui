@@ -151,6 +151,22 @@ import "@yourdevforge/ywf-ui/style.css"; // import once globally in your app ent
 
 **Slots:** `header`, `default`, `footer`
 
+## Adding More Components
+
+1. Create your component in one of these folders:
+
+- `src/components/buttons/` for button-like components
+- `src/components/cards/` for card/layout components
+- or create a new folder under `src/components/` for a new category
+
+2. Export it from `src/index.ts`.
+3. Register it in `src/plugin.ts` if you want global component usage.
+4. Add it to the playground navigation list in `playground/App.vue` (the `components` array in `<script setup>`).
+5. Add preview markup in the center panel in `playground/App.vue`.
+6. Add editable controls in the right `Properties` panel in `playground/App.vue`.
+
+Tip: each component in the playground needs three pieces in `playground/App.vue`: state refs, preview template, and Properties panel controls.
+
 ## Project Structure
 
 ```
@@ -159,8 +175,10 @@ src/
 ├── plugin.ts             Vue plugin for global registration
 ├── types.ts              Shared TypeScript types
 └── components/
-    ├── YButton.vue       Button component
-    └── YCard.vue         Card component
+  ├── buttons/
+  │   └── YButton.vue   Button component
+  └── cards/
+    └── YCard.vue     Card component
 playground/
 ├── index.html            Dev server entry
 ├── vite.config.ts        Playground Vite config
