@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, useSlots } from "vue";
+import { computed, onMounted, onUnmounted, ref, useSlots, watch } from "vue";
 import type {
   YModalProps,
   YModalVariant,
@@ -12,7 +12,7 @@ import type {
 defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(defineProps<YModalProps>(), {
-  open: false,
+  teleportTo: "body",
   variant: "clean",
   size: "md",
   position: "center",
@@ -34,9 +34,37 @@ const emit = defineEmits<{
   "update:open": [value: boolean];
 }>();
 
+const uncontrolledOpen = ref(props.open ?? true);
+const isControlled = computed(() => props.open !== undefined);
+const isOpen = computed(() =>
+  isControlled.value ? Boolean(props.open) : uncontrolledOpen.value,
+);
+const isInline = computed(() => props.teleportTo === false);
+const teleportTarget = computed(() =>
+  typeof props.teleportTo === "string" && props.teleportTo
+    ? props.teleportTo
+    : "body",
+);
+
+watch(
+  () => props.open,
+  (next) => {
+    if (next !== undefined) {
+      uncontrolledOpen.value = Boolean(next);
+    }
+  },
+);
+
+function setOpen(value: boolean) {
+  if (!isControlled.value) {
+    uncontrolledOpen.value = value;
+  }
+  emit("update:open", value);
+}
+
 function close() {
   emit("close");
-  emit("update:open", false);
+  setOpen(false);
 }
 
 function onBackdropClick() {
@@ -44,7 +72,7 @@ function onBackdropClick() {
 }
 
 function onKeydown(e: KeyboardEvent) {
-  if (e.key === "Escape" && props.open && !props.persistent) close();
+  if (e.key === "Escape" && isOpen.value && !props.persistent) close();
 }
 
 onMounted(() => document.addEventListener("keydown", onKeydown));
@@ -281,6 +309,10 @@ const wrapperClass = computed<string>(() => {
   return "flex items-center justify-center p-4";
 });
 
+const overlayClass = computed<string>(() =>
+  isInline.value ? "absolute inset-0 z-20" : "fixed inset-0 z-50",
+);
+
 const shellHeightClass = computed<string>(() => {
   const p = props.position;
   if (p === "drawer-right" || p === "drawer-left" || props.fullHeight)
@@ -318,7 +350,7 @@ const hasHeader = computed(
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport :to="teleportTarget" :disabled="isInline">
     <Transition
       enter-active-class="transition duration-250 ease-out"
       enter-from-class="opacity-0"
@@ -328,9 +360,8 @@ const hasHeader = computed(
       leave-to-class="opacity-0"
     >
       <div
-        v-if="open"
-        class="fixed inset-0 z-50"
-        :class="[backdropClass, wrapperClass]"
+        v-if="isOpen"
+        :class="[overlayClass, backdropClass, wrapperClass]"
         @click.self="onBackdropClick"
       >
         <Transition
@@ -343,7 +374,7 @@ const hasHeader = computed(
           appear
         >
           <div
-            v-if="open"
+            v-if="isOpen"
             class="relative flex flex-col overflow-hidden"
             :class="[
               vt.shell,

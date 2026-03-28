@@ -6,7 +6,17 @@ export type YSidebarVariant =
   | "aurora"
   | "warm"
   | "bordered"
-  | "ghost";
+  | "ghost"
+  | "neon"
+  | "frosted"
+  | "forest"
+  | "midnight"
+  | "chalk"
+  | "retro"
+  | "candy"
+  | "carbon"
+  | "ocean"
+  | "rose";
 
 export type YSidebarSize = "sm" | "md" | "lg";
 export type YSidebarCollapsedMode = "hidden" | "icons" | "mini";

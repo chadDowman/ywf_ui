@@ -17,6 +17,11 @@ export const dropdownVariants: YDropdownVariant[] = [
   "nested",
   "command-palette",
   "compact",
+  "aurora",
+  "brutalist",
+  "pill",
+  "terminal",
+  "floating",
 ];
 
 export const dropdownSizes: YDropdownSize[] = ["xs", "sm", "md", "lg"];
@@ -60,6 +65,41 @@ export const commandPaletteItems: YDropdownItem[] = [
   { id: "terminal", label: "Open Terminal", shortcut: "Ctrl+`", group: "View" },
 ];
 
+export const auroraDropdownItems: YDropdownItem[] = [
+  { id: "explore", label: "Explore", icon: "✦" },
+  { id: "create", label: "Create", icon: "◈" },
+  { id: "library", label: "Library", icon: "⬡" },
+  { id: "settings", label: "Settings", icon: "⊛" },
+];
+
+export const terminalDropdownItems: YDropdownItem[] = [
+  { id: "ls", label: "ls -la", icon: "$" },
+  { id: "cd", label: "cd ~/projects", icon: "$" },
+  { id: "git", label: "git status", icon: "$" },
+  { id: "npm", label: "npm run dev", icon: "$" },
+];
+
+export const pillDropdownItems: YDropdownItem[] = [
+  { id: "design", label: "Design", icon: "🎨" },
+  { id: "develop", label: "Develop", icon: "⚡" },
+  { id: "deploy", label: "Deploy", icon: "🚀" },
+  { id: "monitor", label: "Monitor", icon: "📊" },
+];
+
+export const brutalistDropdownItems: YDropdownItem[] = [
+  { id: "upload", label: "UPLOAD FILE" },
+  { id: "download", label: "DOWNLOAD" },
+  { id: "delete", label: "DELETE", disabled: true },
+  { id: "share", label: "SHARE" },
+];
+
+export const floatingDropdownItems: YDropdownItem[] = [
+  { id: "dashboard", label: "Dashboard", icon: "▦" },
+  { id: "analytics", label: "Analytics", icon: "◎" },
+  { id: "team", label: "Team", icon: "◉" },
+  { id: "billing", label: "Billing", icon: "◈", disabled: true },
+];
+
 export const playgroundQuickConfig: PlaygroundQuickConfig = {
   componentId: "YDropdown",
   propKey: "variant",
@@ -79,21 +119,42 @@ export const playgroundQuickConfig: PlaygroundQuickConfig = {
     if (next.multiSelect === undefined) next.multiSelect = false;
   },
   applyOption(next, option) {
-    if (option === "nested") {
-      next.items = nestedDropdownItems;
-    } else if (option === "command-palette") {
-      next.items = commandPaletteItems;
-      next.searchable = true;
-    } else {
-      next.items = defaultDropdownItems;
-    }
-
+    // Reset multi-select state
     if (option === "multi-select") {
       next.multiSelect = true;
       if (!Array.isArray(next.modelValue)) next.modelValue = [];
     } else {
       next.multiSelect = false;
       if (Array.isArray(next.modelValue)) next.modelValue = "";
+    }
+
+    // Assign variant-appropriate items
+    switch (option) {
+      case "nested":
+        next.items = nestedDropdownItems;
+        break;
+      case "command-palette":
+        next.items = commandPaletteItems;
+        next.searchable = true;
+        break;
+      case "aurora":
+        next.items = auroraDropdownItems;
+        break;
+      case "terminal":
+        next.items = terminalDropdownItems;
+        break;
+      case "pill":
+        next.items = pillDropdownItems;
+        break;
+      case "brutalist":
+        next.items = brutalistDropdownItems;
+        break;
+      case "floating":
+        next.items = floatingDropdownItems;
+        break;
+      default:
+        next.items = defaultDropdownItems;
+        break;
     }
   },
 };

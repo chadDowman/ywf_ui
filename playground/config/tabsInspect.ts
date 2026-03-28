@@ -5,6 +5,21 @@ export const tabsVariants = [
   "pills",
   "boxed",
   "highlight",
+  "brutal",
+  "glass",
+  "neon",
+  "soft",
+  "chip",
+  "retro",
+  "minimal",
+  "floating",
+  "aurora",
+  "terminal",
+  "dot",
+  "folder",
+  "gradient",
+  "outline",
+  "ticker",
 ] as const;
 export const tabsAligns = ["left", "center", "right", "stretch"] as const;
 

@@ -9,6 +9,16 @@ export const sidebarVariants = [
   "warm",
   "bordered",
   "ghost",
+  "neon",
+  "frosted",
+  "forest",
+  "midnight",
+  "chalk",
+  "retro",
+  "candy",
+  "carbon",
+  "ocean",
+  "rose",
 ] as const;
 export const sidebarPositions = ["left", "right"] as const;
 export const sidebarSizes = ["sm", "md", "lg"] as const;

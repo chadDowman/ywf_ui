@@ -7,7 +7,7 @@ import {
   commonCardColorFields,
   type CardColorField,
   type CardTextField,
-} from "../config/card";
+} from "../config/cardInspect";
 
 const props = defineProps<{
   parsedProps: Record<string, unknown>;

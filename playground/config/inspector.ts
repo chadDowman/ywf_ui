@@ -7,52 +7,57 @@ import {
   buttonShadowOptions,
   buttonSizes,
   buttonVariants,
-} from "./button";
-import { cardPresets } from "./card";
+} from "./buttonInspect";
+import { cardPresets } from "./cardInspect";
 import {
   dropdownPlacements,
   dropdownSizes,
   dropdownVariants,
-} from "./dropdown";
-import { navbarVariants } from "./navbar";
+} from "./dropdownInspect";
+import { navbarVariants } from "./navbarInspect";
 import {
   avatarPresets,
   avatarRings,
   avatarShapes,
   avatarSizes,
   avatarStatuses,
-} from "./avatar";
+} from "./avatarInspect";
 import {
   alertTypes,
   alertVariants,
   alertSizes,
   alertIntensities,
   alertRadii,
-} from "./alert";
-import { badgeVariants, badgeSizes, badgeColors, badgeRadii } from "./badge";
+} from "./alertInspect";
+import {
+  badgeVariants,
+  badgeSizes,
+  badgeColors,
+  badgeRadii,
+} from "./badgeInspect";
 import {
   inputTypes,
   inputVariants,
   inputSizes,
   inputRadii,
   inputStates,
-} from "./input";
+} from "./inputInspect";
 import {
-  modalSizes,
-  modalVariants,
-  modalPositions,
-  modalBackdrops,
-  modalPaddings,
-} from "./modal";
+  playgroundModalSizes,
+  playgroundModalVariants,
+  playgroundModalPositions,
+  playgroundModalBackdrops,
+  playgroundModalPaddings,
+} from "./modalInspect";
 import {
   sidebarVariants,
   sidebarPositions,
   sidebarSizes,
   sidebarBehaviors,
   sidebarCollapsedModes,
-} from "./sidebar";
-import { tabsVariants, tabsAligns } from "./tabs";
-import { tooltipPlacements, tooltipVariants } from "./tooltip";
+} from "./sidebarInspect";
+import { tabsVariants, tabsAligns } from "./tabsInspect";
+import { tooltipPlacements, tooltipVariants } from "./tooltipInspect";
 import type { PlaygroundInspectorConfig } from "./types";
 
 const navbarAlignOptions = ["left", "center", "right", "spread"] as const;
@@ -1076,38 +1081,39 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
           key: "size",
           section: "appearance",
           editor: "select",
-          options: modalSizes,
+          options: playgroundModalSizes,
         },
         {
           key: "variant",
           section: "appearance",
           editor: "select",
-          options: modalVariants,
+          options: playgroundModalVariants,
         },
         {
           key: "backdrop",
           section: "appearance",
           editor: "select",
-          options: modalBackdrops,
+          options: playgroundModalBackdrops,
         },
         { key: "rounded", section: "appearance", editor: "boolean" },
         {
           key: "padding",
           section: "appearance",
           editor: "select",
-          options: modalPaddings,
+          options: playgroundModalPaddings,
         },
         {
           key: "position",
           section: "layout",
           editor: "select",
-          options: modalPositions,
+          options: playgroundModalPositions,
         },
         { key: "fullHeight", section: "layout", editor: "boolean" },
         { key: "scrollable", section: "layout", editor: "boolean" },
       ],
       init(next) {
         if (next.open === undefined) next.open = true;
+        next.teleportTo = false;
         if (next.title === undefined) next.title = "Dialog Title";
         if (next.description === undefined)
           next.description = "This is a modal dialog.";
@@ -1378,8 +1384,8 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         if (next.showToggleButton === undefined) next.showToggleButton = true;
         if (next.logoText === undefined) next.logoText = "MyApp";
         if (next.activeItemId === undefined) next.activeItemId = "dashboard";
-        if (next.items === undefined) next.items = [];
-        if (next.groups === undefined)
+        if (!Array.isArray(next.items)) next.items = [];
+        if (!Array.isArray(next.groups) || next.groups.length === 0)
           next.groups = [
             {
               id: "main",

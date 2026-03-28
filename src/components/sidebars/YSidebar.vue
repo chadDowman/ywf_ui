@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import type {
   YSidebarProps,
   YSidebarVariant,
@@ -38,8 +38,29 @@ const emit = defineEmits<{
   "update:open": [value: boolean];
 }>();
 
+const uncontrolledOpen = ref(props.open ?? true);
+const isControlled = computed(() => props.open !== undefined);
+const isOpen = computed(() =>
+  isControlled.value ? Boolean(props.open) : uncontrolledOpen.value,
+);
+
+watch(
+  () => props.open,
+  (next) => {
+    if (next !== undefined) {
+      uncontrolledOpen.value = Boolean(next);
+    }
+  },
+);
+
+function setOpen(value: boolean) {
+  if (!isControlled.value) {
+    uncontrolledOpen.value = value;
+  }
+  emit("update:open", value);
+}
+
 /* ── collapse state ── */
-const isOpen = computed(() => props.open);
 const isCollapsed = computed(
   () => !isOpen.value && props.collapsedMode !== "hidden",
 );
@@ -51,7 +72,7 @@ const isIcons = computed(
 );
 
 function toggle() {
-  emit("update:open", !props.open);
+  setOpen(!isOpen.value);
 }
 
 /* ── group collapse ── */
@@ -131,19 +152,6 @@ const sc = computed(() => sizes[props.size]);
 
 /* ─────────────────────────────────────────────
    VARIANT TOKEN SYSTEM
-   Each variant defines:
-   shell      – the sidebar container
-   border     – border direction class
-   item       – idle item
-   itemHover  – hover
-   itemActive – active state
-   itemActiveBorder – left accent classes
-   groupLabel – group header text
-   badge      – badge bg + text
-   logo       – logo area
-   separator  – divider line
-   toggle     – toggle button
-   tooltip    – icon-mode tooltip
 ───────────────────────────────────────────── */
 interface VariantTokens {
   shell: string;
@@ -159,6 +167,8 @@ interface VariantTokens {
   toggle: string;
   tooltip: string;
   iconDot: string;
+  /** Extra class applied to the active item for special effects */
+  itemActiveExtra?: string;
 }
 
 const variants: Record<YSidebarVariant, VariantTokens> = {
@@ -290,6 +300,186 @@ const variants: Record<YSidebarVariant, VariantTokens> = {
     tooltip: "bg-gray-900 text-white",
     iconDot: "bg-gray-700",
   },
+
+  // ─── NEW VARIANTS ─────────────────────────────────────────────────
+
+  neon: {
+    shell: "ysidebar-neon-shell border-r border-cyan-500/20",
+    border: "border-r border-cyan-500/20",
+    item: "text-cyan-400/60 rounded-md font-mono text-[12px]",
+    itemHover: "hover:text-cyan-300 hover:bg-cyan-500/5",
+    itemActive:
+      "ysidebar-neon-active text-cyan-300 font-mono font-semibold rounded-md",
+    itemActiveBorder: "border-l-2 border-cyan-400",
+    groupLabel: "text-cyan-700 font-mono font-bold tracking-[0.2em] uppercase",
+    badge: "ysidebar-neon-badge text-cyan-300",
+    logo: "text-cyan-400",
+    separator: "border-cyan-900/60",
+    toggle:
+      "ysidebar-neon-toggle border border-cyan-500/30 text-cyan-500 hover:text-cyan-300",
+    tooltip: "bg-gray-950 text-cyan-300 border border-cyan-500/40",
+    iconDot: "ysidebar-neon-dot",
+    itemActiveExtra: "ysidebar-neon-item-glow",
+  },
+
+  frosted: {
+    shell: "ysidebar-frosted-shell border-r border-white/60",
+    border: "border-r border-white/60",
+    item: "text-gray-500 rounded-xl",
+    itemHover: "hover:bg-white/80 hover:text-gray-800",
+    itemActive: "bg-white text-gray-900 font-semibold rounded-xl shadow-sm",
+    itemActiveBorder: "ysidebar-frosted-active-border",
+    groupLabel: "text-gray-400/70 font-semibold tracking-widest uppercase",
+    badge: "bg-white/70 text-indigo-500 shadow-sm",
+    logo: "text-gray-800",
+    separator: "border-white/50",
+    toggle:
+      "bg-white/80 backdrop-blur border border-white/70 text-gray-500 hover:text-gray-800 shadow-sm",
+    tooltip:
+      "bg-white/90 backdrop-blur text-gray-800 border border-white/60 shadow-md",
+    iconDot: "bg-indigo-400",
+  },
+
+  forest: {
+    shell: "bg-[#1a2e1a] border-r border-[#2d4a2d]",
+    border: "border-r border-[#2d4a2d]",
+    item: "text-[#8ab88a] rounded-lg",
+    itemHover: "hover:bg-[#243824] hover:text-[#b8d4b8]",
+    itemActive: "bg-[#2d4a2d] text-[#c8e6c8] font-medium rounded-lg",
+    itemActiveBorder: "border-l-[3px] border-[#7bc47b]",
+    groupLabel: "text-[#4a7a4a] font-semibold tracking-widest uppercase",
+    badge: "bg-[#2d4a2d] text-[#a0c8a0]",
+    logo: "text-[#c8e6c8]",
+    separator: "border-[#2d4a2d]",
+    toggle:
+      "bg-[#243824] border border-[#2d4a2d] text-[#6a9a6a] hover:text-[#c8e6c8]",
+    tooltip: "bg-[#1a2e1a] text-[#b8d4b8] border border-[#2d4a2d]",
+    iconDot: "bg-[#7bc47b]",
+  },
+
+  midnight: {
+    shell: "bg-[#0d1117] border-r border-[#1c2433]",
+    border: "border-r border-[#1c2433]",
+    item: "text-[#8892a4] rounded-md",
+    itemHover: "hover:bg-[#161b22] hover:text-[#c9d1d9]",
+    itemActive:
+      "ysidebar-midnight-active text-[#f0c060] font-medium rounded-md",
+    itemActiveBorder: "border-l-[2px] border-[#f0c060]",
+    groupLabel: "text-[#3d4f69] font-semibold tracking-[0.18em] uppercase",
+    badge: "ysidebar-midnight-badge text-[#f0c060]",
+    logo: "ysidebar-midnight-logo",
+    separator: "border-[#1c2433]",
+    toggle:
+      "bg-[#161b22] border border-[#30363d] text-[#6e7681] hover:text-[#c9d1d9]",
+    tooltip: "bg-[#161b22] text-[#c9d1d9] border border-[#30363d]",
+    iconDot: "ysidebar-midnight-dot",
+  },
+
+  chalk: {
+    shell: "bg-[#f5f0e8] border-r-2 border-[#d4c9b0]",
+    border: "border-r-2 border-[#d4c9b0]",
+    item: "text-[#5c5244] rounded-none",
+    itemHover: "hover:bg-[#ede8de] hover:text-[#2c2418]",
+    itemActive: "ysidebar-chalk-active text-[#2c2418] font-bold rounded-none",
+    itemActiveBorder: "ysidebar-chalk-active-border",
+    groupLabel:
+      "text-[#a09080] font-black tracking-[0.22em] uppercase text-[9px]",
+    badge: "bg-[#2c2418] text-[#f5f0e8]",
+    logo: "text-[#2c2418]",
+    separator: "border-[#d4c9b0]",
+    toggle:
+      "bg-[#ede8de] border-2 border-[#d4c9b0] text-[#7c6c54] hover:text-[#2c2418]",
+    tooltip: "bg-[#2c2418] text-[#f5f0e8]",
+    iconDot: "bg-[#2c2418]",
+  },
+
+  // ─── 5 NEW VARIANTS ───────────────────────────────────────────────
+
+  retro: {
+    shell: "ysidebar-retro-shell border-r-2 border-[#c8820a]",
+    border: "border-r-2 border-[#c8820a]",
+    item: "text-[#d4a040] rounded-none font-mono text-[12px] tracking-wide",
+    itemHover: "hover:bg-[#1a1200] hover:text-[#ffcc44]",
+    itemActive:
+      "ysidebar-retro-active text-[#ffdd66] font-mono font-bold rounded-none",
+    itemActiveBorder: "border-l-[3px] border-[#ffcc44]",
+    groupLabel: "text-[#8a6010] font-mono font-bold tracking-[0.2em] uppercase",
+    badge: "ysidebar-retro-badge text-[#ffcc44]",
+    logo: "text-[#ffcc44] font-mono",
+    separator: "border-[#2a1e00]",
+    toggle:
+      "ysidebar-retro-toggle border border-[#c8820a] text-[#d4a040] hover:text-[#ffcc44]",
+    tooltip: "bg-[#0d0a00] text-[#ffcc44] border border-[#c8820a] font-mono",
+    iconDot: "ysidebar-retro-dot",
+  },
+
+  candy: {
+    shell: "ysidebar-candy-shell border-r border-pink-200/60",
+    border: "border-r border-pink-200/60",
+    item: "text-purple-500 rounded-2xl",
+    itemHover: "hover:bg-pink-50 hover:text-purple-700",
+    itemActive:
+      "ysidebar-candy-active text-purple-700 font-semibold rounded-2xl",
+    itemActiveBorder: "",
+    groupLabel: "text-pink-300 font-bold tracking-widest uppercase",
+    badge: "ysidebar-candy-badge text-purple-600",
+    logo: "ysidebar-candy-logo",
+    separator: "border-pink-100",
+    toggle:
+      "ysidebar-candy-toggle border border-pink-200 text-pink-400 hover:text-purple-600",
+    tooltip: "bg-purple-700 text-white",
+    iconDot: "ysidebar-candy-dot",
+  },
+
+  carbon: {
+    shell: "ysidebar-carbon-shell border-r border-white/5",
+    border: "border-r border-white/5",
+    item: "text-zinc-400 rounded-md",
+    itemHover: "hover:bg-white/5 hover:text-zinc-200",
+    itemActive: "ysidebar-carbon-active text-white font-medium rounded-md",
+    itemActiveBorder: "border-l-[2px] border-zinc-300",
+    groupLabel: "text-zinc-600 font-bold tracking-[0.18em] uppercase",
+    badge: "bg-zinc-700 text-zinc-300 border border-zinc-600",
+    logo: "text-white",
+    separator: "border-white/5",
+    toggle: "bg-zinc-800 border border-zinc-700 text-zinc-400 hover:text-white",
+    tooltip: "bg-zinc-800 text-zinc-100 border border-zinc-700",
+    iconDot: "bg-zinc-300",
+  },
+
+  ocean: {
+    shell: "ysidebar-ocean-shell border-r border-[#0a3a5c]/60",
+    border: "border-r border-[#0a3a5c]/60",
+    item: "text-[#4db8d4] rounded-lg",
+    itemHover: "hover:bg-[#0a2840] hover:text-[#7dd4e8]",
+    itemActive: "ysidebar-ocean-active text-[#a0eaf8] font-semibold rounded-lg",
+    itemActiveBorder: "border-l-[2px] border-[#22d3ee]",
+    groupLabel: "text-[#1e5a78] font-semibold tracking-widest uppercase",
+    badge: "ysidebar-ocean-badge text-[#7dd4e8]",
+    logo: "text-[#a0eaf8]",
+    separator: "border-[#0a3a5c]/50",
+    toggle:
+      "ysidebar-ocean-toggle border border-[#0a3a5c] text-[#4db8d4] hover:text-[#a0eaf8]",
+    tooltip: "bg-[#020d18] text-[#7dd4e8] border border-[#0a3a5c]",
+    iconDot: "ysidebar-ocean-dot",
+  },
+
+  rose: {
+    shell: "bg-[#fdf5f5] border-r border-[#f0d8d8]",
+    border: "border-r border-[#f0d8d8]",
+    item: "text-[#8c5c5c] rounded-lg",
+    itemHover: "hover:bg-[#faeaea] hover:text-[#5a2a2a]",
+    itemActive: "bg-[#faeaea] text-[#5a2a2a] font-semibold rounded-lg",
+    itemActiveBorder: "border-l-[3px] border-[#e07070]",
+    groupLabel: "text-[#c4a0a0] font-semibold tracking-widest uppercase",
+    badge: "bg-[#f8e0e0] text-[#c05050] border border-[#f0c8c8]",
+    logo: "text-[#5a2a2a]",
+    separator: "border-[#f0d8d8]",
+    toggle:
+      "bg-[#faeaea] border border-[#f0d8d8] text-[#b08080] hover:text-[#5a2a2a]",
+    tooltip: "bg-[#5a2a2a] text-[#fdf5f5]",
+    iconDot: "bg-[#e07070]",
+  },
 };
 
 const vt = computed(() => variants[props.variant]);
@@ -321,7 +511,7 @@ function handleItemClick(item: YSidebarItem) {
   emit("item-click", item);
   if (props.behavior === "overlay" || props.behavior === "drawer") {
     emit("close");
-    emit("update:open", false);
+    setOpen(false);
   }
 }
 
@@ -343,12 +533,12 @@ const closeIcon = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" st
     leave-to-class="opacity-0"
   >
     <div
-      v-if="(behavior === 'overlay' || behavior === 'drawer') && open"
+      v-if="(behavior === 'overlay' || behavior === 'drawer') && isOpen"
       class="fixed inset-0 bg-black/30 backdrop-blur-[1px]"
       :style="{ zIndex: (zIndex ?? 40) - 1 }"
       @click="
         emit('close');
-        emit('update:open', false);
+        setOpen(false);
       "
     />
   </Transition>
@@ -373,7 +563,7 @@ const closeIcon = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" st
       zIndex:
         behavior === 'overlay' || behavior === 'drawer' ? zIndex : undefined,
     }"
-    @click="isMini ? emit('update:open', true) : undefined"
+    @click="isMini ? setOpen(true) : undefined"
   >
     <!-- Mini mode sliver — just show accent strip -->
     <div
@@ -481,7 +671,11 @@ const closeIcon = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" st
                       isIcons ? 'justify-center px-0' : sc.itemPx,
                       sc.itemText,
                       isActive(item.id)
-                        ? [vt.itemActive, vt.itemActiveBorder]
+                        ? [
+                            vt.itemActive,
+                            vt.itemActiveBorder,
+                            vt.itemActiveExtra,
+                          ]
                             .filter(Boolean)
                             .join(' ')
                         : [vt.item, vt.itemHover],
@@ -650,18 +844,284 @@ const closeIcon = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" st
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current/30',
             vt.toggle,
           ]"
-          :aria-label="open ? 'Collapse sidebar' : 'Expand sidebar'"
+          :aria-label="isOpen ? 'Collapse sidebar' : 'Expand sidebar'"
           @click="toggle"
         >
           <span
             :class="[
               'w-3.5 h-3.5 transition-transform duration-200',
-              !open ? 'rotate-180' : '',
+              !isOpen ? 'rotate-180' : '',
             ]"
-            v-html="open ? closeIcon : menuIcon"
+            v-html="isOpen ? closeIcon : menuIcon"
           />
         </button>
       </div>
     </template>
   </aside>
 </template>
+
+<style scoped>
+/* ═══════════════════════════════════════════════════════
+   NEON VARIANT
+   ═══════════════════════════════════════════════════════ */
+.ysidebar-neon-shell {
+  background: #020a06;
+  /* Subtle scanline texture */
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 255, 150, 0.015) 2px,
+    rgba(0, 255, 150, 0.015) 4px
+  );
+}
+
+.ysidebar-neon-active {
+  background: rgba(0, 255, 180, 0.06);
+}
+
+.ysidebar-neon-item-glow {
+  text-shadow: 0 0 12px rgba(103, 232, 249, 0.7);
+  filter: drop-shadow(0 0 4px rgba(103, 232, 249, 0.4));
+}
+
+.ysidebar-neon-badge {
+  background: rgba(0, 255, 180, 0.1);
+  border: 1px solid rgba(0, 255, 180, 0.3);
+  box-shadow: 0 0 8px rgba(0, 255, 180, 0.2);
+}
+
+.ysidebar-neon-dot {
+  background: #22d3ee;
+  box-shadow: 0 0 6px #22d3ee;
+}
+
+.ysidebar-neon-toggle {
+  background: rgba(0, 20, 12, 0.8);
+}
+
+/* ═══════════════════════════════════════════════════════
+   FROSTED VARIANT
+   ═══════════════════════════════════════════════════════ */
+.ysidebar-frosted-shell {
+  background: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.82) 0%,
+    rgba(240, 245, 255, 0.78) 100%
+  );
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  /* Subtle left edge gradient for depth */
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.9);
+}
+
+.ysidebar-frosted-active-border {
+  /* Iridescent left border — shifts color on different items */
+  border-left: 2.5px solid transparent;
+  background-clip: padding-box;
+  position: relative;
+}
+
+.ysidebar-frosted-active-border::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2.5px;
+  background: linear-gradient(180deg, #818cf8, #38bdf8, #34d399);
+  border-radius: 0 2px 2px 0;
+}
+
+/* ═══════════════════════════════════════════════════════
+   FOREST VARIANT — uses raw hex colours, no extra CSS needed
+   ═══════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════
+   MIDNIGHT VARIANT
+   ═══════════════════════════════════════════════════════ */
+.ysidebar-midnight-active {
+  background: rgba(240, 192, 96, 0.08);
+}
+
+.ysidebar-midnight-badge {
+  background: rgba(240, 192, 96, 0.12);
+  border: 1px solid rgba(240, 192, 96, 0.25);
+}
+
+.ysidebar-midnight-logo {
+  color: #c9d1d9;
+  letter-spacing: 0.04em;
+}
+
+.ysidebar-midnight-dot {
+  background: #f0c060;
+  box-shadow: 0 0 6px rgba(240, 192, 96, 0.6);
+}
+
+/* ═══════════════════════════════════════════════════════
+   RETRO / CRT VARIANT
+   ═══════════════════════════════════════════════════════ */
+.ysidebar-retro-shell {
+  background: #0d0a00;
+  /* P3 phosphor scanlines */
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(255, 180, 0, 0.018) 3px,
+    rgba(255, 180, 0, 0.018) 4px
+  );
+}
+
+.ysidebar-retro-active {
+  background: rgba(255, 180, 0, 0.07);
+}
+
+.ysidebar-retro-badge {
+  background: rgba(255, 180, 0, 0.1);
+  border: 1px solid rgba(200, 130, 10, 0.5);
+}
+
+.ysidebar-retro-toggle {
+  background: rgba(20, 14, 0, 0.9);
+}
+
+.ysidebar-retro-dot {
+  background: #ffcc44;
+  box-shadow:
+    0 0 8px #ffcc44,
+    0 0 2px #ffcc44;
+}
+
+/* ═══════════════════════════════════════════════════════
+   CANDY VARIANT
+   ═══════════════════════════════════════════════════════ */
+.ysidebar-candy-shell {
+  background: linear-gradient(170deg, #fff0f8 0%, #f5f0ff 50%, #f0f8ff 100%);
+}
+
+.ysidebar-candy-logo {
+  background: linear-gradient(135deg, #f472b6, #a78bfa, #60a5fa);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+}
+
+.ysidebar-candy-active {
+  background: linear-gradient(
+    135deg,
+    rgba(244, 114, 182, 0.12),
+    rgba(167, 139, 250, 0.12)
+  );
+  box-shadow: 0 2px 8px rgba(167, 139, 250, 0.15);
+}
+
+.ysidebar-candy-badge {
+  background: linear-gradient(135deg, #fce7f3, #ede9fe);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+}
+
+.ysidebar-candy-toggle {
+  background: linear-gradient(135deg, #fce7f3, #ede9fe);
+}
+
+.ysidebar-candy-dot {
+  background: linear-gradient(135deg, #f472b6, #a78bfa);
+  box-shadow: 0 0 6px rgba(167, 139, 250, 0.5);
+}
+
+/* ═══════════════════════════════════════════════════════
+   CARBON VARIANT
+   ═══════════════════════════════════════════════════════ */
+.ysidebar-carbon-shell {
+  /* Carbon fiber weave pattern */
+  background-color: #1a1a1a;
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 2px,
+      rgba(255, 255, 255, 0.015) 2px,
+      rgba(255, 255, 255, 0.015) 4px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 2px,
+      rgba(255, 255, 255, 0.015) 2px,
+      rgba(255, 255, 255, 0.015) 4px
+    );
+}
+
+.ysidebar-carbon-active {
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* ═══════════════════════════════════════════════════════
+   OCEAN VARIANT
+   ═══════════════════════════════════════════════════════ */
+.ysidebar-ocean-shell {
+  background: linear-gradient(180deg, #020d18 0%, #041824 40%, #020f1e 100%);
+  /* Subtle bioluminescent shimmer at top */
+  box-shadow: inset 0 60px 80px -40px rgba(6, 100, 140, 0.25);
+}
+
+.ysidebar-ocean-active {
+  background: rgba(34, 211, 238, 0.08);
+  box-shadow: 0 0 16px rgba(34, 211, 238, 0.06);
+}
+
+.ysidebar-ocean-badge {
+  background: rgba(34, 211, 238, 0.1);
+  border: 1px solid rgba(34, 211, 238, 0.25);
+}
+
+.ysidebar-ocean-toggle {
+  background: rgba(2, 18, 36, 0.8);
+}
+
+.ysidebar-ocean-dot {
+  background: #22d3ee;
+  box-shadow: 0 0 8px rgba(34, 211, 238, 0.7);
+}
+
+/* ═══════════════════════════════════════════════════════
+   ROSE VARIANT — uses raw hex, no extra CSS needed
+   ═══════════════════════════════════════════════════════ */
+
+.ysidebar-chalk-active {
+  background: rgba(44, 36, 24, 0.07);
+}
+
+.ysidebar-chalk-active-border {
+  /* Hand-drawn feel: rough left underline instead of solid bar */
+  border-left: 3px solid transparent;
+  position: relative;
+}
+
+.ysidebar-chalk-active-border::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 15%;
+  bottom: 15%;
+  width: 3px;
+  background: #2c2418;
+  border-radius: 2px;
+  /* Sketch-like roughness via clip-path */
+  clip-path: polygon(
+    0% 0%,
+    100% 4%,
+    95% 20%,
+    100% 38%,
+    98% 55%,
+    100% 72%,
+    96% 88%,
+    100% 100%,
+    0% 100%
+  );
+}
+</style>

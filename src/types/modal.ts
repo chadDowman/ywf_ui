@@ -19,6 +19,8 @@ export type YModalPadding = "none" | "sm" | "md" | "lg";
 
 export interface YModalProps {
   open?: boolean;
+  /** Teleport target selector; set to false to render inline in parent container */
+  teleportTo?: string | false;
   variant?: YModalVariant;
   size?: YModalSize;
   position?: YModalPosition;

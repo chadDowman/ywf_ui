@@ -10,7 +10,7 @@ import {
   buttonSizes,
   buttonVariants,
   normalizeMaybeFalse,
-} from "../config/button";
+} from "../config/buttonInspect";
 
 const props = defineProps<{
   parsedProps: Record<string, unknown>;

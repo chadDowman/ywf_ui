@@ -8,7 +8,12 @@ export type YDropdownVariant =
   | "multi-select"
   | "nested"
   | "command-palette"
-  | "compact";
+  | "compact"
+  | "aurora"
+  | "brutalist"
+  | "pill"
+  | "terminal"
+  | "floating";
 
 export type YDropdownSize = "xs" | "sm" | "md" | "lg";
 

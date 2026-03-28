@@ -182,6 +182,7 @@ const search = ref("");
 const activeId = ref("");
 const navCollapsed = ref(false);
 const darkMode = ref(localStorage.getItem("ywf-dark-mode") === "true");
+const categoryFilter = ref<string>("All");
 
 watch(darkMode, (v) => localStorage.setItem("ywf-dark-mode", String(v)));
 
@@ -225,6 +226,22 @@ const groupedFilteredComponents = computed(() => {
   }));
 });
 
+const visibleGroups = computed(() => {
+  if (categoryFilter.value === "All") return groupedFilteredComponents.value;
+  return groupedFilteredComponents.value.filter(
+    (group) => group.category === categoryFilter.value,
+  );
+});
+
+const categoryChips = computed(() => {
+  const groups = groupedFilteredComponents.value.map((group) => ({
+    category: group.category,
+    count: group.items.length,
+  }));
+  const total = groups.reduce((sum, group) => sum + group.count, 0);
+  return [{ category: "All", count: total }, ...groups];
+});
+
 const openCategories = ref<string[]>([]);
 
 watch(
@@ -238,6 +255,13 @@ watch(
       .map((g) => g.category)
       .filter((category) => !kept.includes(category));
     openCategories.value = [...kept, ...missing];
+
+    if (
+      categoryFilter.value !== "All" &&
+      !available.has(categoryFilter.value)
+    ) {
+      categoryFilter.value = "All";
+    }
   },
   { immediate: true },
 );
@@ -256,6 +280,27 @@ function toggleCategory(category: string): void {
 
 function handleNavClick(componentId: string): void {
   activeId.value = componentId;
+  const selected = components.value.find(
+    (component) => component.id === componentId,
+  );
+  if (selected && categoryFilter.value !== "All") {
+    categoryFilter.value = selected.category;
+  }
+}
+
+function showCategory(category: string): void {
+  categoryFilter.value = category;
+  if (category !== "All" && !openCategories.value.includes(category)) {
+    openCategories.value = [...openCategories.value, category];
+  }
+}
+
+function expandAllCategories(): void {
+  openCategories.value = groupedFilteredComponents.value.map((g) => g.category);
+}
+
+function collapseAllCategories(): void {
+  openCategories.value = [];
 }
 
 function getQuickConfig(componentId: string): PlaygroundQuickConfig | null {
@@ -380,6 +425,9 @@ const activeQuickOptions = computed<string[]>(() => {
 });
 
 const isNavbarActive = computed(() => activeComponent.value?.id === "YNavbar");
+const isSidebarActive = computed(
+  () => activeComponent.value?.id === "YSidebar",
+);
 
 const previewSnippet = computed(() => {
   if (!activeComponent.value) return "";
@@ -453,6 +501,28 @@ function copySnippet(): void {
           class="search-input w-full rounded-lg px-3 py-2 text-xs"
           placeholder="Search components or props"
         />
+
+        <div class="nav-toolbar mt-2 flex items-center justify-between gap-2">
+          <button class="nav-toolbar-btn" @click="expandAllCategories">
+            Expand all
+          </button>
+          <button class="nav-toolbar-btn" @click="collapseAllCategories">
+            Collapse all
+          </button>
+        </div>
+
+        <div class="nav-chips mt-2">
+          <button
+            v-for="chip in categoryChips"
+            :key="chip.category"
+            class="nav-chip"
+            :class="categoryFilter === chip.category ? 'nav-chip--active' : ''"
+            @click="showCategory(chip.category)"
+          >
+            <span>{{ chip.category }}</span>
+            <span class="nav-chip-count">{{ chip.count }}</span>
+          </button>
+        </div>
       </div>
 
       <ul
@@ -473,7 +543,7 @@ function copySnippet(): void {
 
       <div v-else class="flex-1 overflow-y-auto px-2 pb-3 space-y-2">
         <section
-          v-for="group in groupedFilteredComponents"
+          v-for="group in visibleGroups"
           :key="group.category"
           class="space-y-1"
         >
@@ -481,7 +551,10 @@ function copySnippet(): void {
             class="nav-category flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wide"
             @click="toggleCategory(group.category)"
           >
-            <span>{{ group.category }}</span>
+            <span class="inline-flex items-center gap-1.5">
+              <span>{{ group.category }}</span>
+              <span class="nav-category-count">{{ group.items.length }}</span>
+            </span>
             <svg
               class="h-3.5 w-3.5 transition-transform duration-150"
               :style="{
@@ -569,11 +642,14 @@ function copySnippet(): void {
         <div class="space-y-5">
           <div
             class="preview-stage min-h-72 rounded-2xl p-6"
-            :class="
+            :class="[
               ['YButton', 'YAvatar'].includes(activeComponent?.id ?? '')
                 ? 'flex items-center justify-center'
-                : ''
-            "
+                : '',
+              activeComponent?.id === 'YModal'
+                ? 'relative overflow-hidden'
+                : '',
+            ]"
           >
             <div v-if="!activeComponent" class="text-sm opacity-70">
               No components found. Add one under
@@ -589,6 +665,21 @@ function copySnippet(): void {
                   This area simulates page content so sticky and floating navbar
                   variants are easier to evaluate.
                 </p>
+              </div>
+            </div>
+            <div v-else-if="isSidebarActive" class="sidebar-preview-shell">
+              <component :is="activeComponent.component" v-bind="parsedProps" />
+              <div class="sidebar-preview-content">
+                <h3>Sidebar Preview Context</h3>
+                <p>
+                  This content area simulates an app workspace so spacing,
+                  width, and navigation rhythm feel like a real sidebar layout.
+                </p>
+                <div class="sidebar-preview-grid">
+                  <div class="sidebar-preview-card" />
+                  <div class="sidebar-preview-card" />
+                  <div class="sidebar-preview-card" />
+                </div>
               </div>
             </div>
             <component
@@ -745,11 +836,94 @@ function copySnippet(): void {
   background: var(--bg-input);
   border: 1px solid var(--border-input);
 }
+.nav-toolbar-btn {
+  flex: 1;
+  background: var(--bg-input);
+  border: 1px solid var(--border-input);
+  color: var(--text-secondary);
+  border-radius: 8px;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  transition:
+    border-color 120ms ease,
+    color 120ms ease,
+    transform 120ms ease;
+}
+.nav-toolbar-btn:hover {
+  color: var(--text-primary);
+  border-color: color-mix(in srgb, var(--text-accent) 24%, transparent);
+  transform: translateY(-1px);
+}
+.nav-chips {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+.nav-chips::-webkit-scrollbar {
+  height: 5px;
+}
+.nav-chips::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--border-input) 70%, transparent);
+  border-radius: 999px;
+}
+.nav-chip {
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--border-input) 80%, transparent);
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  padding: 4px 8px;
+  font-size: 11px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  transition:
+    border-color 120ms ease,
+    color 120ms ease,
+    background-color 120ms ease,
+    transform 120ms ease;
+}
+.nav-chip:hover {
+  color: var(--text-primary);
+  border-color: color-mix(in srgb, var(--text-accent) 24%, transparent);
+  transform: translateY(-1px);
+}
+.nav-chip--active {
+  background: color-mix(in srgb, var(--text-accent) 14%, transparent);
+  border-color: color-mix(in srgb, var(--text-accent) 32%, transparent);
+  color: var(--text-accent);
+}
+.nav-chip-count {
+  min-width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  background: color-mix(in srgb, var(--border-input) 70%, transparent);
+}
+.nav-chip--active .nav-chip-count {
+  background: color-mix(in srgb, var(--text-accent) 24%, transparent);
+}
 .nav-item {
   color: var(--text-secondary);
 }
 .nav-category {
   color: var(--text-secondary);
+}
+.nav-category-count {
+  min-width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  background: color-mix(in srgb, var(--border-input) 68%, transparent);
 }
 .nav-category:hover {
   background: var(--bg-panel-hover);
@@ -956,5 +1130,53 @@ function copySnippet(): void {
   margin: 8px 0 0;
   font-size: 12px;
   line-height: 1.45;
+}
+
+.sidebar-preview-shell {
+  width: 100%;
+  min-height: 360px;
+  border: 1px solid var(--border-panel);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  background:
+    radial-gradient(circle at top right, #dbeafe 0%, transparent 42%),
+    linear-gradient(180deg, #f8fafc 0%, #edf3fb 100%);
+}
+
+.sidebar-preview-shell :deep(aside) {
+  height: 100%;
+}
+
+.sidebar-preview-content {
+  flex: 1;
+  padding: 18px;
+  color: #334155;
+}
+
+.sidebar-preview-content h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.sidebar-preview-content p {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.sidebar-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.sidebar-preview-card {
+  border-radius: 10px;
+  height: 72px;
+  border: 1px solid rgba(100, 116, 139, 0.2);
+  background: rgba(255, 255, 255, 0.65);
 }
 </style>

@@ -4,7 +4,7 @@ import {
   dropdownPlacements,
   dropdownSizes,
   dropdownVariants,
-} from "../config/dropdown";
+} from "../config/dropdownInspect";
 import type { YDropdownVariant } from "../../src/types/dropdown";
 
 const props = defineProps<{
