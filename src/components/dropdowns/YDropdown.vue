@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
+import { useDarkMode } from "@/composables/useDarkMode";
+
+defineOptions({ name: "YDropdown" });
 import type {
   YDropdownProps,
   YDropdownItem,
   YDropdownVariant,
   YDropdownSize,
-} from "../../types/dropdown";
+} from "@/types/dropdown";
+import { sizeClasses, variantBtnClasses } from "./dropdownConstants";
 
 const props = withDefaults(defineProps<YDropdownProps>(), {
   variant: "basic",
@@ -28,6 +32,8 @@ const emit = defineEmits<{
 }>();
 
 const open = defineModel<boolean>("open", { default: false });
+
+const dk = useDarkMode(props.dark);
 
 const search = ref("");
 const focusedIndex = ref(-1);
@@ -187,50 +193,31 @@ function scrollToFocused() {
 
 // --- Sizing classes ---
 
-const sizeClasses: Record<YDropdownSize, string> = {
-  xs: "px-2 py-1 text-xs",
-  sm: "px-3 py-1.5 text-xs",
-  md: "px-4 py-2 text-sm",
-  lg: "px-5 py-2.5 text-base",
-};
-
 const btnSize = computed(() => sizeClasses[props.size]);
 
 // --- Variant-specific button classes ---
 
-const variantBtnClasses: Record<YDropdownVariant, string> = {
-  basic: "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50",
-  outline:
-    "border-2 border-indigo-500 text-indigo-600 bg-transparent hover:bg-indigo-50",
-  ghost: "border-none bg-transparent text-gray-600 hover:bg-gray-100",
-  glass:
-    "border border-white/30 bg-white/20 backdrop-blur-md text-gray-800 hover:bg-white/30 shadow-sm",
-  split: "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50",
-  searchable: "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50",
-  "multi-select":
-    "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50",
-  nested: "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50",
-  "command-palette":
-    "border border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 font-mono",
-  compact:
-    "border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 !px-2 !py-1 text-xs",
-  // New variants
-  aurora: "ydropdown-aurora-btn border-0 text-white font-medium tracking-wide",
-  brutalist:
-    "ydropdown-brutalist-btn border-[3px] border-black bg-white text-black font-black uppercase tracking-widest text-xs hover:bg-black hover:text-white",
-  pill: "ydropdown-pill-btn border-0 text-gray-700 font-medium",
-  terminal:
-    "ydropdown-terminal-btn border border-green-500/40 bg-black text-green-400 font-mono text-xs tracking-wide hover:border-green-400/70 hover:bg-gray-950",
-  floating:
-    "ydropdown-floating-btn border border-gray-200/80 bg-white text-gray-800 font-medium shadow-md hover:shadow-lg hover:-translate-y-px",
-};
-
-const triggerClasses = computed(() => [
-  "rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-indigo-400/50",
-  btnSize.value,
-  variantBtnClasses[props.variant],
-  props.disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer",
-]);
+const triggerClasses = computed(() => {
+  const d = dk.value;
+  let btnCls = variantBtnClasses[props.variant];
+  // Swap light-mode bg-white/text-gray for dark equivalents on simple variants
+  if (d && !['aurora', 'brutalist', 'terminal'].includes(props.variant)) {
+    btnCls = btnCls
+      .replace(/bg-white/g, 'bg-slate-800')
+      .replace(/border-gray-(\d+)/g, 'border-slate-600')
+      .replace(/text-gray-(\d+)/g, 'text-slate-200')
+      .replace(/hover:bg-gray-50/g, 'hover:bg-slate-700')
+      .replace(/hover:bg-gray-100/g, 'hover:bg-slate-700')
+      .replace(/bg-gray-50/g, 'bg-slate-800')
+      .replace(/hover:bg-indigo-50/g, 'hover:bg-indigo-900');
+  }
+  return [
+    "rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-indigo-400/50",
+    btnSize.value,
+    btnCls,
+    props.disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer",
+  ];
+});
 
 // --- Panel classes ---
 
@@ -243,28 +230,28 @@ const panelClasses = computed(() => {
     "top-end": "bottom-full mb-1 right-0",
   };
 
+  const d = dk.value;
+  const panelBg = d ? "bg-slate-800" : "bg-white";
+  const panelBorder = d ? "border-slate-600" : "border-gray-200";
+
   const variantPanel: Record<YDropdownVariant, string> = {
-    basic: "rounded-lg border border-gray-200 bg-white shadow-lg",
-    outline: "rounded-lg border border-indigo-200 bg-white shadow-lg",
-    ghost: "rounded-lg border border-gray-100 bg-white shadow-lg",
-    glass:
-      "rounded-lg border border-white/40 bg-white/70 backdrop-blur-xl shadow-lg",
-    split: "rounded-lg border border-gray-200 bg-white shadow-lg",
-    searchable: "rounded-lg border border-gray-200 bg-white shadow-lg",
-    "multi-select": "rounded-lg border border-gray-200 bg-white shadow-lg",
-    nested: "rounded-lg border border-gray-200 bg-white shadow-lg",
-    "command-palette":
-      "rounded-xl border border-gray-300 bg-gray-50 shadow-2xl min-w-64",
-    compact: "rounded-lg border border-gray-200 bg-white shadow-lg text-xs",
-    // New variants
+    basic: `rounded-lg border ${panelBorder} ${panelBg} shadow-lg`,
+    outline: `rounded-lg border ${d ? "border-indigo-600" : "border-indigo-200"} ${panelBg} shadow-lg`,
+    ghost: `rounded-lg border ${d ? "border-slate-700" : "border-gray-100"} ${panelBg} shadow-lg`,
+    glass: `rounded-lg border border-white/40 ${d ? "bg-slate-900/70" : "bg-white/70"} backdrop-blur-xl shadow-lg`,
+    split: `rounded-lg border ${panelBorder} ${panelBg} shadow-lg`,
+    searchable: `rounded-lg border ${panelBorder} ${panelBg} shadow-lg`,
+    "multi-select": `rounded-lg border ${panelBorder} ${panelBg} shadow-lg`,
+    nested: `rounded-lg border ${panelBorder} ${panelBg} shadow-lg`,
+    "command-palette": `rounded-xl border ${d ? "border-slate-600" : "border-gray-300"} ${d ? "bg-slate-800" : "bg-gray-50"} shadow-2xl min-w-64`,
+    compact: `rounded-lg border ${panelBorder} ${panelBg} shadow-lg text-xs`,
     aurora: "ydropdown-aurora-panel rounded-2xl border-0 shadow-2xl min-w-48",
     brutalist:
       "ydropdown-brutalist-panel border-[3px] border-black bg-white shadow-[4px_4px_0px_0px_#000] rounded-none min-w-44",
-    pill: "ydropdown-pill-panel rounded-2xl border border-gray-100 bg-white shadow-xl min-w-44",
+    pill: `ydropdown-pill-panel rounded-2xl border ${d ? "border-slate-700" : "border-gray-100"} ${panelBg} shadow-xl min-w-44`,
     terminal:
       "ydropdown-terminal-panel rounded-lg border border-green-500/30 bg-black shadow-[0_0_24px_rgba(74,222,128,0.12)] min-w-44",
-    floating:
-      "ydropdown-floating-panel rounded-2xl border border-gray-100 bg-white shadow-[0_24px_48px_-8px_rgba(0,0,0,0.18)] min-w-44",
+    floating: `ydropdown-floating-panel rounded-2xl border ${d ? "border-slate-700" : "border-gray-100"} ${panelBg} shadow-[0_24px_48px_-8px_rgba(0,0,0,0.18)] min-w-44`,
   };
 
   return [base, placementMap[props.placement], variantPanel[props.variant]];
@@ -301,7 +288,8 @@ function setItemRef(el: any, idx: number) {
     >
       <button
         :class="[
-          'border border-r-0 border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition-colors',
+          'border border-r-0 transition-colors',
+          dk ? 'border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50',
           btnSize,
           disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
         ]"
@@ -312,7 +300,8 @@ function setItemRef(el: any, idx: number) {
       </button>
       <button
         :class="[
-          'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition-colors px-2',
+          'border transition-colors px-2',
+          dk ? 'border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50',
           disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
         ]"
         :disabled="disabled"
@@ -454,7 +443,10 @@ function setItemRef(el: any, idx: number) {
             ref="searchInputRef"
             v-model="search"
             :placeholder="placeholder"
-            class="w-full rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-indigo-400/50"
+            :class="[
+              'w-full rounded-md border px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-indigo-400/50',
+              dk ? 'border-slate-600 bg-slate-700 text-slate-100 placeholder-slate-400' : 'border-gray-200 bg-white text-gray-800 placeholder-gray-400',
+            ]"
             @click.stop
           />
         </div>
@@ -731,6 +723,7 @@ function setItemRef(el: any, idx: number) {
               ]"
               :disabled="item.disabled"
               role="option"
+              :aria-selected="isSelected(item.id)"
               @click="
                 item.children
                   ? (expandedNested =
@@ -771,6 +764,7 @@ function setItemRef(el: any, idx: number) {
                 ]"
                 :disabled="child.disabled"
                 role="option"
+                :aria-selected="isSelected(child.id)"
                 @click="selectItem(child)"
               >
                 <span v-if="child.icon" class="opacity-60">{{
@@ -792,12 +786,12 @@ function setItemRef(el: any, idx: number) {
               'flex w-full items-center gap-2 text-left transition-colors',
               variant === 'compact' ? 'px-3 py-1 text-xs' : 'px-4 py-2 text-sm',
               item.disabled
-                ? 'text-gray-300 cursor-not-allowed'
+                ? dk ? 'text-slate-600 cursor-not-allowed' : 'text-gray-300 cursor-not-allowed'
                 : focusedIndex === idx
-                  ? 'bg-indigo-50 text-indigo-700'
+                  ? dk ? 'bg-indigo-900 text-indigo-300' : 'bg-indigo-50 text-indigo-700'
                   : isSelected(item.id)
-                    ? 'bg-indigo-50/50 text-indigo-600'
-                    : 'text-gray-700 hover:bg-gray-50',
+                    ? dk ? 'bg-indigo-900/50 text-indigo-400' : 'bg-indigo-50/50 text-indigo-600'
+                    : dk ? 'text-slate-200 hover:bg-slate-700' : 'text-gray-700 hover:bg-gray-50',
             ]"
             :disabled="item.disabled"
             role="option"
@@ -811,7 +805,7 @@ function setItemRef(el: any, idx: number) {
                 'flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors',
                 isSelected(item.id)
                   ? 'bg-indigo-500 border-indigo-500 text-white'
-                  : 'border-gray-300',
+                  : dk ? 'border-slate-500' : 'border-gray-300',
               ]"
             >
               <svg
@@ -838,7 +832,8 @@ function setItemRef(el: any, idx: number) {
         <!-- Empty state -->
         <div
           v-if="items && filteredItems.length === 0"
-          class="px-4 py-3 text-sm text-gray-400 text-center"
+          class="px-4 py-3 text-sm text-center"
+          :class="dk ? 'text-slate-400' : 'text-gray-400'"
         >
           No results
         </div>

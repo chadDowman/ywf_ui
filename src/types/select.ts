@@ -11,6 +11,7 @@ export interface YSelectOption {
 }
 
 export interface YSelectProps {
+  dark?: boolean;
   modelValue?: unknown;
   options?: YSelectOption[];
   placeholder?: string;

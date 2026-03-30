@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import type { YRadioProps } from "../../types/radio";
+import { computed, onMounted } from "vue";
+import { useDarkMode } from "@/composables/useDarkMode";
+
+defineOptions({ name: "YRadio" });
+import type { YRadioProps } from "@/types/radio";
+import { warnInvalidColor } from "@/utils/validateColor";
 
 const props = withDefaults(defineProps<YRadioProps>(), {
   size: "md",
   variant: "default",
-  color: "#2563eb",
   disabled: false,
 });
 
@@ -39,17 +42,17 @@ const labelSizeMap: Record<string, string> = {
 
 const isSelected = computed(() => props.modelValue === props.value);
 
+const dk = useDarkMode(props.dark);
+const resolvedColor = computed(() => props.color ?? "var(--ywf-interactive)");
+
+onMounted(() => {
+  warnInvalidColor("YRadio", "color", props.color);
+});
+
 function select() {
   if (!props.disabled) {
     emit("update:modelValue", props.value);
   }
-}
-
-function hexToRgba(hex: string, alpha: number): string {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return `rgba(${r},${g},${b},${alpha})`;
 }
 </script>
 
@@ -65,11 +68,16 @@ function hexToRgba(hex: string, alpha: number): string {
         disabled ? 'cursor-not-allowed opacity-50' : '',
         isSelected
           ? 'yradio-card--selected'
-          : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50',
+          : dk
+            ? 'border-slate-600 bg-slate-800 hover:border-slate-500 hover:bg-slate-700'
+            : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50',
       ]"
       :style="
         isSelected
-          ? { borderColor: color, backgroundColor: hexToRgba(color, 0.06) }
+          ? {
+              borderColor: resolvedColor,
+              backgroundColor: `color-mix(in srgb, ${resolvedColor} 6%, transparent)`,
+            }
           : {}
       "
     >
@@ -81,7 +89,7 @@ function hexToRgba(hex: string, alpha: number): string {
           isSelected ? 'border-transparent' : 'border-gray-300 bg-white',
         ]"
         :style="
-          isSelected ? { backgroundColor: color, borderColor: color } : {}
+          isSelected ? { backgroundColor: resolvedColor, borderColor: resolvedColor } : {}
         "
         role="radio"
         :aria-checked="isSelected"
@@ -104,7 +112,7 @@ function hexToRgba(hex: string, alpha: number): string {
             labelSizeMap[size ?? 'md'],
             isSelected ? 'text-gray-900' : 'text-gray-700',
           ]"
-          :style="isSelected ? { color } : {}"
+          :style="isSelected ? { color: resolvedColor } : {}"
           >{{ label }}</span
         >
         <span
@@ -126,9 +134,11 @@ function hexToRgba(hex: string, alpha: number): string {
         labelSizeMap[size ?? 'md'],
         isSelected
           ? 'border-transparent text-white'
-          : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300',
+          : dk
+            ? 'border-slate-600 bg-slate-800 text-slate-300 hover:border-slate-500'
+            : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300',
       ]"
-      :style="isSelected ? { backgroundColor: color } : {}"
+      :style="isSelected ? { backgroundColor: resolvedColor } : {}"
       role="radio"
       :aria-checked="isSelected"
       :aria-disabled="disabled"
@@ -201,8 +211,14 @@ function hexToRgba(hex: string, alpha: number): string {
         ]"
         :style="
           isSelected
-            ? { borderColor: color, backgroundColor: hexToRgba(color, 0.08) }
-            : { borderColor: '#d1d5db', backgroundColor: 'white' }
+            ? {
+                borderColor: resolvedColor,
+                backgroundColor: `color-mix(in srgb, ${resolvedColor} 8%, transparent)`,
+              }
+            : {
+                borderColor: 'var(--ywf-border-disabled)',
+                backgroundColor: 'white',
+              }
         "
         role="radio"
         :aria-checked="isSelected"
@@ -215,7 +231,7 @@ function hexToRgba(hex: string, alpha: number): string {
           v-if="isSelected"
           class="absolute inset-0 m-auto rounded-full"
           :class="dotSizeMap[size ?? 'md']"
-          :style="{ backgroundColor: color }"
+          :style="{ backgroundColor: resolvedColor }"
         />
       </span>
       <span v-if="label || description" class="flex flex-col">
@@ -290,11 +306,17 @@ function hexToRgba(hex: string, alpha: number): string {
         labelSizeMap[size ?? 'md'],
         isSelected
           ? 'yradio-segmented--selected'
-          : 'bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-800',
+          : dk
+            ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-slate-100'
+            : 'bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-800',
       ]"
       :style="
         isSelected
-          ? { backgroundColor: color, color: 'white', borderColor: color }
+          ? {
+              backgroundColor: resolvedColor,
+              color: 'white',
+              borderColor: resolvedColor,
+            }
           : {}
       "
       role="radio"
@@ -321,10 +343,14 @@ function hexToRgba(hex: string, alpha: number): string {
           'relative mt-0.5 shrink-0 rounded-full border-2 transition-all duration-150 focus-within:ring-2 ring-blue-300/50',
           isSelected
             ? 'border-transparent'
-            : 'border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-800',
+            : dk
+              ? 'border-slate-600 bg-slate-800'
+              : 'border-gray-300 bg-white',
         ]"
         :style="
-          isSelected ? { backgroundColor: color, borderColor: color } : {}
+          isSelected
+            ? { backgroundColor: resolvedColor, borderColor: resolvedColor }
+            : {}
         "
         role="radio"
         :aria-checked="isSelected"
@@ -342,13 +368,12 @@ function hexToRgba(hex: string, alpha: number): string {
       <span v-if="label || description" class="flex flex-col">
         <span
           v-if="label"
-          class="font-medium leading-tight text-gray-800 dark:text-gray-200"
-          :class="labelSizeMap[size ?? 'md']"
+          :class="[dk ? 'font-medium leading-tight text-slate-200' : 'font-medium leading-tight text-gray-800', labelSizeMap[size ?? 'md']]"
           >{{ label }}</span
         >
         <span
           v-if="description"
-          class="mt-0.5 text-xs leading-snug text-gray-500 dark:text-gray-400"
+          :class="dk ? 'mt-0.5 text-xs leading-snug text-slate-400' : 'mt-0.5 text-xs leading-snug text-gray-500'"
           >{{ description }}</span
         >
       </span>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, useSlots, watch } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, useSlots, watch } from "vue";
+import { useDarkMode } from "@/composables/useDarkMode";
 import type {
   YModalProps,
   YModalVariant,
@@ -7,9 +8,10 @@ import type {
   YModalPosition,
   YModalBackdrop,
   YModalPadding,
-} from "../../types/modal";
+  YModalVariantTokens,
+} from "@/types/modal";
 
-defineOptions({ inheritAttrs: false });
+defineOptions({ name: "YModal", inheritAttrs: false });
 
 const props = withDefaults(defineProps<YModalProps>(), {
   teleportTo: "body",
@@ -33,6 +35,8 @@ const emit = defineEmits<{
   close: [];
   "update:open": [value: boolean];
 }>();
+
+const dk = useDarkMode(props.dark);
 
 const uncontrolledOpen = ref(props.open ?? true);
 const isControlled = computed(() => props.open !== undefined);
@@ -71,9 +75,53 @@ function onBackdropClick() {
   if (!props.persistent) close();
 }
 
+/* ── Focus trap ── */
+const dialogRef = ref<HTMLElement | null>(null);
+let previouslyFocusedEl: HTMLElement | null = null;
+
+function getFocusableElements(): HTMLElement[] {
+  if (!dialogRef.value) return [];
+  const els = dialogRef.value.querySelectorAll<HTMLElement>(
+    'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+  );
+  return Array.from(els);
+}
+
+function trapFocus(e: KeyboardEvent) {
+  if (e.key !== "Tab" || !isOpen.value) return;
+  const focusable = getFocusableElements();
+  if (!focusable.length) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (e.shiftKey) {
+    if (document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    }
+  } else {
+    if (document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+}
+
 function onKeydown(e: KeyboardEvent) {
   if (e.key === "Escape" && isOpen.value && !props.persistent) close();
+  trapFocus(e);
 }
+
+watch(isOpen, async (val) => {
+  if (val) {
+    previouslyFocusedEl = document.activeElement as HTMLElement | null;
+    await nextTick();
+    const focusable = getFocusableElements();
+    if (focusable.length) focusable[0].focus();
+  } else if (previouslyFocusedEl) {
+    previouslyFocusedEl.focus();
+    previouslyFocusedEl = null;
+  }
+});
 
 onMounted(() => document.addEventListener("keydown", onKeydown));
 onUnmounted(() => document.removeEventListener("keydown", onKeydown));
@@ -139,20 +187,7 @@ const footerPaddingClass = computed<string>(() => {
 });
 
 /* ── Variant tokens ── */
-interface VariantTokens {
-  shell: string;
-  header: string;
-  separator: string;
-  footer: string;
-  title: string;
-  description: string;
-  closeBtn: string;
-  closeBtnHover: string;
-  spinner: string;
-  loadingOverlay: string;
-}
-
-const variants: Record<YModalVariant, VariantTokens> = {
+const variants: Record<YModalVariant, YModalVariantTokens> = {
   clean: {
     shell:
       "bg-white ring-1 ring-slate-900/6 shadow-[0_24px_60px_-28px_rgba(15,23,42,0.45)]",
@@ -259,7 +294,13 @@ const variants: Record<YModalVariant, VariantTokens> = {
   },
 };
 
-const vt = computed(() => variants[props.variant]);
+const vt = computed(() => {
+  // If dark prop is set and variant is light-themed, use dark tokens instead
+  if (dk.value && ['clean', 'glass', 'warm', 'minimal'].includes(props.variant)) {
+    return variants.dark;
+  }
+  return variants[props.variant];
+});
 
 /* ── Danger overrides ── */
 const titleClass = computed(() => {
@@ -375,6 +416,7 @@ const hasHeader = computed(
         >
           <div
             v-if="isOpen"
+            ref="dialogRef"
             class="relative flex flex-col overflow-hidden"
             :class="[
               vt.shell,

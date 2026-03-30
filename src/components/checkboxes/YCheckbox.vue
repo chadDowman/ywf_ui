@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import type { YCheckboxProps } from "../../types/checkbox";
+import { computed, onMounted } from "vue";
+import { useDarkMode } from "@/composables/useDarkMode";
+
+defineOptions({ name: "YCheckbox" });
+import type { YCheckboxProps } from "@/types/checkbox";
+import { warnInvalidColor } from "@/utils/validateColor";
 
 const props = withDefaults(defineProps<YCheckboxProps>(), {
   size: "md",
   variant: "default",
   radius: "md",
-  color: "#2563eb",
   disabled: false,
   indeterminate: false,
 });
@@ -64,18 +67,17 @@ const toggleThumbTranslate: Record<string, string> = {
 
 const isChecked = computed(() => !!props.modelValue);
 
+const dk = useDarkMode(props.dark);
+const resolvedColor = computed(() => props.color ?? "var(--ywf-interactive)");
+
+onMounted(() => {
+  warnInvalidColor("YCheckbox", "color", props.color);
+});
+
 function toggle() {
   if (!props.disabled) {
     emit("update:modelValue", !props.modelValue);
   }
-}
-
-// Hex → rgba helper for soft variant
-function hexToRgba(hex: string, alpha: number): string {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return `rgba(${r},${g},${b},${alpha})`;
 }
 </script>
 
@@ -95,8 +97,12 @@ function hexToRgba(hex: string, alpha: number): string {
           toggleTrackSize[size ?? 'md'],
         ]"
         :style="{
-          backgroundColor: isChecked ? color : '#d1d5db',
-          boxShadow: isChecked ? `0 0 0 3px ${hexToRgba(color, 0.18)}` : 'none',
+          backgroundColor: isChecked
+            ? resolvedColor
+            : 'var(--ywf-border-disabled)',
+          boxShadow: isChecked
+            ? `0 0 0 3px color-mix(in srgb, ${resolvedColor} 18%, transparent)`
+            : 'none',
         }"
         role="checkbox"
         :aria-checked="isChecked"
@@ -138,11 +144,16 @@ function hexToRgba(hex: string, alpha: number): string {
         disabled ? 'cursor-not-allowed opacity-50' : '',
         isChecked
           ? 'ycheckbox-card--checked'
-          : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50',
+          : dk
+            ? 'border-slate-600 bg-slate-800 hover:border-slate-500 hover:bg-slate-700'
+            : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50',
       ]"
       :style="
         isChecked
-          ? { borderColor: color, backgroundColor: hexToRgba(color, 0.06) }
+          ? {
+              borderColor: resolvedColor,
+              backgroundColor: `color-mix(in srgb, ${resolvedColor} 6%, transparent)`,
+            }
           : {}
       "
     >
@@ -154,7 +165,11 @@ function hexToRgba(hex: string, alpha: number): string {
           'relative shrink-0 border-2 transition-all duration-150',
           isChecked ? 'border-transparent' : 'border-gray-300 bg-white',
         ]"
-        :style="isChecked ? { backgroundColor: color, borderColor: color } : {}"
+        :style="
+          isChecked
+            ? { backgroundColor: resolvedColor, borderColor: resolvedColor }
+            : {}
+        "
         role="checkbox"
         :aria-checked="isChecked"
         :aria-disabled="disabled"
@@ -198,7 +213,7 @@ function hexToRgba(hex: string, alpha: number): string {
             labelSizeMap[size ?? 'md'],
             isChecked ? 'text-gray-900' : 'text-gray-700',
           ]"
-          :style="isChecked ? { color } : {}"
+          :style="isChecked ? { color: resolvedColor } : {}"
           >{{ label }}</span
         >
         <span
@@ -220,9 +235,11 @@ function hexToRgba(hex: string, alpha: number): string {
         labelSizeMap[size ?? 'md'],
         isChecked
           ? 'border-transparent text-white'
-          : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300',
+          : dk
+            ? 'border-slate-600 bg-slate-800 text-slate-300 hover:border-slate-500'
+            : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300',
       ]"
-      :style="isChecked ? { backgroundColor: color } : {}"
+      :style="isChecked ? { backgroundColor: resolvedColor } : {}"
       role="checkbox"
       :aria-checked="isChecked"
       :aria-disabled="disabled"
@@ -400,8 +417,14 @@ function hexToRgba(hex: string, alpha: number): string {
         ]"
         :style="
           isChecked || indeterminate
-            ? { backgroundColor: hexToRgba(color, 0.12), borderColor: color }
-            : { borderColor: '#d1d5db', backgroundColor: 'white' }
+            ? {
+                backgroundColor: `color-mix(in srgb, ${resolvedColor} 12%, transparent)`,
+                borderColor: resolvedColor,
+              }
+            : {
+                borderColor: 'var(--ywf-border-disabled)',
+                backgroundColor: dk ? '#1e293b' : 'white',
+              }
         "
         role="checkbox"
         :aria-checked="indeterminate ? 'mixed' : isChecked"
@@ -418,7 +441,7 @@ function hexToRgba(hex: string, alpha: number): string {
         >
           <path
             d="M3 8l3.5 3.5L13 5"
-            :stroke="color"
+            :stroke="resolvedColor"
             stroke-width="2.2"
             stroke-linecap="round"
             stroke-linejoin="round"
@@ -432,7 +455,7 @@ function hexToRgba(hex: string, alpha: number): string {
         >
           <path
             d="M3 8h10"
-            :stroke="color"
+            :stroke="resolvedColor"
             stroke-width="2.2"
             stroke-linecap="round"
           />
@@ -468,11 +491,13 @@ function hexToRgba(hex: string, alpha: number): string {
           'relative mt-0.5 shrink-0 border-2 transition-all duration-150 focus-within:ring-2 ring-blue-300/50',
           isChecked || indeterminate
             ? 'border-transparent'
-            : 'border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-800',
+            : dk
+              ? 'border-slate-600 bg-slate-800'
+              : 'border-gray-300 bg-white',
         ]"
         :style="
           isChecked || indeterminate
-            ? { backgroundColor: color, borderColor: color }
+            ? { backgroundColor: resolvedColor, borderColor: resolvedColor }
             : {}
         "
         role="checkbox"
@@ -513,13 +538,12 @@ function hexToRgba(hex: string, alpha: number): string {
       <span v-if="label || description" class="flex flex-col">
         <span
           v-if="label"
-          class="font-medium leading-tight text-gray-800 dark:text-gray-200"
-          :class="labelSizeMap[size ?? 'md']"
+          :class="[dk ? 'font-medium leading-tight text-slate-200' : 'font-medium leading-tight text-gray-800', labelSizeMap[size ?? 'md']]"
           >{{ label }}</span
         >
         <span
           v-if="description"
-          class="mt-0.5 text-xs leading-snug text-gray-500 dark:text-gray-400"
+          :class="dk ? 'mt-0.5 text-xs leading-snug text-slate-400' : 'mt-0.5 text-xs leading-snug text-gray-500'"
           >{{ description }}</span
         >
       </span>

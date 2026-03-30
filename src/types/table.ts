@@ -17,6 +17,7 @@ export interface YTableColumn {
 }
 
 export interface YTableProps {
+  dark?: boolean;
   columns?: YTableColumn[];
   rows?: Record<string, unknown>[];
   variant?: YTableVariant;

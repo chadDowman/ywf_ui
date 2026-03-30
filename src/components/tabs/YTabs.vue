@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { computed, ref, nextTick } from "vue";
+import { useDarkMode } from "@/composables/useDarkMode";
+
+defineOptions({ name: "YTabs" });
 import type { YTabsProps } from "@/types";
+import { alignMap } from "./tabsConstants";
 
 const props = withDefaults(defineProps<YTabsProps>(), {
   tabs: () => ["Overview", "Billing", "Usage"],
@@ -11,22 +15,18 @@ const props = withDefaults(defineProps<YTabsProps>(), {
 const active = defineModel<string>({ default: "" });
 const tabRefs = ref<HTMLButtonElement[]>([]);
 
-const effectiveActive = computed(() => active.value || props.tabs?.[0] || "");
+const dk = useDarkMode(props.dark);
 
-const alignMap: Record<string, string> = {
-  left: "justify-start",
-  center: "justify-center",
-  right: "justify-end",
-  stretch: "",
-};
+const effectiveActive = computed(() => active.value || props.tabs?.[0] || "");
 
 const wrapperClass = computed(() => {
   const a = alignMap[props.align];
+  const d = dk.value;
 
   const variantMap: Record<string, string> = {
-    underline: `flex border-b border-gray-200 ${a}`,
-    pills: `flex bg-gray-100 p-1 rounded-xl gap-1 ${a}`,
-    boxed: `flex border border-gray-200 divide-x divide-gray-200 rounded-lg overflow-hidden ${a}`,
+    underline: `flex ${d ? 'border-b border-slate-700' : 'border-b border-gray-200'} ${a}`,
+    pills: `flex ${d ? 'bg-slate-800' : 'bg-gray-100'} p-1 rounded-xl gap-1 ${a}`,
+    boxed: `flex ${d ? 'border border-slate-700 divide-x divide-slate-700' : 'border border-gray-200 divide-x divide-gray-200'} rounded-lg overflow-hidden ${a}`,
     highlight: `flex gap-1 ${a}`,
     brutal: `flex border-[3px] border-black ${a}`,
     glass: `flex ytabs-glass-wrapper gap-1 p-1.5 rounded-2xl ${a}`,
@@ -34,12 +34,12 @@ const wrapperClass = computed(() => {
     soft: `flex gap-1.5 ${a}`,
     chip: `flex flex-wrap gap-2 ${a}`,
     retro: `flex ytabs-retro-wrapper ${a}`,
-    minimal: `flex gap-6 border-b border-gray-100 ${a}`,
+    minimal: `flex gap-6 ${d ? 'border-b border-slate-700' : 'border-b border-gray-100'} ${a}`,
     floating: `flex gap-2 ${a}`,
     aurora: `flex ytabs-aurora-wrapper gap-1 p-1.5 rounded-2xl ${a}`,
     terminal: `flex ytabs-terminal-wrapper p-1 gap-1 rounded-md ${a}`,
-    dot: `flex gap-5 border-b border-gray-100 ${a}`,
-    folder: `flex items-end gap-0 border-b border-gray-200 ${a}`,
+    dot: `flex gap-5 ${d ? 'border-b border-slate-700' : 'border-b border-gray-100'} ${a}`,
+    folder: `flex items-end gap-0 ${d ? 'border-b border-slate-700' : 'border-b border-gray-200'} ${a}`,
     gradient: `flex ytabs-gradient-wrapper p-1 gap-1 rounded-2xl ${a}`,
     outline: `flex gap-2 ${a}`,
     ticker: `flex ytabs-ticker-wrapper ${a}`,
@@ -51,29 +51,31 @@ const wrapperClass = computed(() => {
 function tabClass(tab: string, index: number = 0): string {
   const isActive = effectiveActive.value === tab;
   const stretch = props.align === "stretch" ? "flex-1 text-center" : "";
+  const d = dk.value;
 
   type TabStyle = { base: string; active: string; inactive: string };
   const variants: Record<string, TabStyle> = {
     underline: {
       base: `px-4 py-2 text-sm font-medium transition-colors rounded-t-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50 ${stretch}`,
       active: "border-b-2 border-blue-500 text-blue-600 -mb-px",
-      inactive:
-        "border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300",
+      inactive: d
+        ? "border-b-2 border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-500"
+        : "border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300",
     },
     pills: {
       base: `px-4 py-1.5 text-sm font-medium transition-all rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50 ${stretch}`,
-      active: "bg-white text-gray-900 shadow-sm",
-      inactive: "text-gray-500 hover:text-gray-700",
+      active: d ? "bg-slate-700 text-slate-100 shadow-sm" : "bg-white text-gray-900 shadow-sm",
+      inactive: d ? "text-slate-400 hover:text-slate-200" : "text-gray-500 hover:text-gray-700",
     },
     boxed: {
       base: `px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400/50 ${stretch}`,
-      active: "bg-gray-50 text-gray-900",
-      inactive: "text-gray-500 hover:bg-gray-50",
+      active: d ? "bg-slate-800 text-slate-100" : "bg-gray-50 text-gray-900",
+      inactive: d ? "text-slate-400 hover:bg-slate-800" : "text-gray-500 hover:bg-gray-50",
     },
     highlight: {
       base: `px-4 py-2 text-sm font-medium transition-all rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50 ${stretch}`,
       active: "bg-blue-500 text-white",
-      inactive: "text-gray-500 hover:bg-gray-100",
+      inactive: d ? "text-slate-400 hover:bg-slate-800" : "text-gray-500 hover:bg-gray-100",
     },
     brutal: {
       base: `px-5 py-2.5 text-xs font-black uppercase tracking-[0.14em] transition-all focus-visible:outline-none ${stretch}`,
@@ -94,13 +96,14 @@ function tabClass(tab: string, index: number = 0): string {
     soft: {
       base: `px-5 py-2 text-sm font-semibold transition-all rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 ${stretch}`,
       active: "ytabs-soft-active",
-      inactive: "text-gray-400 hover:text-gray-600 hover:bg-gray-100",
+      inactive: d ? "text-slate-400 hover:text-slate-200 hover:bg-slate-800" : "text-gray-400 hover:text-gray-600 hover:bg-gray-100",
     },
     chip: {
       base: `inline-flex items-center px-4 py-1.5 text-xs font-semibold transition-all rounded-full border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 ${stretch}`,
       active: "ytabs-chip-active",
-      inactive:
-        "border-gray-200 text-gray-500 hover:border-gray-400 hover:text-gray-700 bg-white",
+      inactive: d
+        ? "border-slate-600 text-slate-400 hover:border-slate-500 hover:text-slate-200 bg-slate-800"
+        : "border-gray-200 text-gray-500 hover:border-gray-400 hover:text-gray-700 bg-white",
     },
     retro: {
       base: `px-5 py-2 text-xs font-black font-mono uppercase tracking-[0.15em] transition-all border-r-2 border-[#c8820a] last:border-r-0 focus-visible:outline-none ${stretch}`,
@@ -109,13 +112,13 @@ function tabClass(tab: string, index: number = 0): string {
     },
     minimal: {
       base: `pb-3 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 ${stretch}`,
-      active: "text-gray-900 border-b-[1.5px] border-gray-900 -mb-px",
-      inactive: "text-gray-400 hover:text-gray-600",
+      active: d ? "text-slate-100 border-b-[1.5px] border-slate-100 -mb-px" : "text-gray-900 border-b-[1.5px] border-gray-900 -mb-px",
+      inactive: d ? "text-slate-400 hover:text-slate-200" : "text-gray-400 hover:text-gray-600",
     },
     floating: {
       base: `px-4 py-2 text-sm font-medium transition-all rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-300 ${stretch}`,
       active: "ytabs-floating-active",
-      inactive: "text-gray-500 hover:bg-gray-50 hover:text-gray-700",
+      inactive: d ? "text-slate-400 hover:bg-slate-800 hover:text-slate-200" : "text-gray-500 hover:bg-gray-50 hover:text-gray-700",
     },
     aurora: {
       base: `px-4 py-2 text-sm font-medium transition-all rounded-xl focus-visible:outline-none ${stretch}`,
@@ -144,9 +147,10 @@ function tabClass(tab: string, index: number = 0): string {
     },
     outline: {
       base: `px-4 py-2 text-sm font-medium transition-all rounded-lg border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300 ${stretch}`,
-      active: "border-indigo-500 text-indigo-600 bg-indigo-50",
-      inactive:
-        "border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700",
+      active: d ? "border-indigo-500 text-indigo-400 bg-indigo-950" : "border-indigo-500 text-indigo-600 bg-indigo-50",
+      inactive: d
+        ? "border-slate-600 text-slate-400 hover:border-slate-500 hover:text-slate-200"
+        : "border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-700",
     },
     ticker: {
       base: `px-5 py-2.5 text-xs font-black uppercase tracking-[0.12em] transition-all focus-visible:outline-none ${stretch}`,

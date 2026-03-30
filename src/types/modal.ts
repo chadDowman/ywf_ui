@@ -18,6 +18,7 @@ export type YModalBackdrop = "blur" | "dim" | "none" | "frosted";
 export type YModalPadding = "none" | "sm" | "md" | "lg";
 
 export interface YModalProps {
+  dark?: boolean;
   open?: boolean;
   /** Teleport target selector; set to false to render inline in parent container */
   teleportTo?: string | false;
@@ -44,4 +45,18 @@ export type {
   YModalBackdrop as ModalBackdrop,
   YModalPadding as ModalPadding,
   YModalProps as ModalProps,
+  YModalVariantTokens as ModalVariantTokens,
 };
+
+export interface YModalVariantTokens {
+  shell: string;
+  header: string;
+  separator: string;
+  footer: string;
+  title: string;
+  description: string;
+  closeBtn: string;
+  closeBtnHover: string;
+  spinner: string;
+  loadingOverlay: string;
+}

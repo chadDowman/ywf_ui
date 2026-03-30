@@ -34,6 +34,7 @@ export type YBadgeColor = BadgeColor;
 export type YBadgeRadius = BadgeRadius;
 
 export interface YBadgeProps {
+  dark?: boolean;
   label?: string;
   variant?: BadgeVariant;
   size?: BadgeSize;
@@ -51,4 +52,15 @@ export interface YBadgeProps {
   clickable?: boolean;
   count?: number;
   countMax?: number;
+}
+
+export interface YBadgeColorTokens {
+  solid: string;
+  outline: string;
+  soft: string;
+  ghost: string;
+  glass: string;
+  surface: string;
+  "dot-outline": string;
+  dot: string;
 }

@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, watch, nextTick, onBeforeUnmount } from "vue";
+import { useDarkMode } from "@/composables/useDarkMode";
+
+defineOptions({ name: "YNavbar" });
 import type {
   YNavbarProps,
   YNavbarLink,
   YNavbarAction,
   YNavbarVariant,
   YNavbarAlign,
-} from "../../types/navbar";
+} from "@/types/navbar";
 
 const props = withDefaults(defineProps<YNavbarProps>(), {
   brand: "Brand",
@@ -32,9 +35,45 @@ const emit = defineEmits<{
 
 const mobileOpen = ref(false);
 const searchQuery = ref("");
+const hamburgerRef = ref<HTMLButtonElement | null>(null);
+const mobilePanelRef = ref<HTMLElement | null>(null);
+
+const dk = useDarkMode(props.dark);
 
 function toggleMobile() {
   mobileOpen.value = !mobileOpen.value;
+}
+
+watch(mobileOpen, (isOpen) => {
+  if (isOpen) {
+    nextTick(() => {
+      const firstLink = mobilePanelRef.value?.querySelector<HTMLElement>(
+        "button:not([disabled]), a:not([disabled])",
+      );
+      firstLink?.focus();
+    });
+  } else {
+    hamburgerRef.value?.focus();
+  }
+});
+
+function onMobilePanelKeydown(e: KeyboardEvent) {
+  if (e.key !== "Tab" || !mobilePanelRef.value) return;
+  const focusable = Array.from(
+    mobilePanelRef.value.querySelectorAll<HTMLElement>(
+      "button:not([disabled]), a:not([disabled]), input:not([disabled])",
+    ),
+  );
+  if (!focusable.length) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (e.shiftKey && document.activeElement === first) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && document.activeElement === last) {
+    e.preventDefault();
+    first.focus();
+  }
 }
 
 function handleNav(link: YNavbarLink) {
@@ -60,38 +99,58 @@ const lightTextVariants = new Set<YNavbarVariant>([
   "luxury",
 ]);
 
-const isLightText = computed(() => lightTextVariants.has(props.variant));
+const isLightText = computed(() => dk.value || lightTextVariants.has(props.variant));
 
 // --- Variant class map ---
 
-const variantClasses: Record<YNavbarVariant, string> = {
-  // Original 8
-  solid:
-    "bg-white/92 border-b border-slate-200 text-slate-800 supports-[backdrop-filter]:backdrop-blur-xl",
-  outline:
-    "bg-white/70 border border-slate-300 text-slate-800 supports-[backdrop-filter]:backdrop-blur-md",
-  ghost: "bg-transparent text-slate-700",
-  glass: "bg-white/55 backdrop-blur-xl border-b border-white/50 text-slate-800",
-  gradient: "bg-gradient-to-r from-blue-600 to-cyan-500 text-white",
-  minimal: "bg-transparent text-gray-600",
-  bordered: "bg-white border-b-2 border-indigo-500 text-gray-800",
-  floating:
-    "bg-white/95 rounded-2xl shadow-xl border border-slate-200 text-slate-800 mx-4 mt-3 supports-[backdrop-filter]:backdrop-blur-md",
+const variantClasses = computed<Record<YNavbarVariant, string>>(() => {
+  const d = dk.value;
+  return {
+    // Original 8
+    solid: d
+      ? "bg-slate-900/92 border-b border-slate-700 text-slate-100 supports-[backdrop-filter]:backdrop-blur-xl"
+      : "bg-white/92 border-b border-slate-200 text-slate-800 supports-[backdrop-filter]:backdrop-blur-xl",
+    outline: d
+      ? "bg-slate-900/70 border border-slate-600 text-slate-100 supports-[backdrop-filter]:backdrop-blur-md"
+      : "bg-white/70 border border-slate-300 text-slate-800 supports-[backdrop-filter]:backdrop-blur-md",
+    ghost: d ? "bg-transparent text-slate-200" : "bg-transparent text-slate-700",
+    glass: d
+      ? "bg-slate-900/55 backdrop-blur-xl border-b border-slate-700/50 text-slate-100"
+      : "bg-white/55 backdrop-blur-xl border-b border-white/50 text-slate-800",
+    gradient: "bg-gradient-to-r from-blue-600 to-cyan-500 text-white",
+    minimal: d ? "bg-transparent text-slate-300" : "bg-transparent text-gray-600",
+    bordered: d
+      ? "bg-slate-900 border-b-2 border-indigo-500 text-slate-100"
+      : "bg-white border-b-2 border-indigo-500 text-gray-800",
+    floating: d
+      ? "bg-slate-900/95 rounded-2xl shadow-xl border border-slate-700 text-slate-100 mx-4 mt-3 supports-[backdrop-filter]:backdrop-blur-md"
+      : "bg-white/95 rounded-2xl shadow-xl border border-slate-200 text-slate-800 mx-4 mt-3 supports-[backdrop-filter]:backdrop-blur-md",
 
-  // New 12
-  editorial: "bg-white border-b border-gray-900 text-gray-900",
-  startup: "bg-gray-950 text-white border-b border-gray-800",
-  brutalist: "bg-yellow-300 border-b-4 border-black text-black",
-  luxury: "bg-gray-950 text-amber-100 border-b border-amber-700/40",
-  retro: "bg-orange-50 border-b-2 border-orange-800 text-orange-900",
-  enterprise: "bg-slate-800 text-slate-100 border-b border-slate-700",
-  terminal: "bg-gray-950 text-green-400 border-b border-green-900/60",
-  pill: "bg-gray-100 rounded-full border border-gray-200 text-gray-800 mx-6 mt-3",
-  split: "bg-white border-b border-gray-200 text-gray-800",
-  stacked: "bg-white border-b border-gray-200 text-gray-800",
-  "sidebar-header": "bg-gray-50 border-b border-gray-200 text-gray-800",
-  topbar: "bg-indigo-600 text-white",
-};
+    // New 12
+    editorial: d
+      ? "bg-slate-900 border-b border-slate-600 text-slate-100"
+      : "bg-white border-b border-gray-900 text-gray-900",
+    startup: "bg-gray-950 text-white border-b border-gray-800",
+    brutalist: "bg-yellow-300 border-b-4 border-black text-black",
+    luxury: "bg-gray-950 text-amber-100 border-b border-amber-700/40",
+    retro: "bg-orange-50 border-b-2 border-orange-800 text-orange-900",
+    enterprise: "bg-slate-800 text-slate-100 border-b border-slate-700",
+    terminal: "bg-gray-950 text-green-400 border-b border-green-900/60",
+    pill: d
+      ? "bg-slate-800 rounded-full border border-slate-600 text-slate-100 mx-6 mt-3"
+      : "bg-gray-100 rounded-full border border-gray-200 text-gray-800 mx-6 mt-3",
+    split: d
+      ? "bg-slate-900 border-b border-slate-700 text-slate-100"
+      : "bg-white border-b border-gray-200 text-gray-800",
+    stacked: d
+      ? "bg-slate-900 border-b border-slate-700 text-slate-100"
+      : "bg-white border-b border-gray-200 text-gray-800",
+    "sidebar-header": d
+      ? "bg-slate-800 border-b border-slate-700 text-slate-100"
+      : "bg-gray-50 border-b border-gray-200 text-gray-800",
+    topbar: "bg-indigo-600 text-white",
+  };
+});
 
 // --- Per-variant nav wrapper classes ---
 
@@ -99,7 +158,7 @@ const navClasses = computed(() => {
   const v = props.variant;
   const base = [
     "relative w-full transition-all duration-250",
-    variantClasses[v],
+    variantClasses.value[v],
     props.sticky ? "sticky top-0 z-50" : "",
     props.elevated && v !== "floating" && v !== "pill" ? "shadow-md" : "",
     props.transparent ? "!bg-transparent" : "",
@@ -276,9 +335,13 @@ const mobilePanelClass = computed(() => {
     startup: "border-b border-gray-800 bg-gray-950 text-white shadow-2xl",
     enterprise:
       "border-b border-slate-700 bg-slate-800 text-slate-100 shadow-2xl",
-    editorial: "border-b border-gray-900 bg-white text-gray-900 shadow-lg",
+    editorial: dk.value
+      ? "border-b border-slate-600 bg-slate-900 text-slate-100 shadow-2xl"
+      : "border-b border-gray-900 bg-white text-gray-900 shadow-lg",
     topbar: "border-b border-indigo-700 bg-indigo-600 text-white shadow-lg",
-    pill: "border border-gray-200 bg-white text-gray-800 shadow-xl rounded-2xl mx-6 mt-1",
+    pill: dk.value
+      ? "border border-slate-600 bg-slate-800 text-slate-100 shadow-xl rounded-2xl mx-6 mt-1"
+      : "border border-gray-200 bg-white text-gray-800 shadow-xl rounded-2xl mx-6 mt-1",
   };
   return (
     map[v] ??
@@ -454,6 +517,7 @@ const subtitleClass = computed(() => {
 
           <button
             v-if="mobileMenu"
+            ref="hamburgerRef"
             class="md:hidden flex h-8 w-8 items-center justify-center rounded-lg transition-colors cursor-pointer bg-transparent border-none"
             :class="hamburgerClass"
             aria-label="Toggle menu"
@@ -599,6 +663,7 @@ const subtitleClass = computed(() => {
         <!-- Mobile hamburger -->
         <button
           v-if="mobileMenu"
+          ref="hamburgerRef"
           class="md:hidden flex h-8 w-8 items-center justify-center rounded-lg transition-colors cursor-pointer bg-transparent border-none"
           :class="hamburgerClass"
           aria-label="Toggle menu"
@@ -653,12 +718,21 @@ const subtitleClass = computed(() => {
     </div>
 
     <!-- Mobile menu panel -->
-    <Transition name="slide">
+    <Transition
+      enter-active-class="transition duration-200 ease-out"
+      enter-from-class="opacity-0 -translate-y-2"
+      enter-to-class="opacity-100 translate-y-0"
+      leave-active-class="transition duration-200 ease-out"
+      leave-from-class="opacity-100 translate-y-0"
+      leave-to-class="opacity-0 -translate-y-2"
+    >
       <div
         v-if="mobileMenu && mobileOpen && links?.length"
+        ref="mobilePanelRef"
         class="absolute left-0 right-0 top-full z-40 px-6 py-3 md:hidden"
         :class="mobilePanelClass"
         role="menu"
+        @keydown="onMobilePanelKeydown"
       >
         <!-- Mobile search -->
         <div v-if="showSearch" class="mb-3">
@@ -737,17 +811,3 @@ const subtitleClass = computed(() => {
     </Transition>
   </nav>
 </template>
-
-<style scoped>
-.slide-enter-active,
-.slide-leave-active {
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
-}
-.slide-enter-from,
-.slide-leave-to {
-  opacity: 0;
-  transform: translateY(-8px);
-}
-</style>

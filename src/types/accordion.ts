@@ -21,6 +21,7 @@ export interface YAccordionItem {
 }
 
 export interface YAccordionProps {
+  dark?: boolean;
   items?: YAccordionItem[];
   variant?: YAccordionVariant;
   multiple?: boolean;

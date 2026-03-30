@@ -12,6 +12,7 @@ export type YInputRadius = "none" | "sm" | "md" | "lg" | "full";
 export type YInputState = "default" | "error" | "success" | "warning";
 
 export interface YInputProps {
+  dark?: boolean;
   modelValue?: string | number;
   placeholder?: string;
   type?: YInputType;
@@ -36,4 +37,43 @@ export interface YInputProps {
   required?: boolean;
   maxLength?: number;
   showCount?: boolean;
+}
+
+export interface YInputSizeScale {
+  height: string;
+  text: string;
+  px: string;
+  labelText: string;
+  labelGap: string;
+  hintText: string;
+  hintGap: string;
+  affixText: string;
+  affixPx: string;
+  icon: string;
+  iconLeft: string;
+  iconRight: string;
+  inputPl: string;
+  inputPr: string;
+  inputPlIcon: string;
+  inputPrIcon: string;
+  ring: string;
+  closeBtn: string;
+}
+
+export interface YInputVariantTokens {
+  idle: string;
+  hover: string;
+  focus: string;
+  ring: string;
+  error: string;
+  errorRing: string;
+  success: string;
+  successRing: string;
+  warning: string;
+  warningRing: string;
+  disabled: string;
+  readonly: string;
+  affix: string;
+  affixBorderL: string;
+  affixBorderR: string;
 }

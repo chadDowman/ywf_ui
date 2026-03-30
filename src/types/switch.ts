@@ -4,6 +4,7 @@ export type YSwitchSize = ComponentSize;
 export type YSwitchVariant = "default" | "pill" | "slim" | "ios";
 
 export interface YSwitchProps {
+  dark?: boolean;
   modelValue?: boolean;
   label?: string;
   description?: string;

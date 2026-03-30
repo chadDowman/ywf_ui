@@ -1,0 +1,236 @@
+import type { ComponentSize, YButtonPreset } from "@/types";
+
+export const textSizeClasses: Record<ComponentSize, string> = {
+  xs: "text-xs",
+  sm: "text-sm",
+  md: "text-sm",
+  lg: "text-base",
+  xl: "text-lg",
+};
+
+export const paddingClasses: Record<ComponentSize, string> = {
+  xs: "px-2 py-1",
+  sm: "px-3 py-1.5",
+  md: "px-4 py-2",
+  lg: "px-5 py-2.5",
+  xl: "px-6 py-3",
+};
+
+export const roundedClasses: Record<string, string> = {
+  false: "rounded-none",
+  sm: "rounded-sm",
+  md: "rounded-md",
+  lg: "rounded-lg",
+  xl: "rounded-xl",
+  full: "rounded-full",
+};
+
+export const shadowClasses: Record<string, string> = {
+  false: "",
+  sm: "shadow-sm",
+  md: "shadow-md",
+  lg: "shadow-lg",
+  xl: "shadow-xl",
+};
+
+export const textSizeValues: Record<ComponentSize, string> = {
+  xs: "0.75rem",
+  sm: "0.875rem",
+  md: "0.875rem",
+  lg: "1rem",
+  xl: "1.125rem",
+};
+
+export const paddingValues: Record<ComponentSize, string> = {
+  xs: "0.25rem 0.5rem",
+  sm: "0.375rem 0.75rem",
+  md: "0.5rem 1rem",
+  lg: "0.625rem 1.25rem",
+  xl: "0.75rem 1.5rem",
+};
+
+export const roundedValues: Record<string, string> = {
+  false: "0",
+  sm: "0.125rem",
+  md: "0.375rem",
+  lg: "0.5rem",
+  xl: "0.75rem",
+  full: "9999px",
+};
+
+export const shadowValues: Record<string, string> = {
+  false: "none",
+  sm: "0 1px 2px rgba(0, 0, 0, 0.1)",
+  md: "0 4px 6px rgba(0, 0, 0, 0.1)",
+  lg: "0 10px 15px rgba(0, 0, 0, 0.15)",
+  xl: "0 20px 25px rgba(0, 0, 0, 0.2)",
+};
+
+export const animationClasses: Record<string, string> = {
+  false: "",
+  pulse: "y-btn-pulse",
+  bounce: "y-btn-bounce",
+  shake: "y-btn-shake",
+  glow: "y-btn-glow",
+  spin: "y-btn-spin",
+  wobble: "y-btn-wobble",
+  typewriter: "y-btn-typewriter",
+  breathe: "y-btn-breathe",
+  flicker: "y-btn-flicker",
+  "slide-in": "y-btn-slide-in",
+};
+
+export const effectClasses: Record<string, string> = {
+  false: "",
+  ripple: "y-btn-ripple",
+  scale: "y-btn-scale",
+  lift: "y-btn-lift",
+  neon: "y-btn-neon",
+  glassmorphism: "y-btn-glass",
+  morph: "y-btn-morph",
+  "magnetic-pull": "y-btn-magnetic-pull",
+  spotlight: "y-btn-spotlight",
+  emboss: "y-btn-emboss",
+  hologram: "y-btn-hologram",
+};
+
+export const presetClasses: Record<YButtonPreset, string> = {
+  solid: "y-btn-preset-solid",
+  outline: "y-btn-preset-outline",
+  ghost: "y-btn-preset-ghost",
+  gradient: "y-btn-preset-gradient",
+  neon: "y-btn-preset-neon",
+  pill: "y-btn-preset-pill",
+  brutal: "y-btn-preset-brutal",
+  glass: "y-btn-preset-glass",
+  magnetic: "y-btn-preset-magnetic",
+  underline: "y-btn-preset-underline",
+  retro: "y-btn-preset-retro",
+  cyber: "y-btn-preset-cyber",
+  stitched: "y-btn-preset-stitched",
+  liquid: "y-btn-preset-liquid",
+  "3d": "y-btn-preset-3d",
+};
+
+export const animIntensityVars: Record<string, Record<string, string>> = {
+  subtle: {
+    "--y-anim-speed": "1.4",
+    "--y-pulse-min": "0.8",
+    "--y-bounce-y": "8%",
+    "--y-shake-x": "1.5px",
+    "--y-glow-spread-lo": "8px",
+    "--y-glow-spread-hi": "18px",
+    "--y-glow-mix-lo": "25%",
+    "--y-glow-mix-hi": "40%",
+    "--y-wobble-deg": "2deg",
+    "--y-breathe-scale-lo": "0.98",
+    "--y-breathe-scale-hi": "1.02",
+    "--y-flicker-min": "0.85",
+    "--y-slide-x": "8px",
+  },
+  moderate: {
+    "--y-anim-speed": "1",
+    "--y-pulse-min": "0.6",
+    "--y-bounce-y": "15%",
+    "--y-shake-x": "3px",
+    "--y-glow-spread-lo": "15px",
+    "--y-glow-spread-hi": "35px",
+    "--y-glow-mix-lo": "40%",
+    "--y-glow-mix-hi": "60%",
+    "--y-wobble-deg": "5deg",
+    "--y-breathe-scale-lo": "0.95",
+    "--y-breathe-scale-hi": "1.05",
+    "--y-flicker-min": "0.6",
+    "--y-slide-x": "20px",
+  },
+  strong: {
+    "--y-anim-speed": "0.7",
+    "--y-pulse-min": "0.35",
+    "--y-bounce-y": "25%",
+    "--y-shake-x": "6px",
+    "--y-glow-spread-lo": "25px",
+    "--y-glow-spread-hi": "55px",
+    "--y-glow-mix-lo": "55%",
+    "--y-glow-mix-hi": "80%",
+    "--y-wobble-deg": "10deg",
+    "--y-breathe-scale-lo": "0.90",
+    "--y-breathe-scale-hi": "1.10",
+    "--y-flicker-min": "0.3",
+    "--y-slide-x": "40px",
+  },
+};
+
+export const effectIntensityVars: Record<string, Record<string, string>> = {
+  subtle: {
+    "--y-scale-factor": "1.03",
+    "--y-lift-y": "1.5px",
+    "--y-lift-shadow-1": "0 4px 12px -3px rgba(0,0,0,0.12)",
+    "--y-lift-shadow-2": "0 3px 6px -4px rgba(0,0,0,0.1)",
+    "--y-neon-spread-1": "3px",
+    "--y-neon-spread-2": "10px",
+    "--y-neon-mix": "30%",
+    "--y-neon-hover-1": "5px",
+    "--y-neon-hover-2": "18px",
+    "--y-neon-hover-3": "35px",
+    "--y-neon-hover-mix-2": "40%",
+    "--y-neon-hover-mix-3": "18%",
+    "--y-glass-bg": "15%",
+    "--y-glass-border": "25%",
+    "--y-glass-blur": "8px",
+    "--y-ripple-scale": "2",
+    "--y-ripple-opacity": "0.2",
+    "--y-morph-radius": "40% 60% 60% 40% / 60% 40% 60% 40%",
+    "--y-mag-pull-scale": "0.08",
+    "--y-spotlight-size": "60px",
+    "--y-emboss-depth": "1px",
+    "--y-holo-shift": "1px",
+  },
+  moderate: {
+    "--y-scale-factor": "1.07",
+    "--y-lift-y": "3px",
+    "--y-lift-shadow-1": "0 10px 25px -5px rgba(0,0,0,0.2)",
+    "--y-lift-shadow-2": "0 8px 10px -6px rgba(0,0,0,0.15)",
+    "--y-neon-spread-1": "5px",
+    "--y-neon-spread-2": "20px",
+    "--y-neon-mix": "50%",
+    "--y-neon-hover-1": "10px",
+    "--y-neon-hover-2": "30px",
+    "--y-neon-hover-3": "60px",
+    "--y-neon-hover-mix-2": "60%",
+    "--y-neon-hover-mix-3": "30%",
+    "--y-glass-bg": "25%",
+    "--y-glass-border": "40%",
+    "--y-glass-blur": "12px",
+    "--y-ripple-scale": "2.5",
+    "--y-ripple-opacity": "0.3",
+    "--y-morph-radius": "30% 70% 70% 30% / 70% 30% 70% 30%",
+    "--y-mag-pull-scale": "0.15",
+    "--y-spotlight-size": "100px",
+    "--y-emboss-depth": "2px",
+    "--y-holo-shift": "2px",
+  },
+  strong: {
+    "--y-scale-factor": "1.14",
+    "--y-lift-y": "6px",
+    "--y-lift-shadow-1": "0 18px 40px -8px rgba(0,0,0,0.3)",
+    "--y-lift-shadow-2": "0 12px 18px -8px rgba(0,0,0,0.2)",
+    "--y-neon-spread-1": "8px",
+    "--y-neon-spread-2": "35px",
+    "--y-neon-mix": "70%",
+    "--y-neon-hover-1": "16px",
+    "--y-neon-hover-2": "50px",
+    "--y-neon-hover-3": "90px",
+    "--y-neon-hover-mix-2": "80%",
+    "--y-neon-hover-mix-3": "45%",
+    "--y-glass-bg": "35%",
+    "--y-glass-border": "55%",
+    "--y-glass-blur": "18px",
+    "--y-ripple-scale": "3.5",
+    "--y-ripple-opacity": "0.45",
+    "--y-morph-radius": "20% 80% 80% 20% / 80% 20% 80% 20%",
+    "--y-mag-pull-scale": "0.25",
+    "--y-spotlight-size": "150px",
+    "--y-emboss-depth": "3px",
+    "--y-holo-shift": "3px",
+  },
+};

@@ -22,6 +22,7 @@ export type {
   YModalBackdrop,
   YModalPadding,
   YModalProps,
+  YModalVariantTokens,
 } from "./modal";
 export type {
   YDropdownVariant,
@@ -47,6 +48,8 @@ export type {
   YSidebarItem,
   YSidebarGroup,
   YSidebarProps,
+  YSidebarSizeScale,
+  YSidebarVariantTokens,
 } from "./sidebar";
 export type {
   YBadgeVariant,
@@ -54,6 +57,7 @@ export type {
   YBadgeColor,
   YBadgeRadius,
   YBadgeProps,
+  YBadgeColorTokens,
 } from "./badge";
 export type {
   YInputVariant,
@@ -62,6 +66,8 @@ export type {
   YInputRadius,
   YInputState,
   YInputProps,
+  YInputSizeScale,
+  YInputVariantTokens,
 } from "./input";
 export type {
   YAlertType,
@@ -85,32 +91,7 @@ export type {
   YAvatarRing,
   YAvatarProps,
 } from "./avatar";
-export type YTabsVariant =
-  | "underline"
-  | "pills"
-  | "boxed"
-  | "highlight"
-  | "brutal"
-  | "glass"
-  | "neon"
-  | "soft"
-  | "chip"
-  | "retro"
-  | "minimal"
-  | "floating"
-  | "aurora"
-  | "terminal"
-  | "dot"
-  | "folder"
-  | "gradient"
-  | "outline"
-  | "ticker";
-export type YTabsAlign = "left" | "center" | "right" | "stretch";
-export interface YTabsProps {
-  tabs?: string[];
-  variant?: YTabsVariant;
-  align?: YTabsAlign;
-}
+export type { YTabsVariant, YTabsAlign, YTabsProps } from "./tabs";
 export type {
   YCheckboxSize,
   YCheckboxVariant,

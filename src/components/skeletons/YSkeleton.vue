@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import type { YSkeletonProps } from "../../types/skeleton";
+import { useDarkMode } from "@/composables/useDarkMode";
+
+defineOptions({ name: "YSkeleton" });
+import type { YSkeletonProps } from "@/types/skeleton";
 
 const props = withDefaults(defineProps<YSkeletonProps>(), {
   variant: "rect",
@@ -8,6 +11,8 @@ const props = withDefaults(defineProps<YSkeletonProps>(), {
   count: 1,
   radius: "md",
 });
+
+const dk = useDarkMode(props.dark);
 
 const radiusMap: Record<string, string> = {
   none: "rounded-none",
@@ -56,8 +61,7 @@ const variantClasses = computed(() => {
     <div
       v-for="i in count ?? 1"
       :key="i"
-      class="bg-gray-200 dark:bg-gray-700"
-      :class="[variantClasses, animated ? 'animate-pulse' : '']"
+      :class="[dk ? 'bg-slate-700' : 'bg-gray-200', variantClasses, animated ? 'animate-pulse' : '']"
       :style="baseStyle"
     />
   </div>

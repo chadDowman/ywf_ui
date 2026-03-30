@@ -10,6 +10,7 @@ export type YToastPosition =
 export type YToastRadius = "none" | "sm" | "md" | "lg" | "full";
 
 export interface YToastProps {
+  dark?: boolean;
   message?: string;
   title?: string;
   type?: YToastType;

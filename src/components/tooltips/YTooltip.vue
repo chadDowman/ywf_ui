@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref } from "vue";
-import type { YTooltipProps } from "../../types/tooltip";
+import { useDarkMode } from "@/composables/useDarkMode";
+
+defineOptions({ name: "YTooltip" });
+import type { YTooltipProps } from "@/types/tooltip";
 
 const props = withDefaults(defineProps<YTooltipProps>(), {
   placement: "top",
   variant: "dark",
 });
+
+const dk = useDarkMode(props.dark);
 
 const positionClasses: Record<string, string> = {
   top: "bottom-full left-1/2 -translate-x-1/2 mb-2",
@@ -14,25 +19,25 @@ const positionClasses: Record<string, string> = {
   right: "left-full top-1/2 -translate-y-1/2 ml-2",
 };
 
-const variantClasses: Record<string, string> = {
+const variantClasses = computed<Record<string, string>>(() => ({
   dark: "bg-gray-900 text-white",
-  light: "bg-white text-gray-800 border border-gray-200 shadow-md",
+  light: dk.value ? "bg-slate-800 text-slate-100 border border-slate-600 shadow-md" : "bg-white text-gray-800 border border-gray-200 shadow-md",
   primary: "bg-blue-600 text-white",
   success: "bg-green-600 text-white",
   warning: "bg-amber-500 text-white",
   danger: "bg-red-600 text-white",
   gradient: "bg-gradient-to-r from-purple-600 to-pink-500 text-white",
-};
+}));
 
-const arrowClasses: Record<string, string> = {
+const arrowClasses = computed<Record<string, string>>(() => ({
   dark: "border-gray-900",
-  light: "border-white",
+  light: dk.value ? "border-slate-800" : "border-white",
   primary: "border-blue-600",
   success: "border-green-600",
   warning: "border-amber-500",
   danger: "border-red-600",
   gradient: "border-purple-600",
-};
+}));
 
 const open = ref(false);
 let hideTimer: ReturnType<typeof setTimeout> | null = null;
@@ -81,6 +86,7 @@ onBeforeUnmount(() => clearHideTimer());
 <template>
   <span
     class="relative inline-block"
+    :aria-describedby="open ? tooltipId : undefined"
     @mouseenter="showTooltip"
     @mouseleave="hideTooltip"
     @focusin="showTooltip"

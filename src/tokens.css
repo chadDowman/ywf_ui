@@ -1,0 +1,31 @@
+/* ═══════════════════════════════════════════════════════════════════
+   YWF UI – Design Tokens
+   Override these custom properties to theme the entire library.
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Interactive (buttons, checkboxes, radios, switches) ── */
+  --ywf-interactive: #2563eb;
+  --ywf-interactive-text: #f8fafc;
+
+  /* ── Accent / highlight ── */
+  --ywf-accent: #6366f1;
+
+  /* ── Status ── */
+  --ywf-success: #16a34a;
+  --ywf-success-subtle: #10b981;
+  --ywf-warning: #d97706;
+  --ywf-warning-subtle: #f59e0b;
+  --ywf-error: #dc2626;
+  --ywf-error-subtle: #ef4444;
+  --ywf-info: #2563eb;
+
+  /* ── Surfaces ── */
+  --ywf-bg: #ffffff;
+  --ywf-text: #0f172a;
+  --ywf-border: #dbe3ef;
+  --ywf-border-disabled: #d1d5db;
+
+  /* ── Focus ── */
+  --ywf-focus-ring: #f5b731;
+}

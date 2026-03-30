@@ -1,6 +1,9 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import type { YToastProps } from "../../types/toast";
+import { computed, onUnmounted, watch } from "vue";
+import { useDarkMode } from "@/composables/useDarkMode";
+
+defineOptions({ name: "YToast" });
+import type { YToastProps } from "@/types/toast";
 
 const props = withDefaults(defineProps<YToastProps>(), {
   type: "info",
@@ -13,9 +16,43 @@ const props = withDefaults(defineProps<YToastProps>(), {
   radius: "md",
 });
 
+const dk = useDarkMode(props.dark);
+
 const emit = defineEmits<{
   dismiss: [];
-}>();
+}>(); 
+
+/* ── Auto-dismiss timer ── */
+let dismissTimer: ReturnType<typeof setTimeout> | null = null;
+
+function clearDismissTimer() {
+  if (dismissTimer !== null) {
+    clearTimeout(dismissTimer);
+    dismissTimer = null;
+  }
+}
+
+function startDismissTimer() {
+  clearDismissTimer();
+  if (props.duration && props.duration > 0 && props.visible) {
+    dismissTimer = setTimeout(() => emit("dismiss"), props.duration);
+  }
+}
+
+watch(
+  () => props.visible,
+  (val) => {
+    if (val) startDismissTimer();
+    else clearDismissTimer();
+  },
+  { immediate: true },
+);
+
+watch(() => props.duration, () => {
+  if (props.visible) startDismissTimer();
+});
+
+onUnmounted(clearDismissTimer);
 
 const iconPaths: Record<string, string> = {
   success: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
@@ -26,20 +63,24 @@ const iconPaths: Record<string, string> = {
 };
 
 const solidBgMap: Record<string, string> = {
-  success: "#16a34a",
-  error: "#dc2626",
-  warning: "#d97706",
-  info: "#2563eb",
+  success: "var(--ywf-success)",
+  error: "var(--ywf-error)",
+  warning: "var(--ywf-warning)",
+  info: "var(--ywf-info)",
 };
 
-const softClasses: Record<string, string> = {
-  success:
-    "bg-green-50 border border-green-200 text-green-800 dark:bg-green-950 dark:border-green-800 dark:text-green-200",
-  error:
-    "bg-red-50 border border-red-200 text-red-800 dark:bg-red-950 dark:border-red-800 dark:text-red-200",
-  warning:
-    "bg-amber-50 border border-amber-200 text-amber-800 dark:bg-amber-950 dark:border-amber-800 dark:text-amber-200",
-  info: "bg-blue-50 border border-blue-200 text-blue-800 dark:bg-blue-950 dark:border-blue-800 dark:text-blue-200",
+const softClassesLight: Record<string, string> = {
+  success: "bg-green-50 border border-green-200 text-green-800",
+  error: "bg-red-50 border border-red-200 text-red-800",
+  warning: "bg-amber-50 border border-amber-200 text-amber-800",
+  info: "bg-blue-50 border border-blue-200 text-blue-800",
+};
+
+const softClassesDark: Record<string, string> = {
+  success: "bg-green-950 border border-green-800 text-green-200",
+  error: "bg-red-950 border border-red-800 text-red-200",
+  warning: "bg-amber-950 border border-amber-800 text-amber-200",
+  info: "bg-blue-950 border border-blue-800 text-blue-200",
 };
 
 const outlineBorderMap: Record<string, string> = {
@@ -69,13 +110,14 @@ const r = computed(() => radiusMap[props.radius ?? "md"]);
 
 const wrapperClasses = computed(() => {
   const base = `${r.value} p-4 flex items-start gap-3 min-w-[280px] max-w-sm`;
+  const softMap = dk.value ? softClassesDark : softClassesLight;
   switch (props.variant) {
     case "soft":
-      return `${base} ${softClasses[t.value]} shadow-sm`;
+      return `${base} ${softMap[t.value]} shadow-sm`;
     case "outlined":
-      return `${base} border-2 ${outlineBorderMap[t.value]} bg-white dark:bg-gray-900 shadow-sm`;
+      return `${base} border-2 ${outlineBorderMap[t.value]} ${dk.value ? 'bg-gray-900' : 'bg-white'} shadow-sm`;
     case "glass":
-      return `${base} backdrop-blur-md bg-white/80 dark:bg-gray-900/80 border border-white/30 shadow-xl`;
+      return `${base} backdrop-blur-md ${dk.value ? 'bg-gray-900/80' : 'bg-white/80'} border border-white/30 shadow-xl`;
     default:
       return `${base} shadow-lg`;
   }
@@ -94,6 +136,7 @@ const wrapperStyle = computed(() => {
     :class="wrapperClasses"
     :style="wrapperStyle"
     role="alert"
+    :aria-live="type === 'error' || type === 'warning' ? 'assertive' : 'polite'"
   >
     <svg
       v-if="showIcon"
@@ -128,7 +171,7 @@ const wrapperStyle = computed(() => {
       v-if="dismissible"
       type="button"
       class="shrink-0 rounded p-0.5 transition-opacity hover:opacity-70"
-      :class="variant === 'solid' ? 'text-white' : 'text-gray-500'"
+      :class="variant === 'solid' ? 'text-white' : dk ? 'text-gray-400' : 'text-gray-500'"
       @click="emit('dismiss')"
     >
       <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">

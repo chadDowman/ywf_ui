@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import { useDarkMode } from "@/composables/useDarkMode";
+
+defineOptions({ name: "YBadge" });
 import type {
   YBadgeProps,
+  YBadgeColorTokens,
   BadgeVariant,
   BadgeSize,
   BadgeColor,
   BadgeRadius,
-} from "../../types/badge";
+} from "@/types/badge";
 
 const props = withDefaults(defineProps<YBadgeProps>(), {
   label: "Badge",
@@ -22,6 +26,8 @@ const props = withDefaults(defineProps<YBadgeProps>(), {
   clickable: false,
   countMax: 99,
 });
+
+const dk = useDarkMode(props.dark);
 
 const emit = defineEmits<{
   dismiss: [];
@@ -91,17 +97,6 @@ const closeSizeClasses: Record<BadgeSize, string> = {
 
 /* ───── Colour matrix ───── */
 // We define a palette entry per colour with tokens for each variant.
-interface ColorTokens {
-  solid: string;
-  outline: string;
-  soft: string;
-  ghost: string;
-  glass: string;
-  surface: string;
-  "dot-outline": string;
-  dot: string;
-}
-
 function c(
   name: string,
   solidBg: string,
@@ -111,7 +106,7 @@ function c(
   softBg: string,
   softText: string,
   dotBg: string,
-): ColorTokens {
+): YBadgeColorTokens {
   return {
     solid: `${solidBg} ${solidText}`,
     outline: `border ${ring} ${textMid} bg-transparent`,
@@ -124,7 +119,7 @@ function c(
   };
 }
 
-const palette: Record<BadgeColor, ColorTokens> = {
+const palette: Record<BadgeColor, YBadgeColorTokens> = {
   gray: c(
     "gray",
     "bg-gray-600",
@@ -309,7 +304,21 @@ const palette: Record<BadgeColor, ColorTokens> = {
 
 const colorClass = computed(() => {
   const tokens = palette[props.color] ?? palette.blue;
-  return tokens[props.variant] ?? tokens.solid;
+  const cls = tokens[props.variant] ?? tokens.solid;
+  // For soft/glass/surface variants, swap light bg for dark bg
+  if (dk.value && (props.variant === 'soft' || props.variant === 'glass' || props.variant === 'surface')) {
+    return cls
+      .replace(/bg-(\w+)-50/g, 'bg-$1-900')
+      .replace(/text-(\w+)-700/g, 'text-$1-200')
+      .replace(/text-(\w+)-800/g, 'text-$1-200');
+  }
+  if (dk.value && props.variant === 'outline') {
+    return cls.replace(/text-(\w+)-600/g, 'text-$1-300');
+  }
+  if (dk.value && props.variant === 'ghost') {
+    return cls.replace(/text-(\w+)-600/g, 'text-$1-300');
+  }
+  return cls;
 });
 
 const dotColorClass = computed(() => {

@@ -25,6 +25,7 @@ export type YAvatarStatus = "online" | "offline" | "busy" | "away";
 export type YAvatarRing = "none" | "solid" | "dashed" | "double" | "gradient";
 
 export interface YAvatarProps {
+  dark?: boolean;
   src?: string;
   name?: string;
   /** Numeric pixel size — overrides the size scale if provided */
@@ -49,6 +50,8 @@ export interface YAvatarProps {
   textColor?: string;
   /** If true, show initials even when src fails to load */
   initialsFallback?: boolean;
+  /** Custom set of fallback image URLs used when no `src` is provided */
+  defaultImages?: readonly string[];
   /** Accent color used by neon, gradient-ring, sticker presets */
   accentColor?: string;
 }

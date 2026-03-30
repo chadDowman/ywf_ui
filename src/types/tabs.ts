@@ -22,6 +22,7 @@ export type YTabsVariant =
 export type YTabsAlign = "left" | "center" | "right" | "stretch";
 
 export interface YTabsProps {
+  dark?: boolean;
   tabs?: string[];
   variant?: YTabsVariant;
   align?: YTabsAlign;

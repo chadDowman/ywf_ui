@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
-import type { YSelectProps, YSelectOption } from "../../types/select";
+import { useDarkMode } from "@/composables/useDarkMode";
+
+defineOptions({ name: "YSelect" });
+import type { YSelectProps, YSelectOption } from "@/types/select";
 
 const props = withDefaults(defineProps<YSelectProps>(), {
   size: "md",
@@ -22,6 +25,7 @@ const emit = defineEmits<{
 const open = ref(false);
 const searchQuery = ref("");
 const containerRef = ref<HTMLElement | null>(null);
+const dk = useDarkMode(props.dark);
 
 const sizeMap: Record<string, string> = {
   xs: "text-xs px-2 py-1",
@@ -42,15 +46,27 @@ const radiusMap: Record<string, string> = {
 const variantClasses = computed(() => {
   const base =
     "border transition-colors duration-150 focus-within:ring-2 focus-within:ring-blue-300/50";
+  if (dk.value) {
+    switch (props.variant) {
+      case "filled":
+        return `${base} border-transparent bg-slate-800`;
+      case "ghost":
+        return `${base} border-transparent bg-transparent hover:bg-slate-800`;
+      case "underline":
+        return "border-b border-slate-600 rounded-none focus-within:border-blue-400";
+      default:
+        return `${base} border-slate-600 bg-slate-900`;
+    }
+  }
   switch (props.variant) {
     case "filled":
-      return `${base} border-transparent bg-gray-100 dark:bg-gray-800`;
+      return `${base} border-transparent bg-gray-100`;
     case "ghost":
-      return `${base} border-transparent bg-transparent hover:bg-gray-50 dark:hover:bg-gray-800`;
+      return `${base} border-transparent bg-transparent hover:bg-gray-50`;
     case "underline":
-      return "border-b border-gray-300 dark:border-gray-600 rounded-none focus-within:border-blue-500";
+      return "border-b border-gray-300 rounded-none focus-within:border-blue-500";
     default:
-      return `${base} border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-900`;
+      return `${base} border-gray-300 bg-white`;
   }
 });
 
@@ -137,12 +153,14 @@ onBeforeUnmount(() =>
   >
     <div
       v-if="label"
-      class="mb-1 text-xs font-medium text-gray-700 dark:text-gray-300"
+      :class="['mb-1 text-xs font-medium', dk ? 'text-slate-300' : 'text-gray-700']"
     >
       {{ label }}
     </div>
     <button
       type="button"
+      aria-haspopup="listbox"
+      :aria-expanded="open"
       class="flex w-full items-center justify-between gap-2 text-left"
       :class="[
         sizeMap[size ?? 'md'],
@@ -150,8 +168,8 @@ onBeforeUnmount(() =>
         variantClasses,
         disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
         hasValue
-          ? 'text-gray-900 dark:text-gray-100'
-          : 'text-gray-400 dark:text-gray-500',
+          ? dk ? 'text-slate-100' : 'text-gray-900'
+          : dk ? 'text-slate-500' : 'text-gray-400',
       ]"
       :disabled="disabled || loading"
       @click="open = !open"
@@ -189,29 +207,31 @@ onBeforeUnmount(() =>
 
     <div
       v-if="open"
-      class="absolute z-50 mt-1 w-full rounded-md border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-900"
+      :class="['absolute z-50 mt-1 w-full rounded-md border shadow-lg', dk ? 'border-slate-700 bg-slate-900' : 'border-gray-200 bg-white']"
     >
       <div
         v-if="searchable"
-        class="border-b border-gray-100 p-2 dark:border-gray-700"
+        :class="['border-b p-2', dk ? 'border-slate-700' : 'border-gray-100']"
       >
         <input
           v-model="searchQuery"
           type="text"
-          class="w-full rounded bg-gray-50 px-2 py-1 text-xs outline-none dark:bg-gray-800 dark:text-gray-200"
+          :class="['w-full rounded px-2 py-1 text-xs outline-none', dk ? 'bg-slate-800 text-slate-200' : 'bg-gray-50']"
           :placeholder="placeholder ?? 'Search...'"
           autofocus
         />
       </div>
-      <ul class="max-h-56 overflow-y-auto py-1">
+      <ul role="listbox" class="max-h-56 overflow-y-auto py-1">
         <li
           v-for="opt in filteredOptions"
           :key="String(opt.value)"
+          role="option"
+          :aria-selected="isSelected(opt)"
           class="flex cursor-pointer items-center justify-between px-3 py-2 text-sm transition-colors"
           :class="[
             isSelected(opt)
-              ? 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
-              : 'text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800',
+              ? dk ? 'bg-blue-950 text-blue-300' : 'bg-blue-50 text-blue-700'
+              : dk ? 'text-slate-300 hover:bg-slate-800' : 'text-gray-700 hover:bg-gray-50',
             opt.disabled ? 'cursor-not-allowed opacity-40' : '',
           ]"
           @click="selectOption(opt)"
@@ -240,7 +260,7 @@ onBeforeUnmount(() =>
     </div>
 
     <p v-if="error" class="mt-1 text-xs text-red-500">{{ error }}</p>
-    <p v-else-if="hint" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+    <p v-else-if="hint" :class="['mt-1 text-xs', dk ? 'text-slate-400' : 'text-gray-500']">
       {{ hint }}
     </p>
   </div>

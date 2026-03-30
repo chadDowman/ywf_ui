@@ -17,6 +17,7 @@ export type YSpinnerVariant =
 export type YSpinnerSpeed = "slow" | "normal" | "fast";
 
 export interface YSpinnerProps {
+  dark?: boolean;
   size?: YSpinnerSize;
   variant?: YSpinnerVariant;
   color?: string;

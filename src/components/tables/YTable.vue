@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import type { YTableProps, YTableColumn } from "../../types/table";
+import { useDarkMode } from "@/composables/useDarkMode";
+
+defineOptions({ name: "YTable" });
+import type { YTableProps, YTableColumn } from "@/types/table";
 
 const props = withDefaults(defineProps<YTableProps>(), {
   variant: "simple",
@@ -11,6 +14,8 @@ const props = withDefaults(defineProps<YTableProps>(), {
   columns: () => [],
   rows: () => [],
 });
+
+const dk = useDarkMode(props.dark);
 
 const emit = defineEmits<{
   sort: [column: string, direction: "asc" | "desc"];
@@ -44,16 +49,22 @@ const sortedRows = computed(() => {
 
 const rowClasses = computed(() => {
   const hover = props.hoverable
-    ? "hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+    ? dk.value
+      ? "hover:bg-slate-800/50 transition-colors"
+      : "hover:bg-gray-50 transition-colors"
     : "";
   if (props.variant === "striped")
-    return `${hover} even:bg-gray-50/60 dark:even:bg-gray-800/30`;
+    return dk.value
+      ? `${hover} even:bg-slate-800/30`
+      : `${hover} even:bg-gray-50/60`;
   return hover;
 });
 
 const wrapperClasses = computed(() => {
   if (props.variant === "card")
-    return "rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden";
+    return dk.value
+      ? "rounded-xl border border-slate-700 shadow-sm overflow-hidden"
+      : "rounded-xl border border-gray-200 shadow-sm overflow-hidden";
   return "";
 });
 
@@ -69,12 +80,14 @@ function handleSort(col: YTableColumn) {
 }
 
 const cellClass = computed(() =>
-  [sizeMap[props.size ?? "md"], "text-gray-700 dark:text-gray-300"].join(" "),
+  [sizeMap[props.size ?? "md"], dk.value ? "text-slate-300" : "text-gray-700"].join(" "),
 );
 const headCellClass = computed(() =>
   [
     sizeMap[props.size ?? "md"],
-    "font-semibold text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800/80",
+    dk.value
+      ? "font-semibold text-slate-100 bg-slate-800/80"
+      : "font-semibold text-gray-900 bg-gray-50",
   ].join(" "),
 );
 </script>
@@ -82,7 +95,7 @@ const headCellClass = computed(() =>
 <template>
   <div
     :class="[wrapperClasses, 'overflow-auto', fullWidth ? 'w-full' : '']"
-    :style="props.textColor ? { color: props.textColor } : undefined"
+    :style="[props.textColor ? { color: props.textColor } : {}, dk ? { background: '#1e293b', color: '#f1f5f9' } : {}]"
   >
     <div
       v-if="loading"
@@ -109,7 +122,7 @@ const headCellClass = computed(() =>
     <table v-else class="border-collapse" :class="fullWidth ? 'w-full' : ''">
       <caption
         v-if="caption"
-        class="mb-2 text-left text-sm text-gray-500 dark:text-gray-400 caption-top"
+        :class="['mb-2 text-left text-sm caption-top', dk ? 'text-slate-400' : 'text-gray-500']"
       >
         {{
           caption
@@ -129,7 +142,7 @@ const headCellClass = computed(() =>
                   ? 'text-right'
                   : 'text-left',
               variant === 'bordered'
-                ? 'border border-gray-200 dark:border-gray-700'
+                ? dk ? 'border border-slate-700' : 'border border-gray-200'
                 : '',
             ]"
             :style="col.width ? { width: col.width } : {}"
@@ -179,7 +192,7 @@ const headCellClass = computed(() =>
           </th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+      <tbody :class="dk ? 'divide-y divide-slate-700' : 'divide-y divide-gray-100'">
         <tr v-for="(row, ri) in sortedRows" :key="ri" :class="rowClasses">
           <td
             v-for="col in columns"
@@ -192,7 +205,7 @@ const headCellClass = computed(() =>
                   ? 'text-right'
                   : 'text-left',
               variant === 'bordered'
-                ? 'border border-gray-200 dark:border-gray-700'
+                ? dk ? 'border border-slate-700' : 'border border-gray-200'
                 : '',
             ]"
           >

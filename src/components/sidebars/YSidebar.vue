@@ -1,14 +1,18 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import { useDarkMode } from "@/composables/useDarkMode";
 import type {
   YSidebarProps,
   YSidebarVariant,
   YSidebarSize,
   YSidebarItem,
   YSidebarGroup,
-} from "../../types/sidebar";
+  YSidebarSizeScale,
+  YSidebarVariantTokens,
+} from "@/types/sidebar";
+import { sanitizeSvg } from "@/utils/sanitize";
 
-defineOptions({ inheritAttrs: false });
+defineOptions({ name: "YSidebar", inheritAttrs: false });
 
 const props = withDefaults(defineProps<YSidebarProps>(), {
   open: true,
@@ -37,6 +41,8 @@ const emit = defineEmits<{
   "item-click": [item: YSidebarItem];
   "update:open": [value: boolean];
 }>();
+
+const dk = useDarkMode(props.dark);
 
 const uncontrolledOpen = ref(props.open ?? true);
 const isControlled = computed(() => props.open !== undefined);
@@ -102,18 +108,7 @@ const allGroups = computed<YSidebarGroup[]>(() => {
 });
 
 /* ── size scale ── */
-interface SizeScale {
-  itemH: string;
-  itemPx: string;
-  itemText: string;
-  iconSize: string;
-  logoText: string;
-  groupLabel: string;
-  badgeText: string;
-  childText: string;
-  childPl: string;
-}
-const sizes: Record<YSidebarSize, SizeScale> = {
+const sizes: Record<YSidebarSize, YSidebarSizeScale> = {
   sm: {
     itemH: "h-7",
     itemPx: "px-2.5",
@@ -153,25 +148,7 @@ const sc = computed(() => sizes[props.size]);
 /* ─────────────────────────────────────────────
    VARIANT TOKEN SYSTEM
 ───────────────────────────────────────────── */
-interface VariantTokens {
-  shell: string;
-  border: string;
-  item: string;
-  itemHover: string;
-  itemActive: string;
-  itemActiveBorder: string;
-  groupLabel: string;
-  badge: string;
-  logo: string;
-  separator: string;
-  toggle: string;
-  tooltip: string;
-  iconDot: string;
-  /** Extra class applied to the active item for special effects */
-  itemActiveExtra?: string;
-}
-
-const variants: Record<YSidebarVariant, VariantTokens> = {
+const variants: Record<YSidebarVariant, YSidebarVariantTokens> = {
   clean: {
     shell: "bg-white border-r border-gray-100",
     border: "border-r border-gray-100",
@@ -482,7 +459,13 @@ const variants: Record<YSidebarVariant, VariantTokens> = {
   },
 };
 
-const vt = computed(() => variants[props.variant]);
+const vt = computed(() => {
+  // If dark prop is set and variant is light-themed, use dark tokens instead
+  if (dk.value && ['clean', 'glass', 'warm', 'bordered', 'ghost', 'frosted', 'chalk', 'rose'].includes(props.variant)) {
+    return variants.dark;
+  }
+  return variants[props.variant];
+});
 
 /* ── elevation ── */
 const elevationClass = computed(() => {
@@ -514,12 +497,6 @@ function handleItemClick(item: YSidebarItem) {
     setOpen(false);
   }
 }
-
-/* ── chevron SVG ── */
-const chevronDown = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>`;
-const chevronRight = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>`;
-const menuIcon = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 4h12M2 8h12M2 12h12"/></svg>`;
-const closeIcon = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l10 10M13 3L3 13"/></svg>`;
 </script>
 
 <template>
@@ -544,8 +521,8 @@ const closeIcon = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" st
   </Transition>
 
   <!-- Sidebar -->
-  <aside
-    role="navigation"
+  <nav
+    aria-label="Sidebar navigation"
     :class="[
       'flex flex-col h-full overflow-hidden transition-[width] duration-250 ease-out',
       vt.shell,
@@ -599,7 +576,7 @@ const closeIcon = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" st
           <span
             v-if="logoIcon"
             :class="['shrink-0 w-5 h-5', sc.iconSize]"
-            v-html="logoIcon"
+            v-html="sanitizeSvg(logoIcon)"
           />
           <span
             v-if="logoText && !isIcons"
@@ -618,6 +595,7 @@ const closeIcon = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" st
       <!-- Nav body -->
       <div
         class="flex-1 overflow-y-auto overflow-x-hidden py-2 px-2 flex flex-col gap-0.5"
+        role="menu"
       >
         <template v-for="group in allGroups" :key="group.id">
           <!-- Group header -->
@@ -637,9 +615,21 @@ const closeIcon = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" st
                 'w-3 h-3 transition-transform duration-150',
                 collapsedGroups.has(group.id) ? '' : 'rotate-90',
               ]"
+              :aria-expanded="!collapsedGroups.has(group.id)"
               @click="toggleGroup(group.id)"
-              v-html="chevronRight"
-            />
+            >
+              <svg
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="w-full h-full"
+              >
+                <path d="M6 4l4 4-4 4" />
+              </svg>
+            </button>
           </div>
 
           <!-- Group items -->
@@ -662,6 +652,7 @@ const closeIcon = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" st
                     :is="item.href ? 'a' : 'button'"
                     :href="item.href"
                     type="button"
+                    role="menuitem"
                     :aria-current="isActive(item.id) ? 'page' : undefined"
                     :disabled="item.disabled || undefined"
                     :class="[
@@ -692,7 +683,7 @@ const closeIcon = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" st
                       v-if="item.icon"
                       :class="['shrink-0', sc.iconSize]"
                       aria-hidden="true"
-                      v-html="item.icon"
+                      v-html="sanitizeSvg(item.icon)"
                     />
 
                     <!-- Icon mode dot indicator -->
@@ -717,8 +708,19 @@ const closeIcon = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" st
                           'shrink-0 w-3 h-3 transition-transform duration-150',
                           expandedItems.has(item.id) ? 'rotate-180' : '',
                         ]"
-                        v-html="chevronDown"
-                      />
+                      >
+                        <svg
+                          viewBox="0 0 16 16"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="w-full h-full"
+                        >
+                          <path d="M4 6l4 4 4-4" />
+                        </svg>
+                      </span>
 
                       <!-- Badge -->
                       <span
@@ -778,6 +780,7 @@ const closeIcon = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" st
                       :key="child.id"
                       :href="child.href"
                       type="button"
+                      role="menuitem"
                       :aria-current="isActive(child.id) ? 'page' : undefined"
                       :disabled="child.disabled || undefined"
                       :class="[
@@ -801,7 +804,7 @@ const closeIcon = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" st
                       <span
                         v-if="child.icon"
                         :class="['shrink-0 opacity-70', sc.iconSize]"
-                        v-html="child.icon"
+                        v-html="sanitizeSvg(child.icon)"
                       />
                       <span class="flex-1 truncate text-left">{{
                         child.label
@@ -845,6 +848,7 @@ const closeIcon = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" st
             vt.toggle,
           ]"
           :aria-label="isOpen ? 'Collapse sidebar' : 'Expand sidebar'"
+          :aria-expanded="isOpen"
           @click="toggle"
         >
           <span
@@ -852,12 +856,34 @@ const closeIcon = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" st
               'w-3.5 h-3.5 transition-transform duration-200',
               !isOpen ? 'rotate-180' : '',
             ]"
-            v-html="isOpen ? closeIcon : menuIcon"
-          />
+          >
+            <svg
+              v-if="isOpen"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              class="w-full h-full"
+            >
+              <path d="M3 3l10 10M13 3L3 13" />
+            </svg>
+            <svg
+              v-else
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              class="w-full h-full"
+            >
+              <path d="M2 4h12M2 8h12M2 12h12" />
+            </svg>
+          </span>
         </button>
       </div>
     </template>
-  </aside>
+  </nav>
 </template>
 
 <style scoped>

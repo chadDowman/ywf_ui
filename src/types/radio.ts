@@ -13,6 +13,7 @@ export type YRadioVariant =
   | "segmented";
 
 export interface YRadioProps {
+  dark?: boolean;
   modelValue?: unknown;
   value?: unknown;
   label?: string;

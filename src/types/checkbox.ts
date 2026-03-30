@@ -15,6 +15,7 @@ export type YCheckboxVariant =
 export type YCheckboxRadius = "none" | "sm" | "md" | "lg" | "full";
 
 export interface YCheckboxProps {
+  dark?: boolean;
   modelValue?: boolean;
   label?: string;
   description?: string;

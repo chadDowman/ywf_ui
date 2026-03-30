@@ -36,6 +36,7 @@ export interface YDropdownItem {
 }
 
 export interface YDropdownProps {
+  dark?: boolean;
   label?: string;
   variant?: YDropdownVariant;
   size?: YDropdownSize;

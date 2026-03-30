@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
+import { useDarkMode } from "@/composables/useDarkMode";
+
+defineOptions({ name: "YAvatar" });
 import type {
   YAvatarProps,
   YAvatarPreset,
@@ -7,7 +10,7 @@ import type {
   YAvatarShape,
   YAvatarStatus,
   YAvatarRing,
-} from "../../types/avatar";
+} from "@/types/avatar";
 
 const props = withDefaults(defineProps<YAvatarProps>(), {
   preset: "default",
@@ -17,10 +20,11 @@ const props = withDefaults(defineProps<YAvatarProps>(), {
   initialsFallback: true,
 });
 
-// --- Non-human default images (abstract/geometric/landscape via picsum categories) ---
-// Deterministic selection seeded by name so each avatar stays stable across re-renders.
+const dk = useDarkMode(props.dark);
 
-const defaultImages: readonly string[] = [
+// --- Built-in default images (abstract/geometric/landscape) ---
+
+const BUILTIN_DEFAULT_IMAGES: readonly string[] = [
   "https://images.unsplash.com/photo-1557683316-973673baf926?w=120&h=120&fit=crop", // gradient
   "https://images.unsplash.com/photo-1579546929518-9e588b926b7b?w=120&h=120&fit=crop", // abstract paint
   "https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=120&h=120&fit=crop", // ocean wave
@@ -44,41 +48,54 @@ function seedHash(str: string): number {
 }
 
 const seededDefaultImage = computed(() => {
+  const images = props.defaultImages ?? BUILTIN_DEFAULT_IMAGES;
+  if (!images.length) return FALLBACK_SVG;
   const seed = props.name ?? "avatar";
-  const idx = seedHash(seed) % defaultImages.length;
-  return defaultImages[idx];
+  const idx = seedHash(seed) % images.length;
+  return images[idx];
 });
+
+// --- Inline SVG fallback (no external dependency) ---
+
+const FALLBACK_SVG = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" fill="#e5e7eb"/><circle cx="60" cy="45" r="20" fill="#9ca3af"/><ellipse cx="60" cy="100" rx="35" ry="25" fill="#9ca3af"/></svg>')}`;
 
 // --- Image load error handling ---
 
 const imgError = ref(false);
+const defaultImgError = ref(false);
 
 watch(
   () => props.src,
   () => {
     imgError.value = false;
+    defaultImgError.value = false;
   },
 );
 
 function onImgError() {
-  imgError.value = true;
+  if (props.src && !imgError.value) {
+    imgError.value = true;
+  } else if (!defaultImgError.value) {
+    defaultImgError.value = true;
+  }
 }
 
-// Fallback chain: src → seeded default → initials
+// Fallback chain: src → seeded default → inline SVG → initials
 const showImage = computed(() => {
   if (props.src && !imgError.value) return true;
-  if (!props.src) return true; // will show seeded default
-  return false; // src failed and initialsFallback kicks in
+  if (!defaultImgError.value) return true;
+  // Default also failed — use inline SVG unless initialsFallback wants initials
+  return !props.initialsFallback;
 });
 
 const resolvedSrc = computed(() => {
   if (props.src && !imgError.value) return props.src;
-  return seededDefaultImage.value;
+  if (!defaultImgError.value) return seededDefaultImage.value;
+  return FALLBACK_SVG;
 });
 
 const showInitials = computed(() => {
-  if (props.src && imgError.value && props.initialsFallback) return true;
-  return false;
+  return defaultImgError.value && props.initialsFallback;
 });
 
 const initials = computed(() => {
@@ -122,20 +139,20 @@ const shapeClass: Record<YAvatarShape, string> = {
 const presetWrapperClass = computed((): string => {
   const p = props.preset;
   const map: Record<YAvatarPreset, string> = {
-    default: "bg-gray-200",
+    default: dk.value ? "bg-slate-700" : "bg-gray-200",
     glass: "bg-white/20 backdrop-blur-xl border border-white/30",
     neon: "bg-gray-950",
     retro: "bg-orange-100 border-2 border-orange-800",
-    minimal: "bg-gray-50",
+    minimal: dk.value ? "bg-slate-800" : "bg-gray-50",
     brutalist: "bg-yellow-300 border-3 border-black",
     "gradient-ring": "bg-gray-100",
     pixel: "bg-gray-200 [image-rendering:pixelated]",
-    sticker: "bg-white border-2 border-gray-200 shadow-md",
+    sticker: dk.value ? "bg-slate-800 border-2 border-slate-600 shadow-md" : "bg-white border-2 border-gray-200 shadow-md",
     duotone: "bg-indigo-100",
     monochrome: "bg-gray-300 grayscale",
-    "soft-shadow": "bg-white shadow-lg shadow-gray-300/50",
-    elevated: "bg-white shadow-xl border border-gray-100",
-    outline: "bg-transparent border-2 border-gray-400",
+    "soft-shadow": dk.value ? "bg-slate-800 shadow-lg shadow-black/40" : "bg-white shadow-lg shadow-gray-300/50",
+    elevated: dk.value ? "bg-slate-800 shadow-xl border border-slate-600" : "bg-white shadow-xl border border-gray-100",
+    outline: dk.value ? "bg-transparent border-2 border-slate-500" : "bg-transparent border-2 border-gray-400",
     frosted: "bg-white/40 backdrop-blur-md border border-white/50",
     ink: "bg-gray-900",
   };
@@ -160,9 +177,9 @@ const presetInitialsClass = computed((): string => {
     ink: "text-white font-serif italic",
     minimal: "text-gray-400 font-light",
     glass: "text-white/80 font-medium",
-    default: "text-gray-600 font-medium",
+    default: dk.value ? "text-slate-300 font-medium" : "text-gray-600 font-medium",
   };
-  return map[p] ?? "text-gray-600 font-medium";
+  return map[p] ?? (dk.value ? "text-slate-300 font-medium" : "text-gray-600 font-medium");
 });
 
 // --- Neon glow effect ---
@@ -196,7 +213,7 @@ const isGradientRing = computed(() => props.preset === "gradient-ring");
 
 const ringStyle = computed(() => {
   if (props.ring === "none") return {};
-  const color = props.ringColor ?? "#6366f1";
+  const color = props.ringColor ?? "var(--ywf-accent)";
   const width = resolvedSize.value > 60 ? "3px" : "2px";
   const styles: Record<string, string> = {};
 
@@ -337,7 +354,7 @@ const displayBadge = computed(() => {
     <span
       v-if="status"
       :class="[
-        'absolute rounded-full border-2 border-white',
+        'absolute rounded-full border-2', dk ? 'border-slate-800' : 'border-white',
         statusColorMap[status],
         statusDotSize,
         statusDotOffset,

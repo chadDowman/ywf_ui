@@ -233,10 +233,18 @@ const visibleGroups = computed(() => {
   );
 });
 
+function getCategoryItemCount(group: { items: ComponentEntry[] }): number {
+  if (group.items.length === 1) {
+    const opts = getQuickOptions(group.items[0].id);
+    return opts.length || 1;
+  }
+  return group.items.length;
+}
+
 const categoryChips = computed(() => {
   const groups = groupedFilteredComponents.value.map((group) => ({
     category: group.category,
-    count: group.items.length,
+    count: getCategoryItemCount(group),
   }));
   const total = groups.reduce((sum, group) => sum + group.count, 0);
   return [{ category: "All", count: total }, ...groups];
@@ -272,6 +280,12 @@ function toggleCategory(category: string): void {
     return;
   }
   openCategories.value = [category];
+  const group = groupedFilteredComponents.value.find(
+    (g) => g.category === category,
+  );
+  if (group && group.items.length === 1) {
+    activeId.value = group.items[0].id;
+  }
 }
 
 function handleNavClick(componentId: string): void {
@@ -393,6 +407,12 @@ const parsedProps = computed<Record<string, unknown>>(() => {
     return {};
   }
 });
+
+/** Merge the playground dark-mode toggle into every component render. */
+const finalProps = computed<Record<string, unknown>>(() => ({
+  ...parsedProps.value,
+  dark: darkMode.value,
+}));
 
 const hasPropsError = computed(() => {
   try {
@@ -549,7 +569,7 @@ function copySnippet(): void {
           >
             <span class="inline-flex items-center gap-1.5">
               <span>{{ group.category }}</span>
-              <span class="nav-category-count">{{ group.items.length }}</span>
+              <span class="nav-category-count">{{ getCategoryItemCount(group) }}</span>
             </span>
             <svg
               class="h-3.5 w-3.5 transition-transform duration-150"
@@ -571,7 +591,38 @@ function copySnippet(): void {
             </svg>
           </button>
 
-          <ul v-if="isCategoryOpen(group.category)" class="space-y-1">
+          <!-- Single-item category: skip component row, show quick options directly -->
+          <ul
+            v-if="
+              isCategoryOpen(group.category) &&
+              group.items.length === 1 &&
+              getQuickOptions(group.items[0].id).length
+            "
+            class="nav-sublist mt-1 mb-2 ml-4 mr-2 space-y-1"
+          >
+            <li
+              v-for="option in getQuickOptions(group.items[0].id)"
+              :key="option"
+            >
+              <button
+                class="nav-subitem w-full rounded-md px-2 py-1.5 text-left text-[11px] transition-all duration-150"
+                :class="
+                  getQuickSelected(group.items[0].id) === option
+                    ? 'nav-subitem--active'
+                    : ''
+                "
+                @click="applyQuickOption(group.items[0].id, option)"
+              >
+                {{ option }}
+              </button>
+            </li>
+          </ul>
+
+          <!-- Multi-item category: show component rows with nested quick options -->
+          <ul
+            v-else-if="isCategoryOpen(group.category)"
+            class="space-y-1"
+          >
             <li v-for="item in group.items" :key="item.id">
               <button
                 class="nav-item flex w-full items-center rounded-lg px-2.5 py-2 text-left text-xs transition-all"
@@ -652,7 +703,7 @@ function copySnippet(): void {
               src/components/&lt;category&gt;/YName.vue.
             </div>
             <div v-else-if="isNavbarActive" class="navbar-preview-shell">
-              <component :is="activeComponent.component" v-bind="parsedProps">
+              <component :is="activeComponent.component" v-bind="finalProps">
                 <div v-html="slotContent" />
               </component>
               <div class="navbar-preview-content">
@@ -664,7 +715,7 @@ function copySnippet(): void {
               </div>
             </div>
             <div v-else-if="isSidebarActive" class="sidebar-preview-shell">
-              <component :is="activeComponent.component" v-bind="parsedProps" />
+              <component :is="activeComponent.component" v-bind="finalProps" />
               <div class="sidebar-preview-content">
                 <h3>Sidebar Preview Context</h3>
                 <p>
@@ -681,7 +732,7 @@ function copySnippet(): void {
             <component
               :is="activeComponent?.component"
               v-else
-              v-bind="parsedProps"
+              v-bind="finalProps"
             >
               <div v-html="slotContent" />
             </component>

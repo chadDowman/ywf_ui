@@ -8,6 +8,7 @@ export type YSkeletonVariant =
 export type YSkeletonRadius = "none" | "sm" | "md" | "lg" | "full";
 
 export interface YSkeletonProps {
+  dark?: boolean;
   variant?: YSkeletonVariant;
   width?: string | number;
   height?: string | number;

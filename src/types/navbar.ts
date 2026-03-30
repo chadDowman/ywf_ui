@@ -34,6 +34,7 @@ export interface YNavbarLink {
 }
 
 export interface YNavbarProps {
+  dark?: boolean;
   brand?: string;
   links?: YNavbarLink[];
   variant?: YNavbarVariant;

@@ -40,6 +40,7 @@ export interface YSidebarGroup {
 }
 
 export interface YSidebarProps {
+  dark?: boolean;
   open?: boolean;
   variant?: YSidebarVariant;
   size?: YSidebarSize;
@@ -69,4 +70,36 @@ export type {
   YSidebarItem as SidebarItem,
   YSidebarGroup as SidebarGroup,
   YSidebarProps as SidebarProps,
+  YSidebarSizeScale as SidebarSizeScale,
+  YSidebarVariantTokens as SidebarVariantTokens,
 };
+
+export interface YSidebarSizeScale {
+  itemH: string;
+  itemPx: string;
+  itemText: string;
+  iconSize: string;
+  logoText: string;
+  groupLabel: string;
+  badgeText: string;
+  childText: string;
+  childPl: string;
+}
+
+export interface YSidebarVariantTokens {
+  shell: string;
+  border: string;
+  item: string;
+  itemHover: string;
+  itemActive: string;
+  itemActiveBorder: string;
+  groupLabel: string;
+  badge: string;
+  logo: string;
+  separator: string;
+  toggle: string;
+  tooltip: string;
+  iconDot: string;
+  /** Extra class applied to the active item for special effects */
+  itemActiveExtra?: string;
+}

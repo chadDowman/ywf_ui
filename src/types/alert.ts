@@ -21,6 +21,7 @@ export interface YAlertAction {
 }
 
 export interface YAlertProps {
+  dark?: boolean;
   type?: AlertType;
   variant?: AlertVariant;
   size?: AlertSize;

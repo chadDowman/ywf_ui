@@ -1,13 +1,22 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { useDarkMode } from "@/composables/useDarkMode";
+
+defineOptions({ name: "YCard" });
 import type { YCardProps, ComponentSize } from "@/types";
+import {
+  paddingMap,
+  shadowMap,
+  roundedMap,
+  notifColors,
+  notifIcons,
+  priorityBg,
+  priorityText,
+} from "./cardConstants";
 
 const props = withDefaults(defineProps<YCardProps>(), {
   preset: "basic",
   padding: "md",
-  bgColor: "#ffffff",
-  borderColor: "#dbe3ef",
-  textColor: "#0f172a",
   shadow: "md",
   bordered: true,
   rounded: "lg",
@@ -41,7 +50,7 @@ const props = withDefaults(defineProps<YCardProps>(), {
   ],
   pricingCta: "Get started",
   pricingHighlight: true,
-  accentColor: "#6366f1",
+  accentColor: "var(--ywf-accent)",
 
   // Notification
   notifTitle: "New message",
@@ -131,27 +140,13 @@ const props = withDefaults(defineProps<YCardProps>(), {
   wxBg2: "#38bdf8",
 });
 
-// ── Utility maps ──────────────────────────────────────────────────────
-const paddingMap: Record<ComponentSize, string> = {
-  xs: "p-2",
-  sm: "p-3",
-  md: "p-4",
-  lg: "p-6",
-  xl: "p-8",
-};
-const shadowMap: Record<string, string> = {
-  sm: "shadow-sm",
-  md: "shadow-md",
-  lg: "shadow-lg",
-  xl: "shadow-xl",
-};
-const roundedMap: Record<string, string> = {
-  sm: "rounded-sm",
-  md: "rounded-md",
-  lg: "rounded-lg",
-  xl: "rounded-xl",
-  full: "rounded-full",
-};
+// ── Utility maps (imported from ./cardConstants) ─────────────────────
+
+// ── Dark-mode aware color helpers ────────────────────────────────────
+const dk = useDarkMode(props.dark);
+const defaultBg = computed(() => dk.value ? '#1e293b' : 'var(--ywf-bg)');
+const defaultText = computed(() => dk.value ? '#f1f5f9' : 'var(--ywf-text)');
+const defaultBorder = computed(() => dk.value ? '#334155' : 'var(--ywf-border)');
 
 // ── Base wrapper classes (for presets that use YCard shell) ───────────
 const baseClasses = computed(() => [
@@ -159,15 +154,19 @@ const baseClasses = computed(() => [
   paddingMap[props.padding],
   props.shadow !== false ? (shadowMap[String(props.shadow)] ?? "") : "",
   props.rounded !== false ? (roundedMap[String(props.rounded)] ?? "") : "",
-  "ring-1 ring-slate-900/5 hover:-translate-y-0.5 hover:shadow-lg",
+  dk.value
+    ? "ring-1 ring-slate-600/30 hover:-translate-y-0.5 hover:shadow-lg"
+    : "ring-1 ring-slate-900/5 hover:-translate-y-0.5 hover:shadow-lg",
 ]);
 
 const baseStyles = computed(() => ({
-  backgroundColor: props.bgColor,
-  borderColor: props.bordered ? props.borderColor : "transparent",
+  backgroundColor: props.bgColor ?? defaultBg.value,
+  borderColor: props.bordered
+    ? (props.borderColor ?? defaultBorder.value)
+    : "transparent",
   borderWidth: props.bordered ? "1px" : "0",
   borderStyle: "solid",
-  color: props.textColor,
+  color: props.textColor ?? defaultText.value,
   backdropFilter: "saturate(1.05)",
 }));
 
@@ -186,19 +185,7 @@ function stars(n: number) {
   );
 }
 
-// ── Notif colour ──────────────────────────────────────────────────────
-const notifColors: Record<string, string> = {
-  info: "#6366f1",
-  success: "#10b981",
-  warning: "#f59e0b",
-  error: "#ef4444",
-};
-const notifIcons: Record<string, string> = {
-  info: "i",
-  success: "✓",
-  warning: "!",
-  error: "✕",
-};
+
 
 // ── Profile initials ─────────────────────────────────────────────────
 const profileInitials = computed(() =>
@@ -216,17 +203,7 @@ const tlProgress = computed(() => {
   return (items.filter((i) => i.done).length / items.length) * 100;
 });
 
-// ── Priority badge colours ────────────────────────────────────────────
-const priorityBg: Record<string, string> = {
-  low: "#dcfce7",
-  medium: "#fef9c3",
-  high: "#fee2e2",
-};
-const priorityText: Record<string, string> = {
-  low: "#16a34a",
-  medium: "#ca8a04",
-  high: "#ef4444",
-};
+
 </script>
 
 <template>
@@ -245,12 +222,12 @@ const priorityText: Record<string, string> = {
     <div
       v-if="$slots.footer || footerLabel"
       class="mt-4 pt-3"
-      style="border-top: 1px solid rgba(0, 0, 0, 0.08)"
+      :style="{ borderTop: dk ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.08)' }"
     >
       <slot name="footer">
         <button
           class="text-xs font-semibold px-3 py-1.5 rounded-md text-white"
-          :style="{ background: accentColor ?? '#3b82f6' }"
+          :style="{ background: accentColor ?? 'var(--ywf-accent)' }"
         >
           {{ footerLabel }}
         </button>
@@ -287,7 +264,7 @@ const priorityText: Record<string, string> = {
       </button>
       <button
         class="text-xs px-3 py-1.5 rounded-md font-medium border"
-        style="border-color: rgba(0, 0, 0, 0.12)"
+        :style="{ borderColor: dk ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.12)' }"
       >
         Message
       </button>
@@ -312,7 +289,11 @@ const priorityText: Record<string, string> = {
         </div>
         <div
           class="text-xs font-semibold mt-1"
-          :style="{ color: s.change.startsWith('+') ? '#10b981' : '#ef4444' }"
+          :style="{
+            color: s.change.startsWith('+')
+              ? 'var(--ywf-success-subtle)'
+              : 'var(--ywf-error-subtle)',
+          }"
         >
           {{ s.change }}
         </div>
@@ -412,7 +393,10 @@ const priorityText: Record<string, string> = {
     </div>
     <div
       :class="paddingMap[padding]"
-      :style="{ background: bgColor, color: textColor }"
+      :style="{
+        background: bgColor ?? defaultBg,
+        color: textColor ?? defaultText,
+      }"
     >
       <div class="flex items-start justify-between gap-2">
         <div class="font-bold text-sm leading-tight">{{ productName }}</div>
@@ -422,8 +406,8 @@ const priorityText: Record<string, string> = {
         {{ stars(productRating ?? 0) }}
       </div>
       <button
-        class="mt-3 w-full py-2 rounded-lg text-xs font-bold text-white"
-        style="background: #111"
+        class="mt-3 w-full py-2 rounded-lg text-xs font-bold"
+        :style="{ background: dk ? '#e2e8f0' : '#111', color: dk ? '#0f172a' : '#fff' }"
       >
         Add to cart
       </button>
@@ -515,7 +499,7 @@ const priorityText: Record<string, string> = {
         backdropFilter: `blur(${glassBlur}px)`,
         WebkitBackdropFilter: `blur(${glassBlur}px)`,
         border: '1px solid rgba(255,255,255,0.3)',
-        color: textColor ?? '#111111',
+        color: textColor ?? defaultText,
       }"
     >
       <div class="font-bold text-base">{{ glassTitle }}</div>
@@ -690,7 +674,11 @@ const priorityText: Record<string, string> = {
       >
         <div
           class="h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 text-white"
-          :style="{ background: item.done ? timelineAccent : '#d1d5db' }"
+          :style="{
+            background: item.done
+              ? timelineAccent
+              : 'var(--ywf-border-disabled)',
+          }"
         >
           {{ item.done ? "✓" : i + 1 }}
         </div>
@@ -707,7 +695,7 @@ const priorityText: Record<string, string> = {
     </div>
     <div
       class="mt-4 h-1.5 rounded-full overflow-hidden"
-      style="background: rgba(0, 0, 0, 0.08)"
+      :style="{ background: dk ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }"
     >
       <div
         class="h-full rounded-full transition-all duration-500"
@@ -757,7 +745,7 @@ const priorityText: Record<string, string> = {
     :class="[shapeClasses, paddingMap[padding]]"
     :style="{
       background: `linear-gradient(135deg, ${wxBg1}, ${wxBg2})`,
-      color: textColor ?? '#111111',
+      color: textColor ?? 'var(--ywf-text)',
     }"
   >
     <div class="flex items-start justify-between">
@@ -774,5 +762,3 @@ const priorityText: Record<string, string> = {
     </div>
   </div>
 </template>
-
-<style scoped></style>

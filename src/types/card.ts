@@ -33,6 +33,7 @@ export type YCardPriority = "low" | "medium" | "high";
 
 export interface YCardProps {
   // ── Shared ──────────────────────────────────────────────────────────
+  dark?: boolean;
   preset?: YCardPreset;
   bgColor?: string;
   borderColor?: string;

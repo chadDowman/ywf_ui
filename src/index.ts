@@ -1,3 +1,5 @@
+import "./tokens.css";
+
 export { default as YButton } from "./components/buttons/YButton.vue";
 export { default as YCard } from "./components/cards/YCard.vue";
 export { default as YModal } from "./components/modals/YModal.vue";
@@ -20,6 +22,8 @@ export { default as YTable } from "./components/tables/YTable.vue";
 export { default as YToast } from "./components/toasts/YToast.vue";
 export { default as YAccordion } from "./components/accordions/YAccordion.vue";
 export { YwfUIPlugin } from "./plugin";
+export type { YwfUIPluginOptions } from "./plugin";
+export { YWF_DARK_MODE_KEY, useDarkMode } from "./composables/useDarkMode";
 export type {
   ComponentSize,
   YButtonAnimation,

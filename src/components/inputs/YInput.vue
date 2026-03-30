@@ -1,14 +1,18 @@
 <script setup lang="ts">
-import { computed, ref, useAttrs } from "vue";
+import { computed, ref, useAttrs, useId } from "vue";
+import { useDarkMode } from "@/composables/useDarkMode";
 import type {
   YInputProps,
   YInputVariant,
   YInputSize,
   YInputRadius,
   YInputState,
-} from "../../types/input";
+  YInputSizeScale,
+  YInputVariantTokens,
+} from "@/types/input";
+import { sanitizeSvg } from "@/utils/sanitize";
 
-defineOptions({ inheritAttrs: false });
+defineOptions({ name: "YInput", inheritAttrs: false });
 
 const props = withDefaults(defineProps<YInputProps>(), {
   modelValue: "",
@@ -49,6 +53,7 @@ const attrs = useAttrs();
 const isFocused = ref(false);
 const inputRef = ref<HTMLInputElement | null>(null);
 const showPassword = ref(false);
+const inputId = useId();
 
 const resolvedType = computed(() =>
   props.type === "password" && showPassword.value ? "text" : props.type,
@@ -71,28 +76,7 @@ const helpText = computed(() => {
 });
 
 /* ───── Size scales ───── */
-interface SizeScale {
-  height: string;
-  text: string;
-  px: string;
-  labelText: string;
-  labelGap: string;
-  hintText: string;
-  hintGap: string;
-  affixText: string;
-  affixPx: string;
-  icon: string;
-  iconLeft: string;
-  iconRight: string;
-  inputPl: string;
-  inputPr: string;
-  inputPlIcon: string;
-  inputPrIcon: string;
-  ring: string;
-  closeBtn: string;
-}
-
-const scales: Record<YInputSize, SizeScale> = {
+const scales: Record<YInputSize, YInputSizeScale> = {
   sm: {
     height: "h-8",
     text: "text-[13px] leading-none",
@@ -157,6 +141,9 @@ const scales: Record<YInputSize, SizeScale> = {
 
 const sc = computed(() => scales[props.size]);
 
+/* ───── Dark mode ───── */
+const dk = useDarkMode(props.dark);
+
 /* ───── Radius ───── */
 const radiusMap: Record<YInputRadius, string> = {
   none: "rounded-none",
@@ -171,25 +158,7 @@ const resolvedRadius = computed(() =>
 );
 
 /* ───── Variant token system ───── */
-interface VariantTokens {
-  idle: string;
-  hover: string;
-  focus: string;
-  ring: string;
-  error: string;
-  errorRing: string;
-  success: string;
-  successRing: string;
-  warning: string;
-  warningRing: string;
-  disabled: string;
-  readonly: string;
-  affix: string;
-  affixBorderL: string;
-  affixBorderR: string;
-}
-
-const variantTokens: Record<YInputVariant, VariantTokens> = {
+const lightVariantTokens: Record<YInputVariant, YInputVariantTokens> = {
   outlined: {
     idle: "bg-white border border-gray-200 shadow-sm text-gray-900 placeholder:text-gray-400",
     hover: "hover:border-gray-300 hover:shadow",
@@ -271,8 +240,81 @@ const variantTokens: Record<YInputVariant, VariantTokens> = {
   },
 };
 
+const darkVariantTokens: Record<YInputVariant, YInputVariantTokens> = {
+  outlined: {
+    idle: "bg-slate-800 border border-slate-600 shadow-sm text-slate-100 placeholder:text-slate-400",
+    hover: "hover:border-slate-500 hover:shadow",
+    focus: "focus-within:border-blue-400 focus-within:shadow-sm",
+    ring: "focus-within:ring-blue-400/20",
+    error: "border-red-500 shadow-sm",
+    errorRing: "focus-within:border-red-400 focus-within:ring-red-400/20",
+    success: "border-emerald-500 shadow-sm",
+    successRing: "focus-within:border-emerald-400 focus-within:ring-emerald-400/20",
+    warning: "border-amber-500 shadow-sm",
+    warningRing: "focus-within:border-amber-400 focus-within:ring-amber-400/20",
+    disabled: "bg-slate-900 border-slate-700 text-slate-500 shadow-none cursor-not-allowed",
+    readonly: "bg-slate-800/60 border-slate-700 cursor-default",
+    affix: "bg-slate-700 text-slate-400 border-slate-600",
+    affixBorderL: "border-l",
+    affixBorderR: "border-r",
+  },
+  filled: {
+    idle: "bg-slate-700/80 border border-transparent text-slate-100 placeholder:text-slate-400",
+    hover: "hover:bg-slate-700 hover:border-slate-600",
+    focus: "focus-within:bg-slate-800 focus-within:border-blue-400 focus-within:shadow-sm",
+    ring: "focus-within:ring-blue-400/20",
+    error: "bg-red-900/30 border-red-500",
+    errorRing: "focus-within:bg-slate-800 focus-within:border-red-400 focus-within:ring-red-400/20",
+    success: "bg-emerald-900/30 border-emerald-500",
+    successRing: "focus-within:bg-slate-800 focus-within:border-emerald-400 focus-within:ring-emerald-400/20",
+    warning: "bg-amber-900/30 border-amber-500",
+    warningRing: "focus-within:bg-slate-800 focus-within:border-amber-400 focus-within:ring-amber-400/20",
+    disabled: "bg-slate-800 border-transparent text-slate-500 cursor-not-allowed",
+    readonly: "bg-slate-800/60 border-transparent cursor-default",
+    affix: "bg-slate-600/60 text-slate-400 border-slate-600",
+    affixBorderL: "border-l",
+    affixBorderR: "border-r",
+  },
+  ghost: {
+    idle: "bg-transparent border border-transparent text-slate-100 placeholder:text-slate-400",
+    hover: "hover:bg-slate-800 hover:border-slate-700",
+    focus: "focus-within:bg-slate-800 focus-within:border-slate-600 focus-within:shadow-sm",
+    ring: "focus-within:ring-slate-500/15",
+    error: "bg-red-900/20 border-red-500",
+    errorRing: "focus-within:bg-slate-800 focus-within:border-red-400 focus-within:ring-red-400/15",
+    success: "bg-emerald-900/20 border-emerald-500",
+    successRing: "focus-within:bg-slate-800 focus-within:border-emerald-400 focus-within:ring-emerald-400/15",
+    warning: "bg-amber-900/20 border-amber-500",
+    warningRing: "focus-within:bg-slate-800 focus-within:border-amber-400 focus-within:ring-amber-400/15",
+    disabled: "bg-transparent border-transparent text-slate-500 cursor-not-allowed",
+    readonly: "bg-transparent border-transparent cursor-default",
+    affix: "bg-transparent text-slate-500 border-slate-600",
+    affixBorderL: "border-l",
+    affixBorderR: "border-r",
+  },
+  underline: {
+    idle: "bg-transparent border-0 border-b-2 border-slate-600 text-slate-100 placeholder:text-slate-400",
+    hover: "hover:border-slate-500",
+    focus: "focus-within:border-blue-400",
+    ring: "",
+    error: "border-red-500",
+    errorRing: "focus-within:border-red-400",
+    success: "border-emerald-500",
+    successRing: "focus-within:border-emerald-400",
+    warning: "border-amber-500",
+    warningRing: "focus-within:border-amber-400",
+    disabled: "border-slate-700 text-slate-500 cursor-not-allowed",
+    readonly: "border-slate-700 cursor-default",
+    affix: "bg-transparent text-slate-500 border-slate-600",
+    affixBorderL: "border-l",
+    affixBorderR: "border-r",
+  },
+};
+
+const variantTokens = computed(() => dk.value ? darkVariantTokens : lightVariantTokens);
+
 const wrapperClasses = computed(() => {
-  const t = variantTokens[props.variant];
+  const t = variantTokens.value[props.variant];
   const s = resolvedState.value;
   const isUnderline = props.variant === "underline";
 
@@ -352,7 +394,9 @@ const inputClasses = computed(() => {
     plClass,
     prClass,
     props.disabled
-      ? "cursor-not-allowed text-gray-400 placeholder:text-gray-300"
+      ? dk.value
+        ? "cursor-not-allowed text-slate-500 placeholder:text-slate-600"
+        : "cursor-not-allowed text-gray-400 placeholder:text-gray-300"
       : "",
     props.readonly ? "cursor-default" : "",
     "placeholder:font-normal",
@@ -366,14 +410,15 @@ const affixBaseClasses = computed(() =>
     "font-medium select-none",
     sc.value.affixText,
     sc.value.affixPx,
-    variantTokens[props.variant].affix,
+    variantTokens.value[props.variant].affix,
   ].join(" "),
 );
 
 /* ───── Leading / trailing icon classes ───── */
 const leadingIconClass = computed(() => [
   "absolute top-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center",
-  "text-gray-400 transition-colors duration-150",
+  dk.value ? "text-slate-400" : "text-gray-400",
+  "transition-colors duration-150",
   sc.value.iconLeft,
   sc.value.icon,
 ]);
@@ -384,41 +429,28 @@ const stateIconColor = computed(() => {
     error: "text-red-400",
     success: "text-emerald-400",
     warning: "text-amber-400",
-    default: "text-gray-400",
+    default: dk.value ? "text-slate-400" : "text-gray-400",
   };
   return map[resolvedState.value];
 });
 
 const helpTextColor = computed(() => {
   const map: Record<YInputState, string> = {
-    error: "text-red-600",
-    success: "text-emerald-600",
-    warning: "text-amber-600",
-    default: "text-gray-400",
+    error: dk.value ? "text-red-400" : "text-red-600",
+    success: dk.value ? "text-emerald-400" : "text-emerald-600",
+    warning: dk.value ? "text-amber-400" : "text-amber-600",
+    default: dk.value ? "text-slate-400" : "text-gray-400",
   };
   return map[resolvedState.value];
 });
 
-/* ───── Help icon SVGs ───── */
-const helpIcon = computed(() => {
-  if (resolvedState.value === "error")
-    return `<svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8 15A7 7 0 108 1a7 7 0 000 14zm-.75-9.25a.75.75 0 011.5 0v3.5a.75.75 0 01-1.5 0v-3.5zM8 12a1 1 0 110-2 1 1 0 010 2z" clip-rule="evenodd"/></svg>`;
-  if (resolvedState.value === "success")
-    return `<svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8 15A7 7 0 108 1a7 7 0 000 14zm3.78-8.22a.75.75 0 00-1.06-1.06L7 9.44 5.28 7.72a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.06 0l4.25-4.25z" clip-rule="evenodd"/></svg>`;
-  if (resolvedState.value === "warning")
-    return `<svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M6.701 2.25c.577-1 2.02-1 2.598 0l5.196 9a1.5 1.5 0 01-1.299 2.25H2.804A1.5 1.5 0 011.505 11.25l5.196-9zM8 5a.75.75 0 01.75.75v2.5a.75.75 0 01-1.5 0v-2.5A.75.75 0 018 5zm0 7a1 1 0 110-2 1 1 0 010 2z" clip-rule="evenodd"/></svg>`;
-  return null;
-});
-
-/* ───── Password eye icons ───── */
-const eyeIcon = computed(() =>
-  showPassword.value
-    ? `<svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06l-1.745-1.745a10.029 10.029 0 003.3-4.38 1.651 1.651 0 000-1.185A10.004 10.004 0 009.999 3a9.956 9.956 0 00-4.744 1.194L3.28 2.22zM7.752 6.69l1.092 1.092a2.5 2.5 0 013.374 3.373l1.091 1.092a4 4 0 00-5.557-5.557z" clip-rule="evenodd"/><path d="M10.748 13.93l2.523 2.523a9.987 9.987 0 01-3.27.547c-4.258 0-7.894-2.66-9.337-6.41a1.651 1.651 0 010-1.186A10.007 10.007 0 012.839 6.02L6.07 9.252a4 4 0 004.678 4.678z"/></svg>`
-    : `<svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"/><path fill-rule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/></svg>`,
+/* ───── Help icon visibility ───── */
+const showHelpIcon = computed(
+  () =>
+    resolvedState.value === "error" ||
+    resolvedState.value === "success" ||
+    resolvedState.value === "warning",
 );
-
-/* ───── Loading spinner ───── */
-const spinnerSvg = `<svg viewBox="0 0 24 24" fill="none" class="animate-spin"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="42 85" class="opacity-30"/><path fill="currentColor" d="M12 3a9 9 0 019 9h-2.5A6.5 6.5 0 0012 5.5V3z"/></svg>`;
 
 /* ───── Trailing area visibility ───── */
 const showTrailingArea = computed(
@@ -467,6 +499,7 @@ function onClear() {
     <!-- Label -->
     <label
       v-if="label"
+      :for="inputId"
       :class="[
         'text-gray-500 select-none letter-spacing-wide',
         sc.labelText,
@@ -501,13 +534,14 @@ function onClear() {
         v-if="leadingIcon && !prefix"
         :class="leadingIconClass"
         aria-hidden="true"
-        v-html="leadingIcon"
+        v-html="sanitizeSvg(leadingIcon)"
       />
 
       <!-- Native input -->
       <input
         ref="inputRef"
         v-bind="attrs"
+        :id="inputId"
         :value="modelValue"
         :type="resolvedType"
         :placeholder="placeholder"
@@ -540,8 +574,28 @@ function onClear() {
           :class="['flex items-center justify-center text-gray-400', sc.icon]"
           role="status"
           aria-label="Loading"
-          v-html="spinnerSvg"
-        />
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            class="animate-spin w-full h-full"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="9"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-dasharray="42 85"
+              class="opacity-30"
+            />
+            <path
+              fill="currentColor"
+              d="M12 3a9 9 0 019 9h-2.5A6.5 6.5 0 0012 5.5V3z"
+            />
+          </svg>
+        </span>
 
         <!-- Clear button -->
         <button
@@ -577,8 +631,36 @@ function onClear() {
           ]"
           :aria-label="showPassword ? 'Hide password' : 'Show password'"
           @click="showPassword = !showPassword"
-          v-html="eyeIcon"
-        />
+        >
+          <svg
+            v-if="showPassword"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            class="w-full h-full"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06l-1.745-1.745a10.029 10.029 0 003.3-4.38 1.651 1.651 0 000-1.185A10.004 10.004 0 009.999 3a9.956 9.956 0 00-4.744 1.194L3.28 2.22zM7.752 6.69l1.092 1.092a2.5 2.5 0 013.374 3.373l1.091 1.092a4 4 0 00-5.557-5.557z"
+              clip-rule="evenodd"
+            />
+            <path
+              d="M10.748 13.93l2.523 2.523a9.987 9.987 0 01-3.27.547c-4.258 0-7.894-2.66-9.337-6.41a1.651 1.651 0 010-1.186A10.007 10.007 0 012.839 6.02L6.07 9.252a4 4 0 004.678 4.678z"
+            />
+          </svg>
+          <svg
+            v-else
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            class="w-full h-full"
+          >
+            <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
+            <path
+              fill-rule="evenodd"
+              d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </button>
 
         <!-- Static trailing icon -->
         <span
@@ -589,7 +671,7 @@ function onClear() {
             sc.icon,
           ]"
           aria-hidden="true"
-          v-html="trailingIcon"
+          v-html="sanitizeSvg(trailingIcon)"
         />
       </span>
 
@@ -622,12 +704,45 @@ function onClear() {
         :role="resolvedState === 'error' ? 'alert' : undefined"
         :aria-live="resolvedState === 'error' ? 'polite' : undefined"
       >
-        <span
-          v-if="helpIcon"
+        <svg
+          v-if="resolvedState === 'error'"
+          viewBox="0 0 16 16"
+          fill="currentColor"
           class="w-3.5 h-3.5 shrink-0 mt-px"
           aria-hidden="true"
-          v-html="helpIcon"
-        />
+        >
+          <path
+            fill-rule="evenodd"
+            d="M8 15A7 7 0 108 1a7 7 0 000 14zm-.75-9.25a.75.75 0 011.5 0v3.5a.75.75 0 01-1.5 0v-3.5zM8 12a1 1 0 110-2 1 1 0 010 2z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        <svg
+          v-else-if="resolvedState === 'success'"
+          viewBox="0 0 16 16"
+          fill="currentColor"
+          class="w-3.5 h-3.5 shrink-0 mt-px"
+          aria-hidden="true"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M8 15A7 7 0 108 1a7 7 0 000 14zm3.78-8.22a.75.75 0 00-1.06-1.06L7 9.44 5.28 7.72a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.06 0l4.25-4.25z"
+            clip-rule="evenodd"
+          />
+        </svg>
+        <svg
+          v-else-if="resolvedState === 'warning'"
+          viewBox="0 0 16 16"
+          fill="currentColor"
+          class="w-3.5 h-3.5 shrink-0 mt-px"
+          aria-hidden="true"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M6.701 2.25c.577-1 2.02-1 2.598 0l5.196 9a1.5 1.5 0 01-1.299 2.25H2.804A1.5 1.5 0 011.505 11.25l5.196-9zM8 5a.75.75 0 01.75.75v2.5a.75.75 0 01-1.5 0v-2.5A.75.75 0 018 5zm0 7a1 1 0 110-2 1 1 0 010 2z"
+            clip-rule="evenodd"
+          />
+        </svg>
         {{ helpText }}
       </p>
 

@@ -44,6 +44,7 @@ export type YButtonEffect =
 export type YButtonIntensity = "subtle" | "moderate" | "strong";
 
 export interface YButtonProps {
+  dark?: boolean;
   label?: string;
   size?: ComponentSize;
   color?: string;

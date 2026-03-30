@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import type { YAccordionProps, YAccordionItem } from "../../types/accordion";
+import { useDarkMode } from "@/composables/useDarkMode";
+import type { YAccordionProps, YAccordionItem } from "@/types/accordion";
+
+defineOptions({ name: "YAccordion" });
 
 const props = withDefaults(defineProps<YAccordionProps>(), {
   variant: "default",
@@ -13,6 +16,9 @@ const props = withDefaults(defineProps<YAccordionProps>(), {
 });
 
 const openItems = ref<string[]>([...(props.defaultOpen ?? [])]);
+const accordionRef = ref<HTMLElement | null>(null);
+
+const dk = useDarkMode(props.dark);
 
 const normalizedItems = computed<YAccordionItem[]>(() => {
   const source = props.items ?? [];
@@ -67,19 +73,52 @@ function toggle(item: YAccordionItem) {
   }
 }
 
+function onTriggerKeydown(e: KeyboardEvent) {
+  if (!accordionRef.value) return;
+  const triggers = Array.from(
+    accordionRef.value.querySelectorAll<HTMLButtonElement>(
+      "button[aria-expanded]",
+    ),
+  ).filter((btn) => !btn.disabled);
+  const index = triggers.indexOf(e.currentTarget as HTMLButtonElement);
+  if (index === -1) return;
+  let target: number | null = null;
+  switch (e.key) {
+    case "ArrowDown":
+      target = (index + 1) % triggers.length;
+      break;
+    case "ArrowUp":
+      target = (index - 1 + triggers.length) % triggers.length;
+      break;
+    case "Home":
+      target = 0;
+      break;
+    case "End":
+      target = triggers.length - 1;
+      break;
+    default:
+      return;
+  }
+  e.preventDefault();
+  triggers[target]?.focus();
+}
+
 const r = () => radiusMap[props.radius ?? "md"];
 
 function wrapperClass(): string {
+  const d = dk.value;
+  const border = d ? "border-slate-700" : "border-gray-200";
+  const divider = d ? "divide-slate-700" : "divide-gray-100";
   switch (props.variant) {
     case "flush":
-      return "divide-y divide-gray-200";
+      return `divide-y ${d ? "divide-slate-700" : "divide-gray-200"}`;
     case "filled":
     case "bordered":
-      return `${r()} border border-gray-200 divide-y divide-gray-100 overflow-hidden`;
+      return `${r()} border ${border} divide-y ${divider} overflow-hidden`;
     case "card":
       return props.separated
         ? "space-y-3"
-        : `${r()} border border-gray-200 divide-y divide-gray-100 overflow-hidden`;
+        : `${r()} border ${border} divide-y ${divider} overflow-hidden`;
     case "ghost":
       return "space-y-1";
     case "brutal":
@@ -94,12 +133,14 @@ function wrapperClass(): string {
       return props.separated
         ? "space-y-2"
         : props.bordered
-          ? `${r()} border border-gray-200 divide-y divide-gray-100 overflow-hidden`
+          ? `${r()} border ${border} divide-y ${divider} overflow-hidden`
           : "space-y-2";
   }
 }
 
 function itemClass(idx: number): string {
+  const d = dk.value;
+  const border = d ? "border-slate-700" : "border-gray-200";
   switch (props.variant) {
     case "ghost":
       return `${r()} overflow-hidden`;
@@ -113,11 +154,11 @@ function itemClass(idx: number): string {
       return "yacc-timeline-item";
     case "card":
       return props.separated
-        ? `${r()} border border-gray-200 overflow-hidden shadow-sm`
+        ? `${r()} border ${border} overflow-hidden shadow-sm`
         : "";
     default:
       return props.separated
-        ? `${r()} overflow-hidden border border-gray-200`
+        ? `${r()} overflow-hidden border ${border}`
         : "";
   }
 }
@@ -128,13 +169,14 @@ function triggerClass(item: YAccordionItem, open: boolean): string {
   const disabled = item.disabled
     ? "cursor-not-allowed opacity-40"
     : "cursor-pointer";
+  const d = dk.value;
 
   switch (props.variant) {
     case "ghost":
       return `${base} px-3 py-3 text-sm rounded-lg ${disabled} ${
         open
-          ? "text-gray-900"
-          : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+          ? d ? "text-slate-100" : "text-gray-900"
+          : d ? "text-slate-400 hover:text-slate-200 hover:bg-slate-800" : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
       }`;
     case "brutal":
       return `${base} px-4 py-3.5 text-sm uppercase tracking-wider font-black ${disabled} ${
@@ -146,43 +188,44 @@ function triggerClass(item: YAccordionItem, open: boolean): string {
       }`;
     case "soft":
       return `${base} px-4 py-3.5 text-sm ${disabled} ${
-        open ? "yacc-soft-trigger--open" : "text-gray-600 hover:text-gray-900"
+        open ? "yacc-soft-trigger--open" : d ? "text-slate-400 hover:text-slate-200" : "text-gray-600 hover:text-gray-900"
       }`;
     case "timeline":
       return `${base} py-3 text-sm ${disabled} ${
         open
           ? "text-indigo-600 font-semibold"
-          : "text-gray-600 hover:text-gray-900"
+          : d ? "text-slate-400 hover:text-slate-200" : "text-gray-600 hover:text-gray-900"
       }`;
     case "filled":
       return `${base} px-4 py-3.5 text-sm ${disabled} ${
-        open ? "bg-gray-50 text-blue-600" : "text-gray-800 hover:bg-gray-50"
+        open ? (d ? "bg-slate-800 text-blue-400" : "bg-gray-50 text-blue-600") : (d ? "text-slate-200 hover:bg-slate-800" : "text-gray-800 hover:bg-gray-50")
       }`;
     case "flush":
       return `${base} px-0 py-4 text-sm ${disabled} ${
-        open ? "text-blue-600" : "text-gray-800 hover:text-gray-900"
+        open ? "text-blue-600" : (d ? "text-slate-200 hover:text-slate-100" : "text-gray-800 hover:text-gray-900")
       }`;
     default:
       return `${base} px-4 py-3.5 text-sm ${disabled} ${
-        open ? "text-blue-600" : "text-gray-800 hover:bg-gray-50"
+        open ? "text-blue-600" : (d ? "text-slate-200 hover:bg-slate-800" : "text-gray-800 hover:bg-gray-50")
       }`;
   }
 }
 
 function contentClass(): string {
+  const d = dk.value;
   switch (props.variant) {
     case "brutal":
       return "px-4 pb-4 pt-1 text-sm leading-relaxed text-gray-700 border-t-[2px] border-black";
     case "neon":
       return "px-4 pb-4 pt-1 text-sm leading-relaxed yacc-neon-content font-mono";
     case "soft":
-      return "px-4 pb-4 pt-1 text-sm leading-relaxed text-gray-500";
+      return `px-4 pb-4 pt-1 text-sm leading-relaxed ${d ? "text-slate-400" : "text-gray-500"}`;
     case "timeline":
-      return "pb-4 pt-1 text-sm leading-relaxed text-gray-500 yacc-timeline-content";
+      return `pb-4 pt-1 text-sm leading-relaxed ${d ? "text-slate-400" : "text-gray-500"} yacc-timeline-content`;
     case "flush":
-      return "pb-4 pt-1 text-sm leading-relaxed text-gray-600";
+      return `pb-4 pt-1 text-sm leading-relaxed ${d ? "text-slate-400" : "text-gray-600"}`;
     default:
-      return "px-4 pb-4 pt-1 text-sm leading-relaxed text-gray-600";
+      return `px-4 pb-4 pt-1 text-sm leading-relaxed ${d ? "text-slate-400" : "text-gray-600"}`;
   }
 }
 
@@ -205,6 +248,7 @@ function chevronClass(open: boolean): string {
 
 <template>
   <div
+    ref="accordionRef"
     :class="wrapperClass()"
     :style="props.textColor ? { color: props.textColor } : undefined"
   >
@@ -231,6 +275,7 @@ function chevronClass(open: boolean): string {
               :aria-expanded="isOpen(item.id)"
               :disabled="item.disabled"
               @click="toggle(item)"
+              @keydown="onTriggerKeydown"
             >
               <span class="flex items-center gap-2">
                 <span v-if="item.icon" class="text-base leading-none">{{
@@ -260,6 +305,7 @@ function chevronClass(open: boolean): string {
           :aria-expanded="isOpen(item.id)"
           :disabled="item.disabled"
           @click="toggle(item)"
+          @keydown="onTriggerKeydown"
         >
           <span class="flex items-center gap-2">
             <span v-if="item.icon" class="text-base leading-none">{{

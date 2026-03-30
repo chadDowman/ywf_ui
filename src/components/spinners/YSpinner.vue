@@ -1,13 +1,19 @@
 <script setup lang="ts">
-import type { YSpinnerProps } from "../../types/spinner";
+import { computed } from "vue";
+import { useDarkMode } from "@/composables/useDarkMode";
+import type { YSpinnerProps } from "@/types/spinner";
+
+defineOptions({ name: "YSpinner" });
 
 const props = withDefaults(defineProps<YSpinnerProps>(), {
   size: "md",
   variant: "ring",
-  color: "#2563eb",
   speed: "normal",
   visible: true,
 });
+
+const dk = useDarkMode(props.dark);
+const resolvedColor = computed(() => props.color ?? (dk.value ? '#93c5fd' : '#2563eb'));
 
 const sizeMap: Record<string, string> = {
   xs: "h-4 w-4",
@@ -64,13 +70,13 @@ const gridDelay = (i: number) =>
         r="10"
         stroke="currentColor"
         stroke-width="4"
-        :style="{ color }"
+        :style="{ color: resolvedColor }"
       />
       <path
         class="opacity-75"
         fill="currentColor"
         d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4z"
-        :style="{ color }"
+        :style="{ color: resolvedColor }"
       />
     </svg>
 
@@ -87,7 +93,7 @@ const gridDelay = (i: number) =>
         :style="{
           width: '30%',
           height: '30%',
-          backgroundColor: color,
+          backgroundColor: resolvedColor,
           animation: `yspinner-bounce ${speedMap[speed ?? 'normal']} ease-in-out infinite`,
           animationDelay: `${(i - 1) * 0.15}s`,
         }"
@@ -106,7 +112,7 @@ const gridDelay = (i: number) =>
         class="inline-block w-1/5 rounded-sm"
         :style="{
           height: '100%',
-          backgroundColor: color,
+          backgroundColor: resolvedColor,
           animation: `yspinner-barPulse ${speedMap[speed ?? 'normal']} ease-in-out infinite`,
           animationDelay: `${(i - 1) * 0.12}s`,
         }"
@@ -119,7 +125,7 @@ const gridDelay = (i: number) =>
       class="inline-block rounded-full"
       :class="sizeMap[size ?? 'md']"
       :style="{
-        backgroundColor: color,
+        backgroundColor: resolvedColor,
         animation: `yspinner-pulse ${speedMap[speed ?? 'normal']} cubic-bezier(0.4,0,0.6,1) infinite`,
       }"
     />
@@ -137,7 +143,7 @@ const gridDelay = (i: number) =>
         :style="{
           width: '28%',
           height: '28%',
-          backgroundColor: color,
+          backgroundColor: resolvedColor,
           animation: `yspinner-spinnerBounce ${speedMap[speed ?? 'normal']} ease-in-out infinite`,
           animationDelay: `${(i - 1) * 0.16}s`,
         }"
@@ -155,7 +161,7 @@ const gridDelay = (i: number) =>
         :key="i"
         class="absolute inset-0 rounded-full border-2"
         :style="{
-          borderColor: color,
+          borderColor: resolvedColor,
           animation: `yspinner-ripple ${speedMap[speed ?? 'normal']} ease-out infinite`,
           animationDelay: `${(i - 1) * 0.4}s`,
         }"
@@ -172,32 +178,32 @@ const gridDelay = (i: number) =>
       <!-- Centre -->
       <span
         class="absolute rounded-full yspinner-orbit-center"
-        :style="{ backgroundColor: color }"
+        :style="{ backgroundColor: resolvedColor }"
       />
       <!-- Orbit ring 1 -->
       <span
         class="absolute inset-0 rounded-full yspinner-orbit-ring"
         :style="{
-          borderColor: color,
+          borderColor: resolvedColor,
           animation: `yspinner-spin ${speedMap[speed ?? 'normal']} linear infinite`,
         }"
       >
         <span
           class="absolute rounded-full yspinner-orbit-dot"
-          :style="{ backgroundColor: color }"
+          :style="{ backgroundColor: resolvedColor }"
         />
       </span>
       <!-- Orbit ring 2, counter-clockwise, slightly smaller -->
       <span
         class="absolute yspinner-orbit-ring2"
         :style="{
-          borderColor: color,
+          borderColor: resolvedColor,
           animation: `yspinner-spinReverse ${parseFloat(speedMap[speed ?? 'normal']) * 1.5}s linear infinite`,
         }"
       >
         <span
           class="absolute rounded-full yspinner-orbit-dot2"
-          :style="{ backgroundColor: color }"
+          :style="{ backgroundColor: resolvedColor }"
         />
       </span>
     </span>
@@ -215,7 +221,7 @@ const gridDelay = (i: number) =>
         cx="12"
         cy="12"
         r="10"
-        :stroke="color"
+        :stroke="resolvedColor"
         stroke-width="1.5"
         opacity="0.25"
       />
@@ -225,7 +231,7 @@ const gridDelay = (i: number) =>
         y1="3.5"
         x2="12"
         y2="5.5"
-        :stroke="color"
+        :stroke="resolvedColor"
         stroke-width="1.5"
         stroke-linecap="round"
         opacity="0.5"
@@ -235,7 +241,7 @@ const gridDelay = (i: number) =>
         y1="18.5"
         x2="12"
         y2="20.5"
-        :stroke="color"
+        :stroke="resolvedColor"
         stroke-width="1.5"
         stroke-linecap="round"
         opacity="0.5"
@@ -245,7 +251,7 @@ const gridDelay = (i: number) =>
         y1="12"
         x2="5.5"
         y2="12"
-        :stroke="color"
+        :stroke="resolvedColor"
         stroke-width="1.5"
         stroke-linecap="round"
         opacity="0.5"
@@ -255,7 +261,7 @@ const gridDelay = (i: number) =>
         y1="12"
         x2="20.5"
         y2="12"
-        :stroke="color"
+        :stroke="resolvedColor"
         stroke-width="1.5"
         stroke-linecap="round"
         opacity="0.5"
@@ -266,7 +272,7 @@ const gridDelay = (i: number) =>
         y1="12"
         x2="12"
         y2="8"
-        :stroke="color"
+        :stroke="resolvedColor"
         stroke-width="2"
         stroke-linecap="round"
         :style="{
@@ -280,7 +286,7 @@ const gridDelay = (i: number) =>
         y1="12"
         x2="12"
         y2="6"
-        :stroke="color"
+        :stroke="resolvedColor"
         stroke-width="1.5"
         stroke-linecap="round"
         opacity="0.7"
@@ -290,7 +296,7 @@ const gridDelay = (i: number) =>
         }"
       />
       <!-- Centre dot -->
-      <circle cx="12" cy="12" r="1.2" :fill="color" />
+      <circle cx="12" cy="12" r="1.2" :fill="resolvedColor" />
     </svg>
 
     <!-- ── MORPH ───────────────────────────────────────────────── -->
@@ -300,7 +306,7 @@ const gridDelay = (i: number) =>
       class="inline-block yspinner-morph"
       :class="sizeMap[size ?? 'md']"
       :style="{
-        backgroundColor: color,
+        backgroundColor: resolvedColor,
         animation: `yspinner-morph ${speedMap[speed ?? 'normal']} ease-in-out infinite`,
       }"
     />
@@ -319,7 +325,7 @@ const gridDelay = (i: number) =>
         :style="{
           width: '14%',
           height: '60%',
-          backgroundColor: color,
+          backgroundColor: resolvedColor,
           animation: `yspinner-wave ${speedMap[speed ?? 'normal']} ease-in-out infinite`,
           animationDelay: `${(i - 1) * 0.1}s`,
         }"
@@ -338,7 +344,7 @@ const gridDelay = (i: number) =>
         :key="i"
         class="rounded-full yspinner-grid-dot"
         :style="{
-          backgroundColor: color,
+          backgroundColor: resolvedColor,
           animation: `yspinner-gridPop ${speedMap[speed ?? 'normal']} ease-in-out infinite`,
           animationDelay: gridDelay(i),
         }"
@@ -361,7 +367,7 @@ const gridDelay = (i: number) =>
         cx="12"
         cy="12"
         r="9"
-        :stroke="color"
+        :stroke="resolvedColor"
         stroke-width="2.5"
         opacity="0.12"
       />
@@ -370,7 +376,7 @@ const gridDelay = (i: number) =>
         cx="12"
         cy="12"
         r="9"
-        :stroke="color"
+        :stroke="resolvedColor"
         stroke-width="2.5"
         stroke-linecap="round"
         stroke-dasharray="20 37"
@@ -378,7 +384,7 @@ const gridDelay = (i: number) =>
         opacity="0.9"
       />
       <!-- Bright leading dot -->
-      <circle cx="12" cy="3" r="2" :fill="color" />
+      <circle cx="12" cy="3" r="2" :fill="resolvedColor" />
     </svg>
 
     <span v-if="label" class="text-xs text-gray-500 dark:text-gray-400">{{

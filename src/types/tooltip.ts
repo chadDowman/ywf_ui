@@ -9,6 +9,7 @@ export type YTooltipVariant =
   | "gradient";
 
 export interface YTooltipProps {
+  dark?: boolean;
   text?: string;
   placement?: YTooltipPlacement;
   variant?: YTooltipVariant;
