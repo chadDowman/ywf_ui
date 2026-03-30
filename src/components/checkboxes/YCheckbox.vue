@@ -538,12 +538,21 @@ function toggle() {
       <span v-if="label || description" class="flex flex-col">
         <span
           v-if="label"
-          :class="[dk ? 'font-medium leading-tight text-slate-200' : 'font-medium leading-tight text-gray-800', labelSizeMap[size ?? 'md']]"
+          :class="[
+            dk
+              ? 'font-medium leading-tight text-slate-200'
+              : 'font-medium leading-tight text-gray-800',
+            labelSizeMap[size ?? 'md'],
+          ]"
           >{{ label }}</span
         >
         <span
           v-if="description"
-          :class="dk ? 'mt-0.5 text-xs leading-snug text-slate-400' : 'mt-0.5 text-xs leading-snug text-gray-500'"
+          :class="
+            dk
+              ? 'mt-0.5 text-xs leading-snug text-slate-400'
+              : 'mt-0.5 text-xs leading-snug text-gray-500'
+          "
           >{{ description }}</span
         >
       </span>

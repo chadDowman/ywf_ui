@@ -21,7 +21,9 @@ const positionClasses: Record<string, string> = {
 
 const variantClasses = computed<Record<string, string>>(() => ({
   dark: "bg-gray-900 text-white",
-  light: dk.value ? "bg-slate-800 text-slate-100 border border-slate-600 shadow-md" : "bg-white text-gray-800 border border-gray-200 shadow-md",
+  light: dk.value
+    ? "bg-slate-800 text-slate-100 border border-slate-600 shadow-md"
+    : "bg-white text-gray-800 border border-gray-200 shadow-md",
   primary: "bg-blue-600 text-white",
   success: "bg-green-600 text-white",
   warning: "bg-amber-500 text-white",

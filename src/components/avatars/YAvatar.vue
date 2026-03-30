@@ -147,12 +147,20 @@ const presetWrapperClass = computed((): string => {
     brutalist: "bg-yellow-300 border-3 border-black",
     "gradient-ring": "bg-gray-100",
     pixel: "bg-gray-200 [image-rendering:pixelated]",
-    sticker: dk.value ? "bg-slate-800 border-2 border-slate-600 shadow-md" : "bg-white border-2 border-gray-200 shadow-md",
+    sticker: dk.value
+      ? "bg-slate-800 border-2 border-slate-600 shadow-md"
+      : "bg-white border-2 border-gray-200 shadow-md",
     duotone: "bg-indigo-100",
     monochrome: "bg-gray-300 grayscale",
-    "soft-shadow": dk.value ? "bg-slate-800 shadow-lg shadow-black/40" : "bg-white shadow-lg shadow-gray-300/50",
-    elevated: dk.value ? "bg-slate-800 shadow-xl border border-slate-600" : "bg-white shadow-xl border border-gray-100",
-    outline: dk.value ? "bg-transparent border-2 border-slate-500" : "bg-transparent border-2 border-gray-400",
+    "soft-shadow": dk.value
+      ? "bg-slate-800 shadow-lg shadow-black/40"
+      : "bg-white shadow-lg shadow-gray-300/50",
+    elevated: dk.value
+      ? "bg-slate-800 shadow-xl border border-slate-600"
+      : "bg-white shadow-xl border border-gray-100",
+    outline: dk.value
+      ? "bg-transparent border-2 border-slate-500"
+      : "bg-transparent border-2 border-gray-400",
     frosted: "bg-white/40 backdrop-blur-md border border-white/50",
     ink: "bg-gray-900",
   };
@@ -177,9 +185,14 @@ const presetInitialsClass = computed((): string => {
     ink: "text-white font-serif italic",
     minimal: "text-gray-400 font-light",
     glass: "text-white/80 font-medium",
-    default: dk.value ? "text-slate-300 font-medium" : "text-gray-600 font-medium",
+    default: dk.value
+      ? "text-slate-300 font-medium"
+      : "text-gray-600 font-medium",
   };
-  return map[p] ?? (dk.value ? "text-slate-300 font-medium" : "text-gray-600 font-medium");
+  return (
+    map[p] ??
+    (dk.value ? "text-slate-300 font-medium" : "text-gray-600 font-medium")
+  );
 });
 
 // --- Neon glow effect ---
@@ -354,7 +367,8 @@ const displayBadge = computed(() => {
     <span
       v-if="status"
       :class="[
-        'absolute rounded-full border-2', dk ? 'border-slate-800' : 'border-white',
+        'absolute rounded-full border-2',
+        dk ? 'border-slate-800' : 'border-white',
         statusColorMap[status],
         statusDotSize,
         statusDotOffset,

@@ -306,17 +306,22 @@ const colorClass = computed(() => {
   const tokens = palette[props.color] ?? palette.blue;
   const cls = tokens[props.variant] ?? tokens.solid;
   // For soft/glass/surface variants, swap light bg for dark bg
-  if (dk.value && (props.variant === 'soft' || props.variant === 'glass' || props.variant === 'surface')) {
+  if (
+    dk.value &&
+    (props.variant === "soft" ||
+      props.variant === "glass" ||
+      props.variant === "surface")
+  ) {
     return cls
-      .replace(/bg-(\w+)-50/g, 'bg-$1-900')
-      .replace(/text-(\w+)-700/g, 'text-$1-200')
-      .replace(/text-(\w+)-800/g, 'text-$1-200');
+      .replace(/bg-(\w+)-50/g, "bg-$1-900")
+      .replace(/text-(\w+)-700/g, "text-$1-200")
+      .replace(/text-(\w+)-800/g, "text-$1-200");
   }
-  if (dk.value && props.variant === 'outline') {
-    return cls.replace(/text-(\w+)-600/g, 'text-$1-300');
+  if (dk.value && props.variant === "outline") {
+    return cls.replace(/text-(\w+)-600/g, "text-$1-300");
   }
-  if (dk.value && props.variant === 'ghost') {
-    return cls.replace(/text-(\w+)-600/g, 'text-$1-300');
+  if (dk.value && props.variant === "ghost") {
+    return cls.replace(/text-(\w+)-600/g, "text-$1-300");
   }
   return cls;
 });

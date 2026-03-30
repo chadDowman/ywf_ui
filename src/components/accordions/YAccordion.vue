@@ -157,9 +157,7 @@ function itemClass(idx: number): string {
         ? `${r()} border ${border} overflow-hidden shadow-sm`
         : "";
     default:
-      return props.separated
-        ? `${r()} overflow-hidden border ${border}`
-        : "";
+      return props.separated ? `${r()} overflow-hidden border ${border}` : "";
   }
 }
 
@@ -175,8 +173,12 @@ function triggerClass(item: YAccordionItem, open: boolean): string {
     case "ghost":
       return `${base} px-3 py-3 text-sm rounded-lg ${disabled} ${
         open
-          ? d ? "text-slate-100" : "text-gray-900"
-          : d ? "text-slate-400 hover:text-slate-200 hover:bg-slate-800" : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+          ? d
+            ? "text-slate-100"
+            : "text-gray-900"
+          : d
+            ? "text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+            : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
       }`;
     case "brutal":
       return `${base} px-4 py-3.5 text-sm uppercase tracking-wider font-black ${disabled} ${
@@ -188,25 +190,45 @@ function triggerClass(item: YAccordionItem, open: boolean): string {
       }`;
     case "soft":
       return `${base} px-4 py-3.5 text-sm ${disabled} ${
-        open ? "yacc-soft-trigger--open" : d ? "text-slate-400 hover:text-slate-200" : "text-gray-600 hover:text-gray-900"
+        open
+          ? "yacc-soft-trigger--open"
+          : d
+            ? "text-slate-400 hover:text-slate-200"
+            : "text-gray-600 hover:text-gray-900"
       }`;
     case "timeline":
       return `${base} py-3 text-sm ${disabled} ${
         open
           ? "text-indigo-600 font-semibold"
-          : d ? "text-slate-400 hover:text-slate-200" : "text-gray-600 hover:text-gray-900"
+          : d
+            ? "text-slate-400 hover:text-slate-200"
+            : "text-gray-600 hover:text-gray-900"
       }`;
     case "filled":
       return `${base} px-4 py-3.5 text-sm ${disabled} ${
-        open ? (d ? "bg-slate-800 text-blue-400" : "bg-gray-50 text-blue-600") : (d ? "text-slate-200 hover:bg-slate-800" : "text-gray-800 hover:bg-gray-50")
+        open
+          ? d
+            ? "bg-slate-800 text-blue-400"
+            : "bg-gray-50 text-blue-600"
+          : d
+            ? "text-slate-200 hover:bg-slate-800"
+            : "text-gray-800 hover:bg-gray-50"
       }`;
     case "flush":
       return `${base} px-0 py-4 text-sm ${disabled} ${
-        open ? "text-blue-600" : (d ? "text-slate-200 hover:text-slate-100" : "text-gray-800 hover:text-gray-900")
+        open
+          ? "text-blue-600"
+          : d
+            ? "text-slate-200 hover:text-slate-100"
+            : "text-gray-800 hover:text-gray-900"
       }`;
     default:
       return `${base} px-4 py-3.5 text-sm ${disabled} ${
-        open ? "text-blue-600" : (d ? "text-slate-200 hover:bg-slate-800" : "text-gray-800 hover:bg-gray-50")
+        open
+          ? "text-blue-600"
+          : d
+            ? "text-slate-200 hover:bg-slate-800"
+            : "text-gray-800 hover:bg-gray-50"
       }`;
   }
 }

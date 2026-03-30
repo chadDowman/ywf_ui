@@ -249,10 +249,12 @@ const darkVariantTokens: Record<YInputVariant, YInputVariantTokens> = {
     error: "border-red-500 shadow-sm",
     errorRing: "focus-within:border-red-400 focus-within:ring-red-400/20",
     success: "border-emerald-500 shadow-sm",
-    successRing: "focus-within:border-emerald-400 focus-within:ring-emerald-400/20",
+    successRing:
+      "focus-within:border-emerald-400 focus-within:ring-emerald-400/20",
     warning: "border-amber-500 shadow-sm",
     warningRing: "focus-within:border-amber-400 focus-within:ring-amber-400/20",
-    disabled: "bg-slate-900 border-slate-700 text-slate-500 shadow-none cursor-not-allowed",
+    disabled:
+      "bg-slate-900 border-slate-700 text-slate-500 shadow-none cursor-not-allowed",
     readonly: "bg-slate-800/60 border-slate-700 cursor-default",
     affix: "bg-slate-700 text-slate-400 border-slate-600",
     affixBorderL: "border-l",
@@ -261,15 +263,20 @@ const darkVariantTokens: Record<YInputVariant, YInputVariantTokens> = {
   filled: {
     idle: "bg-slate-700/80 border border-transparent text-slate-100 placeholder:text-slate-400",
     hover: "hover:bg-slate-700 hover:border-slate-600",
-    focus: "focus-within:bg-slate-800 focus-within:border-blue-400 focus-within:shadow-sm",
+    focus:
+      "focus-within:bg-slate-800 focus-within:border-blue-400 focus-within:shadow-sm",
     ring: "focus-within:ring-blue-400/20",
     error: "bg-red-900/30 border-red-500",
-    errorRing: "focus-within:bg-slate-800 focus-within:border-red-400 focus-within:ring-red-400/20",
+    errorRing:
+      "focus-within:bg-slate-800 focus-within:border-red-400 focus-within:ring-red-400/20",
     success: "bg-emerald-900/30 border-emerald-500",
-    successRing: "focus-within:bg-slate-800 focus-within:border-emerald-400 focus-within:ring-emerald-400/20",
+    successRing:
+      "focus-within:bg-slate-800 focus-within:border-emerald-400 focus-within:ring-emerald-400/20",
     warning: "bg-amber-900/30 border-amber-500",
-    warningRing: "focus-within:bg-slate-800 focus-within:border-amber-400 focus-within:ring-amber-400/20",
-    disabled: "bg-slate-800 border-transparent text-slate-500 cursor-not-allowed",
+    warningRing:
+      "focus-within:bg-slate-800 focus-within:border-amber-400 focus-within:ring-amber-400/20",
+    disabled:
+      "bg-slate-800 border-transparent text-slate-500 cursor-not-allowed",
     readonly: "bg-slate-800/60 border-transparent cursor-default",
     affix: "bg-slate-600/60 text-slate-400 border-slate-600",
     affixBorderL: "border-l",
@@ -278,15 +285,20 @@ const darkVariantTokens: Record<YInputVariant, YInputVariantTokens> = {
   ghost: {
     idle: "bg-transparent border border-transparent text-slate-100 placeholder:text-slate-400",
     hover: "hover:bg-slate-800 hover:border-slate-700",
-    focus: "focus-within:bg-slate-800 focus-within:border-slate-600 focus-within:shadow-sm",
+    focus:
+      "focus-within:bg-slate-800 focus-within:border-slate-600 focus-within:shadow-sm",
     ring: "focus-within:ring-slate-500/15",
     error: "bg-red-900/20 border-red-500",
-    errorRing: "focus-within:bg-slate-800 focus-within:border-red-400 focus-within:ring-red-400/15",
+    errorRing:
+      "focus-within:bg-slate-800 focus-within:border-red-400 focus-within:ring-red-400/15",
     success: "bg-emerald-900/20 border-emerald-500",
-    successRing: "focus-within:bg-slate-800 focus-within:border-emerald-400 focus-within:ring-emerald-400/15",
+    successRing:
+      "focus-within:bg-slate-800 focus-within:border-emerald-400 focus-within:ring-emerald-400/15",
     warning: "bg-amber-900/20 border-amber-500",
-    warningRing: "focus-within:bg-slate-800 focus-within:border-amber-400 focus-within:ring-amber-400/15",
-    disabled: "bg-transparent border-transparent text-slate-500 cursor-not-allowed",
+    warningRing:
+      "focus-within:bg-slate-800 focus-within:border-amber-400 focus-within:ring-amber-400/15",
+    disabled:
+      "bg-transparent border-transparent text-slate-500 cursor-not-allowed",
     readonly: "bg-transparent border-transparent cursor-default",
     affix: "bg-transparent text-slate-500 border-slate-600",
     affixBorderL: "border-l",
@@ -311,7 +323,9 @@ const darkVariantTokens: Record<YInputVariant, YInputVariantTokens> = {
   },
 };
 
-const variantTokens = computed(() => dk.value ? darkVariantTokens : lightVariantTokens);
+const variantTokens = computed(() =>
+  dk.value ? darkVariantTokens : lightVariantTokens,
+);
 
 const wrapperClasses = computed(() => {
   const t = variantTokens.value[props.variant];

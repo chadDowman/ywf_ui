@@ -201,15 +201,15 @@ const triggerClasses = computed(() => {
   const d = dk.value;
   let btnCls = variantBtnClasses[props.variant];
   // Swap light-mode bg-white/text-gray for dark equivalents on simple variants
-  if (d && !['aurora', 'brutalist', 'terminal'].includes(props.variant)) {
+  if (d && !["aurora", "brutalist", "terminal"].includes(props.variant)) {
     btnCls = btnCls
-      .replace(/bg-white/g, 'bg-slate-800')
-      .replace(/border-gray-(\d+)/g, 'border-slate-600')
-      .replace(/text-gray-(\d+)/g, 'text-slate-200')
-      .replace(/hover:bg-gray-50/g, 'hover:bg-slate-700')
-      .replace(/hover:bg-gray-100/g, 'hover:bg-slate-700')
-      .replace(/bg-gray-50/g, 'bg-slate-800')
-      .replace(/hover:bg-indigo-50/g, 'hover:bg-indigo-900');
+      .replace(/bg-white/g, "bg-slate-800")
+      .replace(/border-gray-(\d+)/g, "border-slate-600")
+      .replace(/text-gray-(\d+)/g, "text-slate-200")
+      .replace(/hover:bg-gray-50/g, "hover:bg-slate-700")
+      .replace(/hover:bg-gray-100/g, "hover:bg-slate-700")
+      .replace(/bg-gray-50/g, "bg-slate-800")
+      .replace(/hover:bg-indigo-50/g, "hover:bg-indigo-900");
   }
   return [
     "rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-indigo-400/50",
@@ -289,7 +289,9 @@ function setItemRef(el: any, idx: number) {
       <button
         :class="[
           'border border-r-0 transition-colors',
-          dk ? 'border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50',
+          dk
+            ? 'border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700'
+            : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50',
           btnSize,
           disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
         ]"
@@ -301,7 +303,9 @@ function setItemRef(el: any, idx: number) {
       <button
         :class="[
           'border transition-colors px-2',
-          dk ? 'border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50',
+          dk
+            ? 'border-slate-600 bg-slate-800 text-slate-200 hover:bg-slate-700'
+            : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50',
           disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
         ]"
         :disabled="disabled"
@@ -445,7 +449,9 @@ function setItemRef(el: any, idx: number) {
             :placeholder="placeholder"
             :class="[
               'w-full rounded-md border px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-indigo-400/50',
-              dk ? 'border-slate-600 bg-slate-700 text-slate-100 placeholder-slate-400' : 'border-gray-200 bg-white text-gray-800 placeholder-gray-400',
+              dk
+                ? 'border-slate-600 bg-slate-700 text-slate-100 placeholder-slate-400'
+                : 'border-gray-200 bg-white text-gray-800 placeholder-gray-400',
             ]"
             @click.stop
           />
@@ -786,12 +792,20 @@ function setItemRef(el: any, idx: number) {
               'flex w-full items-center gap-2 text-left transition-colors',
               variant === 'compact' ? 'px-3 py-1 text-xs' : 'px-4 py-2 text-sm',
               item.disabled
-                ? dk ? 'text-slate-600 cursor-not-allowed' : 'text-gray-300 cursor-not-allowed'
+                ? dk
+                  ? 'text-slate-600 cursor-not-allowed'
+                  : 'text-gray-300 cursor-not-allowed'
                 : focusedIndex === idx
-                  ? dk ? 'bg-indigo-900 text-indigo-300' : 'bg-indigo-50 text-indigo-700'
+                  ? dk
+                    ? 'bg-indigo-900 text-indigo-300'
+                    : 'bg-indigo-50 text-indigo-700'
                   : isSelected(item.id)
-                    ? dk ? 'bg-indigo-900/50 text-indigo-400' : 'bg-indigo-50/50 text-indigo-600'
-                    : dk ? 'text-slate-200 hover:bg-slate-700' : 'text-gray-700 hover:bg-gray-50',
+                    ? dk
+                      ? 'bg-indigo-900/50 text-indigo-400'
+                      : 'bg-indigo-50/50 text-indigo-600'
+                    : dk
+                      ? 'text-slate-200 hover:bg-slate-700'
+                      : 'text-gray-700 hover:bg-gray-50',
             ]"
             :disabled="item.disabled"
             role="option"
@@ -805,7 +819,9 @@ function setItemRef(el: any, idx: number) {
                 'flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors',
                 isSelected(item.id)
                   ? 'bg-indigo-500 border-indigo-500 text-white'
-                  : dk ? 'border-slate-500' : 'border-gray-300',
+                  : dk
+                    ? 'border-slate-500'
+                    : 'border-gray-300',
               ]"
             >
               <svg

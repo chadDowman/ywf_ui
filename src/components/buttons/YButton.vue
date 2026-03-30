@@ -41,11 +41,12 @@ const emit = defineEmits<{
   click: [event: MouseEvent];
 }>();
 
-const resolvedColor = computed(() =>
-  props.color ?? (dk.value ? "#60a5fa" : "var(--ywf-interactive)"),
+const resolvedColor = computed(
+  () => props.color ?? (dk.value ? "#60a5fa" : "var(--ywf-interactive)"),
 );
-const resolvedTextColor = computed(() =>
-  props.textColor ?? (dk.value ? "#ffffff" : "var(--ywf-interactive-text)"),
+const resolvedTextColor = computed(
+  () =>
+    props.textColor ?? (dk.value ? "#ffffff" : "var(--ywf-interactive-text)"),
 );
 
 onMounted(() => {
@@ -93,12 +94,16 @@ const colorStyles = computed(() => {
     case "outline":
       styles.color = resolvedColor.value;
       styles.borderColor = resolvedColor.value;
-      styles.backgroundColor = dk.value ? "rgba(255,255,255,0.05)" : "transparent";
+      styles.backgroundColor = dk.value
+        ? "rgba(255,255,255,0.05)"
+        : "transparent";
       break;
     case "ghost":
       styles.color = resolvedColor.value;
       styles.borderColor = "transparent";
-      styles.backgroundColor = dk.value ? "rgba(255,255,255,0.05)" : "transparent";
+      styles.backgroundColor = dk.value
+        ? "rgba(255,255,255,0.05)"
+        : "transparent";
       break;
     default:
       styles.backgroundColor = resolvedColor.value;

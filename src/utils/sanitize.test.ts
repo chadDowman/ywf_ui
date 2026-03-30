@@ -26,14 +26,16 @@ describe("sanitizeSvg", () => {
   });
 
   it("strips on* event attributes", () => {
-    const input = '<svg><circle r="10" onclick="alert(1)" onload="alert(2)"/></svg>';
+    const input =
+      '<svg><circle r="10" onclick="alert(1)" onload="alert(2)"/></svg>';
     const result = sanitizeSvg(input);
     expect(result).not.toContain("onclick");
     expect(result).not.toContain("onload");
   });
 
   it("strips javascript: URIs from href", () => {
-    const input = '<svg><a href="javascript:alert(1)"><text>click</text></a></svg>';
+    const input =
+      '<svg><a href="javascript:alert(1)"><text>click</text></a></svg>';
     const result = sanitizeSvg(input);
     expect(result).not.toContain("javascript:");
   });

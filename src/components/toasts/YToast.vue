@@ -20,7 +20,7 @@ const dk = useDarkMode(props.dark);
 
 const emit = defineEmits<{
   dismiss: [];
-}>(); 
+}>();
 
 /* ── Auto-dismiss timer ── */
 let dismissTimer: ReturnType<typeof setTimeout> | null = null;
@@ -48,9 +48,12 @@ watch(
   { immediate: true },
 );
 
-watch(() => props.duration, () => {
-  if (props.visible) startDismissTimer();
-});
+watch(
+  () => props.duration,
+  () => {
+    if (props.visible) startDismissTimer();
+  },
+);
 
 onUnmounted(clearDismissTimer);
 
@@ -115,9 +118,9 @@ const wrapperClasses = computed(() => {
     case "soft":
       return `${base} ${softMap[t.value]} shadow-sm`;
     case "outlined":
-      return `${base} border-2 ${outlineBorderMap[t.value]} ${dk.value ? 'bg-gray-900' : 'bg-white'} shadow-sm`;
+      return `${base} border-2 ${outlineBorderMap[t.value]} ${dk.value ? "bg-gray-900" : "bg-white"} shadow-sm`;
     case "glass":
-      return `${base} backdrop-blur-md ${dk.value ? 'bg-gray-900/80' : 'bg-white/80'} border border-white/30 shadow-xl`;
+      return `${base} backdrop-blur-md ${dk.value ? "bg-gray-900/80" : "bg-white/80"} border border-white/30 shadow-xl`;
     default:
       return `${base} shadow-lg`;
   }
@@ -171,7 +174,13 @@ const wrapperStyle = computed(() => {
       v-if="dismissible"
       type="button"
       class="shrink-0 rounded p-0.5 transition-opacity hover:opacity-70"
-      :class="variant === 'solid' ? 'text-white' : dk ? 'text-gray-400' : 'text-gray-500'"
+      :class="
+        variant === 'solid'
+          ? 'text-white'
+          : dk
+            ? 'text-gray-400'
+            : 'text-gray-500'
+      "
       @click="emit('dismiss')"
     >
       <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">

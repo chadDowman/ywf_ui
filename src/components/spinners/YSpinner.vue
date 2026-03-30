@@ -13,7 +13,9 @@ const props = withDefaults(defineProps<YSpinnerProps>(), {
 });
 
 const dk = useDarkMode(props.dark);
-const resolvedColor = computed(() => props.color ?? (dk.value ? '#93c5fd' : '#2563eb'));
+const resolvedColor = computed(
+  () => props.color ?? (dk.value ? "#93c5fd" : "#2563eb"),
+);
 
 const sizeMap: Record<string, string> = {
   xs: "h-4 w-4",

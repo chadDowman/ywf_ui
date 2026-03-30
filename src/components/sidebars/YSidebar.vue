@@ -461,7 +461,19 @@ const variants: Record<YSidebarVariant, YSidebarVariantTokens> = {
 
 const vt = computed(() => {
   // If dark prop is set and variant is light-themed, use dark tokens instead
-  if (dk.value && ['clean', 'glass', 'warm', 'bordered', 'ghost', 'frosted', 'chalk', 'rose'].includes(props.variant)) {
+  if (
+    dk.value &&
+    [
+      "clean",
+      "glass",
+      "warm",
+      "bordered",
+      "ghost",
+      "frosted",
+      "chalk",
+      "rose",
+    ].includes(props.variant)
+  ) {
     return variants.dark;
   }
   return variants[props.variant];

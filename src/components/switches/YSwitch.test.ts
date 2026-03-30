@@ -51,7 +51,9 @@ describe("YSwitch", () => {
     const wrapper = mount(YSwitch, {
       props: { modelValue: true },
     });
-    expect(wrapper.find("[role='switch']").attributes("aria-checked")).toBe("true");
+    expect(wrapper.find("[role='switch']").attributes("aria-checked")).toBe(
+      "true",
+    );
   });
 
   it("shows label text", () => {

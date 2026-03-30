@@ -145,8 +145,19 @@ function toggle() {
           viewBox="0 0 24 24"
           fill="none"
         >
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4z" />
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          />
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4z"
+          />
         </svg>
       </span>
     </button>
@@ -163,7 +174,13 @@ function toggle() {
         slimTrackSizeMap[size ?? 'md'],
         isOn ? '' : dk ? 'bg-slate-600/50' : 'bg-gray-300/60',
       ]"
-      :style="isOn ? { backgroundColor: `color-mix(in srgb, ${resolvedColor} 40%, transparent)` } : {}"
+      :style="
+        isOn
+          ? {
+              backgroundColor: `color-mix(in srgb, ${resolvedColor} 40%, transparent)`,
+            }
+          : {}
+      "
       @click="toggle"
     >
       <span
@@ -172,7 +189,9 @@ function toggle() {
           slimThumbSizeMap[size ?? 'md'],
           isOn ? slimThumbTranslateMap[size ?? 'md'] : 'translate-x-0',
         ]"
-        :style="{ backgroundColor: isOn ? resolvedColor : dk ? '#64748b' : '#9ca3af' }"
+        :style="{
+          backgroundColor: isOn ? resolvedColor : dk ? '#64748b' : '#9ca3af',
+        }"
       >
         <svg
           v-if="loading"
@@ -180,8 +199,19 @@ function toggle() {
           viewBox="0 0 24 24"
           fill="none"
         >
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4z" />
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          />
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4z"
+          />
         </svg>
       </span>
     </button>
@@ -196,16 +226,26 @@ function toggle() {
       class="relative inline-flex shrink-0 items-center rounded-full border-2 transition-all duration-200 focus:outline-none focus:ring-2 ring-blue-300/50"
       :class="[
         trackSizeMap[size ?? 'md'],
-        isOn ? 'border-transparent' : dk ? 'border-slate-500 bg-slate-700' : 'border-gray-300 bg-gray-100',
+        isOn
+          ? 'border-transparent'
+          : dk
+            ? 'border-slate-500 bg-slate-700'
+            : 'border-gray-300 bg-gray-100',
       ]"
-      :style="isOn ? { backgroundColor: resolvedColor, borderColor: resolvedColor } : {}"
+      :style="
+        isOn
+          ? { backgroundColor: resolvedColor, borderColor: resolvedColor }
+          : {}
+      "
       @click="toggle"
     >
       <span
         class="inline-block rounded-full shadow transition-transform duration-200"
         :class="[
           thumbSizeMap[size ?? 'md'],
-          isOn ? thumbTranslateMap[size ?? 'md'] + ' bg-white' : 'translate-x-0.5 ' + (dk ? 'bg-slate-400' : 'bg-white'),
+          isOn
+            ? thumbTranslateMap[size ?? 'md'] + ' bg-white'
+            : 'translate-x-0.5 ' + (dk ? 'bg-slate-400' : 'bg-white'),
         ]"
       >
         <svg
@@ -214,8 +254,19 @@ function toggle() {
           viewBox="0 0 24 24"
           fill="none"
         >
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4z" />
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          />
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4z"
+          />
         </svg>
       </span>
     </button>
@@ -248,8 +299,19 @@ function toggle() {
           viewBox="0 0 24 24"
           fill="none"
         >
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4z" />
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          />
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4z"
+          />
         </svg>
       </span>
     </button>
@@ -257,12 +319,21 @@ function toggle() {
     <span v-if="label || description" class="flex flex-col">
       <span
         v-if="label"
-        :class="[dk ? 'font-medium leading-tight text-slate-200' : 'font-medium leading-tight text-gray-800', labelSizeMap[size ?? 'md']]"
+        :class="[
+          dk
+            ? 'font-medium leading-tight text-slate-200'
+            : 'font-medium leading-tight text-gray-800',
+          labelSizeMap[size ?? 'md'],
+        ]"
         >{{ label }}</span
       >
       <span
         v-if="description"
-        :class="dk ? 'mt-0.5 text-xs leading-snug text-slate-400' : 'mt-0.5 text-xs leading-snug text-gray-500'"
+        :class="
+          dk
+            ? 'mt-0.5 text-xs leading-snug text-slate-400'
+            : 'mt-0.5 text-xs leading-snug text-gray-500'
+        "
         >{{ description }}</span
       >
     </span>

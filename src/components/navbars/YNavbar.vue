@@ -99,7 +99,9 @@ const lightTextVariants = new Set<YNavbarVariant>([
   "luxury",
 ]);
 
-const isLightText = computed(() => dk.value || lightTextVariants.has(props.variant));
+const isLightText = computed(
+  () => dk.value || lightTextVariants.has(props.variant),
+);
 
 // --- Variant class map ---
 
@@ -113,12 +115,16 @@ const variantClasses = computed<Record<YNavbarVariant, string>>(() => {
     outline: d
       ? "bg-slate-900/70 border border-slate-600 text-slate-100 supports-[backdrop-filter]:backdrop-blur-md"
       : "bg-white/70 border border-slate-300 text-slate-800 supports-[backdrop-filter]:backdrop-blur-md",
-    ghost: d ? "bg-transparent text-slate-200" : "bg-transparent text-slate-700",
+    ghost: d
+      ? "bg-transparent text-slate-200"
+      : "bg-transparent text-slate-700",
     glass: d
       ? "bg-slate-900/55 backdrop-blur-xl border-b border-slate-700/50 text-slate-100"
       : "bg-white/55 backdrop-blur-xl border-b border-white/50 text-slate-800",
     gradient: "bg-gradient-to-r from-blue-600 to-cyan-500 text-white",
-    minimal: d ? "bg-transparent text-slate-300" : "bg-transparent text-gray-600",
+    minimal: d
+      ? "bg-transparent text-slate-300"
+      : "bg-transparent text-gray-600",
     bordered: d
       ? "bg-slate-900 border-b-2 border-indigo-500 text-slate-100"
       : "bg-white border-b-2 border-indigo-500 text-gray-800",

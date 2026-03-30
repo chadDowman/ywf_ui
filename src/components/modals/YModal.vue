@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, useSlots, watch } from "vue";
+import {
+  computed,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  ref,
+  useSlots,
+  watch,
+} from "vue";
 import { useDarkMode } from "@/composables/useDarkMode";
 import type {
   YModalProps,
@@ -82,7 +90,7 @@ let previouslyFocusedEl: HTMLElement | null = null;
 function getFocusableElements(): HTMLElement[] {
   if (!dialogRef.value) return [];
   const els = dialogRef.value.querySelectorAll<HTMLElement>(
-    'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
   );
   return Array.from(els);
 }
@@ -296,7 +304,10 @@ const variants: Record<YModalVariant, YModalVariantTokens> = {
 
 const vt = computed(() => {
   // If dark prop is set and variant is light-themed, use dark tokens instead
-  if (dk.value && ['clean', 'glass', 'warm', 'minimal'].includes(props.variant)) {
+  if (
+    dk.value &&
+    ["clean", "glass", "warm", "minimal"].includes(props.variant)
+  ) {
     return variants.dark;
   }
   return variants[props.variant];

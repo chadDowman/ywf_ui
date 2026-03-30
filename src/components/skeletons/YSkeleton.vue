@@ -61,7 +61,11 @@ const variantClasses = computed(() => {
     <div
       v-for="i in count ?? 1"
       :key="i"
-      :class="[dk ? 'bg-slate-700' : 'bg-gray-200', variantClasses, animated ? 'animate-pulse' : '']"
+      :class="[
+        dk ? 'bg-slate-700' : 'bg-gray-200',
+        variantClasses,
+        animated ? 'animate-pulse' : '',
+      ]"
       :style="baseStyle"
     />
   </div>

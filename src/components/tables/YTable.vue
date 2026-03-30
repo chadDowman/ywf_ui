@@ -80,7 +80,10 @@ function handleSort(col: YTableColumn) {
 }
 
 const cellClass = computed(() =>
-  [sizeMap[props.size ?? "md"], dk.value ? "text-slate-300" : "text-gray-700"].join(" "),
+  [
+    sizeMap[props.size ?? "md"],
+    dk.value ? "text-slate-300" : "text-gray-700",
+  ].join(" "),
 );
 const headCellClass = computed(() =>
   [
@@ -95,7 +98,10 @@ const headCellClass = computed(() =>
 <template>
   <div
     :class="[wrapperClasses, 'overflow-auto', fullWidth ? 'w-full' : '']"
-    :style="[props.textColor ? { color: props.textColor } : {}, dk ? { background: '#1e293b', color: '#f1f5f9' } : {}]"
+    :style="[
+      props.textColor ? { color: props.textColor } : {},
+      dk ? { background: '#1e293b', color: '#f1f5f9' } : {},
+    ]"
   >
     <div
       v-if="loading"
@@ -122,7 +128,10 @@ const headCellClass = computed(() =>
     <table v-else class="border-collapse" :class="fullWidth ? 'w-full' : ''">
       <caption
         v-if="caption"
-        :class="['mb-2 text-left text-sm caption-top', dk ? 'text-slate-400' : 'text-gray-500']"
+        :class="[
+          'mb-2 text-left text-sm caption-top',
+          dk ? 'text-slate-400' : 'text-gray-500',
+        ]"
       >
         {{
           caption
@@ -142,7 +151,9 @@ const headCellClass = computed(() =>
                   ? 'text-right'
                   : 'text-left',
               variant === 'bordered'
-                ? dk ? 'border border-slate-700' : 'border border-gray-200'
+                ? dk
+                  ? 'border border-slate-700'
+                  : 'border border-gray-200'
                 : '',
             ]"
             :style="col.width ? { width: col.width } : {}"
@@ -192,7 +203,9 @@ const headCellClass = computed(() =>
           </th>
         </tr>
       </thead>
-      <tbody :class="dk ? 'divide-y divide-slate-700' : 'divide-y divide-gray-100'">
+      <tbody
+        :class="dk ? 'divide-y divide-slate-700' : 'divide-y divide-gray-100'"
+      >
         <tr v-for="(row, ri) in sortedRows" :key="ri" :class="rowClasses">
           <td
             v-for="col in columns"
@@ -205,7 +218,9 @@ const headCellClass = computed(() =>
                   ? 'text-right'
                   : 'text-left',
               variant === 'bordered'
-                ? dk ? 'border border-slate-700' : 'border border-gray-200'
+                ? dk
+                  ? 'border border-slate-700'
+                  : 'border border-gray-200'
                 : '',
             ]"
           >

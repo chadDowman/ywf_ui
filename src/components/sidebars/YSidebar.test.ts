@@ -20,7 +20,9 @@ describe("YSidebar", () => {
         items: [{ id: "home", label: "Home" }],
       },
     });
-    expect(wrapper.find("nav").attributes("aria-label")).toBe("Sidebar navigation");
+    expect(wrapper.find("nav").attributes("aria-label")).toBe(
+      "Sidebar navigation",
+    );
   });
 
   it("renders menu items", () => {

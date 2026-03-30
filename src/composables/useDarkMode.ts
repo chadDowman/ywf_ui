@@ -1,6 +1,8 @@
 import { inject, computed, type Ref } from "vue";
 
-export const YWF_DARK_MODE_KEY = Symbol("ywf-dark-mode") as InjectionKey<Ref<boolean>>;
+export const YWF_DARK_MODE_KEY = Symbol("ywf-dark-mode") as InjectionKey<
+  Ref<boolean>
+>;
 
 import type { InjectionKey } from "vue";
 

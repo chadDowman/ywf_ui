@@ -153,7 +153,10 @@ onBeforeUnmount(() =>
   >
     <div
       v-if="label"
-      :class="['mb-1 text-xs font-medium', dk ? 'text-slate-300' : 'text-gray-700']"
+      :class="[
+        'mb-1 text-xs font-medium',
+        dk ? 'text-slate-300' : 'text-gray-700',
+      ]"
     >
       {{ label }}
     </div>
@@ -168,8 +171,12 @@ onBeforeUnmount(() =>
         variantClasses,
         disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer',
         hasValue
-          ? dk ? 'text-slate-100' : 'text-gray-900'
-          : dk ? 'text-slate-500' : 'text-gray-400',
+          ? dk
+            ? 'text-slate-100'
+            : 'text-gray-900'
+          : dk
+            ? 'text-slate-500'
+            : 'text-gray-400',
       ]"
       :disabled="disabled || loading"
       @click="open = !open"
@@ -207,7 +214,10 @@ onBeforeUnmount(() =>
 
     <div
       v-if="open"
-      :class="['absolute z-50 mt-1 w-full rounded-md border shadow-lg', dk ? 'border-slate-700 bg-slate-900' : 'border-gray-200 bg-white']"
+      :class="[
+        'absolute z-50 mt-1 w-full rounded-md border shadow-lg',
+        dk ? 'border-slate-700 bg-slate-900' : 'border-gray-200 bg-white',
+      ]"
     >
       <div
         v-if="searchable"
@@ -216,7 +226,10 @@ onBeforeUnmount(() =>
         <input
           v-model="searchQuery"
           type="text"
-          :class="['w-full rounded px-2 py-1 text-xs outline-none', dk ? 'bg-slate-800 text-slate-200' : 'bg-gray-50']"
+          :class="[
+            'w-full rounded px-2 py-1 text-xs outline-none',
+            dk ? 'bg-slate-800 text-slate-200' : 'bg-gray-50',
+          ]"
           :placeholder="placeholder ?? 'Search...'"
           autofocus
         />
@@ -230,8 +243,12 @@ onBeforeUnmount(() =>
           class="flex cursor-pointer items-center justify-between px-3 py-2 text-sm transition-colors"
           :class="[
             isSelected(opt)
-              ? dk ? 'bg-blue-950 text-blue-300' : 'bg-blue-50 text-blue-700'
-              : dk ? 'text-slate-300 hover:bg-slate-800' : 'text-gray-700 hover:bg-gray-50',
+              ? dk
+                ? 'bg-blue-950 text-blue-300'
+                : 'bg-blue-50 text-blue-700'
+              : dk
+                ? 'text-slate-300 hover:bg-slate-800'
+                : 'text-gray-700 hover:bg-gray-50',
             opt.disabled ? 'cursor-not-allowed opacity-40' : '',
           ]"
           @click="selectOption(opt)"
@@ -260,7 +277,10 @@ onBeforeUnmount(() =>
     </div>
 
     <p v-if="error" class="mt-1 text-xs text-red-500">{{ error }}</p>
-    <p v-else-if="hint" :class="['mt-1 text-xs', dk ? 'text-slate-400' : 'text-gray-500']">
+    <p
+      v-else-if="hint"
+      :class="['mt-1 text-xs', dk ? 'text-slate-400' : 'text-gray-500']"
+    >
       {{ hint }}
     </p>
   </div>

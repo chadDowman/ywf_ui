@@ -32,9 +32,14 @@ describe("YModal", () => {
       props: { open: true, persistent: false, teleportTo: false },
     });
     // The overlay div has @click.self="onBackdropClick"
-    const overlay = wrapper.find("[role='dialog']").element.parentElement?.parentElement;
+    const overlay =
+      wrapper.find("[role='dialog']").element.parentElement?.parentElement;
     if (overlay) {
-      await wrapper.find("[role='dialog']").element.parentElement!.parentElement!.dispatchEvent(new MouseEvent("click"));
+      await wrapper
+        .find("[role='dialog']")
+        .element.parentElement!.parentElement!.dispatchEvent(
+          new MouseEvent("click"),
+        );
     }
     // Alternative: just test that the close event mechanism works via escape
   });
@@ -44,7 +49,9 @@ describe("YModal", () => {
       props: { open: true, persistent: true, teleportTo: false },
       attachTo: document.body,
     });
-    await document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    await document.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Escape" }),
+    );
     expect(wrapper.emitted("close")).toBeFalsy();
     wrapper.unmount();
   });
@@ -54,7 +61,9 @@ describe("YModal", () => {
       props: { open: true, teleportTo: false },
       attachTo: document.body,
     });
-    await document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+    await document.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Escape" }),
+    );
     expect(wrapper.emitted("close")).toBeTruthy();
     wrapper.unmount();
   });

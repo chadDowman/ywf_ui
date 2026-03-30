@@ -569,7 +569,9 @@ function copySnippet(): void {
           >
             <span class="inline-flex items-center gap-1.5">
               <span>{{ group.category }}</span>
-              <span class="nav-category-count">{{ getCategoryItemCount(group) }}</span>
+              <span class="nav-category-count">{{
+                getCategoryItemCount(group)
+              }}</span>
             </span>
             <svg
               class="h-3.5 w-3.5 transition-transform duration-150"
@@ -619,10 +621,7 @@ function copySnippet(): void {
           </ul>
 
           <!-- Multi-item category: show component rows with nested quick options -->
-          <ul
-            v-else-if="isCategoryOpen(group.category)"
-            class="space-y-1"
-          >
+          <ul v-else-if="isCategoryOpen(group.category)" class="space-y-1">
             <li v-for="item in group.items" :key="item.id">
               <button
                 class="nav-item flex w-full items-center rounded-lg px-2.5 py-2 text-left text-xs transition-all"

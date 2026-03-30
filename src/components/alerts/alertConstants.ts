@@ -82,7 +82,10 @@ export const intensitySoftBg: Record<
 
 type ColorMatrix = Record<AlertType, Record<AlertVariant, string>>;
 
-export const buildColorMap = (intensity: AlertIntensity, dark = false): ColorMatrix => {
+export const buildColorMap = (
+  intensity: AlertIntensity,
+  dark = false,
+): ColorMatrix => {
   const softBg = intensitySoftBg[intensity];
 
   if (dark) {
@@ -128,40 +131,35 @@ export const buildColorMap = (intensity: AlertIntensity, dark = false): ColorMat
   return {
     info: {
       solid: "bg-blue-600 text-white border border-blue-600",
-      outline:
-        "bg-transparent text-blue-700 border border-blue-400",
+      outline: "bg-transparent text-blue-700 border border-blue-400",
       soft: `${softBg.info} text-blue-800 border border-blue-200`,
       "left-accent": `${softBg.info} text-blue-800 border-l-4 border-blue-500`,
       ghost: "bg-transparent text-blue-700",
     },
     success: {
       solid: "bg-green-600 text-white border border-green-600",
-      outline:
-        "bg-transparent text-green-700 border border-green-400",
+      outline: "bg-transparent text-green-700 border border-green-400",
       soft: `${softBg.success} text-green-800 border border-green-200`,
       "left-accent": `${softBg.success} text-green-800 border-l-4 border-green-500`,
       ghost: "bg-transparent text-green-700",
     },
     warning: {
       solid: "bg-amber-500 text-white border border-amber-500",
-      outline:
-        "bg-transparent text-amber-700 border border-amber-400",
+      outline: "bg-transparent text-amber-700 border border-amber-400",
       soft: `${softBg.warning} text-amber-800 border border-amber-200`,
       "left-accent": `${softBg.warning} text-amber-800 border-l-4 border-amber-500`,
       ghost: "bg-transparent text-amber-700",
     },
     error: {
       solid: "bg-red-600 text-white border border-red-600",
-      outline:
-        "bg-transparent text-red-700 border border-red-400",
+      outline: "bg-transparent text-red-700 border border-red-400",
       soft: `${softBg.error} text-red-800 border border-red-200`,
       "left-accent": `${softBg.error} text-red-800 border-l-4 border-red-500`,
       ghost: "bg-transparent text-red-700",
     },
     neutral: {
       solid: "bg-gray-700 text-white border border-gray-700",
-      outline:
-        "bg-transparent text-gray-700 border border-gray-400",
+      outline: "bg-transparent text-gray-700 border border-gray-400",
       soft: `${softBg.neutral} text-gray-800 border border-gray-200`,
       "left-accent": `${softBg.neutral} text-gray-800 border-l-4 border-gray-500`,
       ghost: "bg-transparent text-gray-700",
@@ -175,32 +173,27 @@ export const actionColorMap: Record<
 > = {
   info: {
     link: "text-blue-700 hover:underline",
-    outline:
-      "border border-blue-500 text-blue-700 hover:bg-blue-100",
+    outline: "border border-blue-500 text-blue-700 hover:bg-blue-100",
     solid: "bg-blue-600 text-white hover:bg-blue-700",
   },
   success: {
     link: "text-green-700 hover:underline",
-    outline:
-      "border border-green-500 text-green-700 hover:bg-green-100",
+    outline: "border border-green-500 text-green-700 hover:bg-green-100",
     solid: "bg-green-600 text-white hover:bg-green-700",
   },
   warning: {
     link: "text-amber-700 hover:underline",
-    outline:
-      "border border-amber-500 text-amber-700 hover:bg-amber-100",
+    outline: "border border-amber-500 text-amber-700 hover:bg-amber-100",
     solid: "bg-amber-600 text-white hover:bg-amber-700",
   },
   error: {
     link: "text-red-700 hover:underline",
-    outline:
-      "border border-red-500 text-red-700 hover:bg-red-100",
+    outline: "border border-red-500 text-red-700 hover:bg-red-100",
     solid: "bg-red-600 text-white hover:bg-red-700",
   },
   neutral: {
     link: "text-gray-700 hover:underline",
-    outline:
-      "border border-gray-500 text-gray-700 hover:bg-gray-100",
+    outline: "border border-gray-500 text-gray-700 hover:bg-gray-100",
     solid: "bg-gray-700 text-white hover:bg-gray-800",
   },
 };
@@ -211,32 +204,27 @@ export const darkActionColorMap: Record<
 > = {
   info: {
     link: "text-blue-300 hover:underline",
-    outline:
-      "border border-blue-500 text-blue-300 hover:bg-blue-900",
+    outline: "border border-blue-500 text-blue-300 hover:bg-blue-900",
     solid: "bg-blue-600 text-white hover:bg-blue-700",
   },
   success: {
     link: "text-green-300 hover:underline",
-    outline:
-      "border border-green-500 text-green-300 hover:bg-green-900",
+    outline: "border border-green-500 text-green-300 hover:bg-green-900",
     solid: "bg-green-600 text-white hover:bg-green-700",
   },
   warning: {
     link: "text-amber-300 hover:underline",
-    outline:
-      "border border-amber-500 text-amber-300 hover:bg-amber-900",
+    outline: "border border-amber-500 text-amber-300 hover:bg-amber-900",
     solid: "bg-amber-600 text-white hover:bg-amber-700",
   },
   error: {
     link: "text-red-300 hover:underline",
-    outline:
-      "border border-red-500 text-red-300 hover:bg-red-900",
+    outline: "border border-red-500 text-red-300 hover:bg-red-900",
     solid: "bg-red-600 text-white hover:bg-red-700",
   },
   neutral: {
     link: "text-gray-300 hover:underline",
-    outline:
-      "border border-gray-500 text-gray-300 hover:bg-gray-800",
+    outline: "border border-gray-500 text-gray-300 hover:bg-gray-800",
     solid: "bg-gray-700 text-white hover:bg-gray-800",
   },
 };

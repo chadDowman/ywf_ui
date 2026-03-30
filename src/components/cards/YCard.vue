@@ -144,9 +144,11 @@ const props = withDefaults(defineProps<YCardProps>(), {
 
 // ── Dark-mode aware color helpers ────────────────────────────────────
 const dk = useDarkMode(props.dark);
-const defaultBg = computed(() => dk.value ? '#1e293b' : 'var(--ywf-bg)');
-const defaultText = computed(() => dk.value ? '#f1f5f9' : 'var(--ywf-text)');
-const defaultBorder = computed(() => dk.value ? '#334155' : 'var(--ywf-border)');
+const defaultBg = computed(() => (dk.value ? "#1e293b" : "var(--ywf-bg)"));
+const defaultText = computed(() => (dk.value ? "#f1f5f9" : "var(--ywf-text)"));
+const defaultBorder = computed(() =>
+  dk.value ? "#334155" : "var(--ywf-border)",
+);
 
 // ── Base wrapper classes (for presets that use YCard shell) ───────────
 const baseClasses = computed(() => [
@@ -185,8 +187,6 @@ function stars(n: number) {
   );
 }
 
-
-
 // ── Profile initials ─────────────────────────────────────────────────
 const profileInitials = computed(() =>
   (props.profileName ?? "")
@@ -202,8 +202,6 @@ const tlProgress = computed(() => {
   if (!items.length) return 0;
   return (items.filter((i) => i.done).length / items.length) * 100;
 });
-
-
 </script>
 
 <template>
@@ -222,7 +220,11 @@ const tlProgress = computed(() => {
     <div
       v-if="$slots.footer || footerLabel"
       class="mt-4 pt-3"
-      :style="{ borderTop: dk ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.08)' }"
+      :style="{
+        borderTop: dk
+          ? '1px solid rgba(255,255,255,0.1)'
+          : '1px solid rgba(0,0,0,0.08)',
+      }"
     >
       <slot name="footer">
         <button
@@ -264,7 +266,9 @@ const tlProgress = computed(() => {
       </button>
       <button
         class="text-xs px-3 py-1.5 rounded-md font-medium border"
-        :style="{ borderColor: dk ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.12)' }"
+        :style="{
+          borderColor: dk ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.12)',
+        }"
       >
         Message
       </button>
@@ -407,7 +411,10 @@ const tlProgress = computed(() => {
       </div>
       <button
         class="mt-3 w-full py-2 rounded-lg text-xs font-bold"
-        :style="{ background: dk ? '#e2e8f0' : '#111', color: dk ? '#0f172a' : '#fff' }"
+        :style="{
+          background: dk ? '#e2e8f0' : '#111',
+          color: dk ? '#0f172a' : '#fff',
+        }"
       >
         Add to cart
       </button>

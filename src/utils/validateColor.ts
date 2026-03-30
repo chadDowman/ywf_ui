@@ -10,11 +10,7 @@ export function warnInvalidColor(
   prop: string,
   value: string | undefined,
 ): void {
-  if (
-    import.meta.env.DEV &&
-    value !== undefined &&
-    !isValidCSSColor(value)
-  ) {
+  if (import.meta.env.DEV && value !== undefined && !isValidCSSColor(value)) {
     console.warn(
       `[ywf-ui ${component}] Invalid "${prop}" value: "${value}". ` +
         `Expected a CSS color (hex, rgb(), hsl(), var(), color-mix()).`,
