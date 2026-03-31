@@ -83,8 +83,10 @@ const dropdownMultiSelect = computed<boolean>(
       Dropdown Properties
     </h3>
 
-    <label class="prop-label">Label</label>
+    <label class="prop-label" for="dropdown-controls-label">Label</label>
     <input
+      id="dropdown-controls-label"
+      name="label"
       class="prop-input w-full text-xs"
       :value="dropdownLabel"
       @input="
@@ -95,8 +97,12 @@ const dropdownMultiSelect = computed<boolean>(
     />
 
     <div v-if="selectedDropdownVariant === 'split'">
-      <label class="prop-label">Split Label</label>
+      <label class="prop-label" for="dropdown-controls-split-label"
+        >Split Label</label
+      >
       <input
+        id="dropdown-controls-split-label"
+        name="splitLabel"
         class="prop-input w-full text-xs"
         :value="dropdownSplitLabel"
         @input="
@@ -114,8 +120,12 @@ const dropdownMultiSelect = computed<boolean>(
         selectedDropdownVariant === 'command-palette'
       "
     >
-      <label class="prop-label">Search Placeholder</label>
+      <label class="prop-label" for="dropdown-controls-placeholder"
+        >Search Placeholder</label
+      >
       <input
+        id="dropdown-controls-placeholder"
+        name="placeholder"
         class="prop-input w-full text-xs"
         :value="dropdownPlaceholder"
         @input="
@@ -129,8 +139,10 @@ const dropdownMultiSelect = computed<boolean>(
 
     <div class="grid grid-cols-2 gap-2">
       <div>
-        <label class="prop-label">Size</label>
+        <label class="prop-label" for="dropdown-controls-size">Size</label>
         <select
+          id="dropdown-controls-size"
+          name="size"
           class="prop-input w-full text-xs"
           :value="selectedDropdownSize"
           @change="
@@ -146,8 +158,12 @@ const dropdownMultiSelect = computed<boolean>(
         </select>
       </div>
       <div>
-        <label class="prop-label">Placement</label>
+        <label class="prop-label" for="dropdown-controls-placement"
+          >Placement</label
+        >
         <select
+          id="dropdown-controls-placement"
+          name="placement"
           class="prop-input w-full text-xs"
           :value="selectedDropdownPlacement"
           @change="
@@ -168,8 +184,12 @@ const dropdownMultiSelect = computed<boolean>(
       </div>
     </div>
 
-    <label class="prop-label">Max Height</label>
+    <label class="prop-label" for="dropdown-controls-max-height"
+      >Max Height</label
+    >
     <input
+      id="dropdown-controls-max-height"
+      name="maxHeight"
       class="prop-input w-full text-xs"
       :value="dropdownMaxHeight"
       @input="
@@ -182,6 +202,8 @@ const dropdownMultiSelect = computed<boolean>(
 
     <label class="inline-flex items-center gap-2 text-xs">
       <input
+        id="dropdown-controls-disabled"
+        name="disabled"
         type="checkbox"
         :checked="dropdownDisabled"
         @change="
@@ -196,6 +218,8 @@ const dropdownMultiSelect = computed<boolean>(
 
     <label class="inline-flex items-center gap-2 text-xs">
       <input
+        id="dropdown-controls-close-on-select"
+        name="closeOnSelect"
         type="checkbox"
         :checked="dropdownCloseOnSelect"
         @change="
@@ -212,6 +236,8 @@ const dropdownMultiSelect = computed<boolean>(
 
     <label class="inline-flex items-center gap-2 text-xs">
       <input
+        id="dropdown-controls-keyboard-navigation"
+        name="keyboardNavigation"
         type="checkbox"
         :checked="dropdownKeyboardNavigation"
         @change="
@@ -228,6 +254,8 @@ const dropdownMultiSelect = computed<boolean>(
 
     <label class="inline-flex items-center gap-2 text-xs">
       <input
+        id="dropdown-controls-searchable"
+        name="searchable"
         type="checkbox"
         :checked="dropdownSearchable"
         @change="
@@ -242,6 +270,8 @@ const dropdownMultiSelect = computed<boolean>(
 
     <label class="inline-flex items-center gap-2 text-xs">
       <input
+        id="dropdown-controls-multi-select"
+        name="multiSelect"
         type="checkbox"
         :checked="dropdownMultiSelect"
         @change="

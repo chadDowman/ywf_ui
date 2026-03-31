@@ -1,5 +1,14 @@
 export type YToastType = "success" | "error" | "warning" | "info";
-export type YToastVariant = "solid" | "soft" | "outlined" | "glass";
+export type YToastVariant =
+  | "solid"
+  | "soft"
+  | "outlined"
+  | "glass"
+  | "aurora"
+  | "neon"
+  | "brutalist"
+  | "terminal"
+  | "minimal";
 export type YToastPosition =
   | "top-left"
   | "top-center"

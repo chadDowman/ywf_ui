@@ -8,6 +8,7 @@ export { default as YNavbar } from "./components/navbars/YNavbar.vue";
 export { default as YSidebar } from "./components/sidebars/YSidebar.vue";
 export { default as YBadge } from "./components/badges/YBadge.vue";
 export { default as YInput } from "./components/inputs/YInput.vue";
+export { default as YTextarea } from "./components/textareas/YTextarea.vue";
 export { default as YAlert } from "./components/alerts/YAlert.vue";
 export { default as YTooltip } from "./components/tooltips/YTooltip.vue";
 export { default as YAvatar } from "./components/avatars/YAvatar.vue";
@@ -19,6 +20,8 @@ export { default as YSelect } from "./components/selects/YSelect.vue";
 export { default as YSpinner } from "./components/spinners/YSpinner.vue";
 export { default as YSkeleton } from "./components/skeletons/YSkeleton.vue";
 export { default as YTable } from "./components/tables/YTable.vue";
+export { default as YPagination } from "./components/paginations/YPagination.vue";
+export { default as YProgress } from "./components/progresses/YProgress.vue";
 export { default as YToast } from "./components/toasts/YToast.vue";
 export { default as YAccordion } from "./components/accordions/YAccordion.vue";
 export { YwfUIPlugin } from "./plugin";
@@ -73,6 +76,12 @@ export type {
   YInputRadius,
   YInputState,
   YInputProps,
+  YTextareaVariant,
+  YTextareaSize,
+  YTextareaRadius,
+  YTextareaState,
+  YTextareaResize,
+  YTextareaProps,
   YAlertType,
   YAlertVariant,
   YAlertSize,
@@ -118,6 +127,12 @@ export type {
   YTableVariant,
   YTableColumn,
   YTableProps,
+  YPaginationVariant,
+  YPaginationSize,
+  YPaginationProps,
+  YProgressVariant,
+  YProgressSize,
+  YProgressProps,
   YToastType,
   YToastVariant,
   YToastPosition,

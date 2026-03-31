@@ -6,7 +6,12 @@ export type YTableVariant =
   | "striped"
   | "bordered"
   | "minimal"
-  | "card";
+  | "card"
+  | "aurora"
+  | "glass"
+  | "brutalist"
+  | "terminal"
+  | "neon";
 
 export interface YTableColumn {
   key: string;
@@ -23,6 +28,15 @@ export interface YTableProps {
   variant?: YTableVariant;
   size?: YTableSize;
   textColor?: string;
+  backgroundColor?: string;
+  borderColor?: string;
+  headerBackgroundColor?: string;
+  headerTextColor?: string;
+  cellTextColor?: string;
+  captionColor?: string;
+  rowHoverColor?: string;
+  rowHoverTextColor?: string;
+  dividerColor?: string;
   loading?: boolean;
   caption?: string;
   hoverable?: boolean;

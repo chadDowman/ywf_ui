@@ -11,6 +11,11 @@ const props = defineProps<{
   propNames: string[];
   propTypes: Record<string, string[]>;
   parsedProps: Record<string, unknown>;
+  detectedColorTargets?: {
+    key: string;
+    label: string;
+    defaultValue: string;
+  }[];
   inspectorConfig?: PlaygroundInspectorConfig | null;
   updatePropsJson: (updater: (value: Record<string, unknown>) => void) => void;
 }>();
@@ -27,10 +32,25 @@ type ResolvedSection = {
   controls: ResolvedControl[];
 };
 
+const detectedColorTargetMap = computed(
+  () =>
+    new Map(
+      (props.detectedColorTargets ?? []).map((target) => [target.key, target]),
+    ),
+);
+
+const detectedColorControlKeys = computed(() =>
+  (props.detectedColorTargets ?? []).map((target) => target.key),
+);
+
 const propKeys = computed<string[]>(() => {
+  const internalAllowed = new Set(detectedColorControlKeys.value);
   const keys = new Set<string>([
     ...props.propNames,
-    ...Object.keys(props.parsedProps),
+    ...Object.keys(props.parsedProps).filter(
+      (key) => !key.startsWith("__") || internalAllowed.has(key),
+    ),
+    ...detectedColorControlKeys.value,
   ]);
   return [...keys].sort((a, b) => a.localeCompare(b));
 });
@@ -45,7 +65,22 @@ function titleCase(input: string): string {
 }
 
 function getControl(key: string): PlaygroundInspectorControl | undefined {
-  return props.inspectorConfig?.controls.find((control) => control.key === key);
+  const configured = props.inspectorConfig?.controls.find(
+    (control) => control.key === key,
+  );
+  if (configured) return configured;
+
+  const detected = detectedColorTargetMap.value.get(key);
+  if (detected) {
+    return {
+      key,
+      label: detected.label,
+      section: "colors",
+      editor: "color",
+    };
+  }
+
+  return undefined;
 }
 
 function isRuleMatch(rule: PlaygroundVisibilityRule): boolean {
@@ -76,7 +111,36 @@ const visibleControls = computed<ResolvedControl[]>(() => {
     .map((control) => ({ key: control.key, control }));
 
   if (props.inspectorConfig.strict) {
-    return configured;
+    const configuredKeys = new Set(configured.map((entry) => entry.key));
+    const detectedColors = detectedColorControlKeys.value
+      .filter((key) => !configuredKeys.has(key))
+      .map((key) => ({
+        key,
+        control: {
+          key,
+          section: "colors",
+          editor: "color",
+          label: detectedColorTargetMap.value.get(key)?.label,
+        } satisfies PlaygroundInspectorControl,
+      }));
+
+    const reservedDetected = new Set(detectedColors.map((entry) => entry.key));
+    const autoColorControls = propKeys.value
+      .filter(
+        (key) =>
+          !configuredKeys.has(key) &&
+          !reservedDetected.has(key) &&
+          isColorControlCandidate(key),
+      )
+      .map((key) => ({
+        key,
+        control: {
+          key,
+          section: "colors",
+          editor: "color",
+        } satisfies PlaygroundInspectorControl,
+      }));
+    return [...configured, ...detectedColors, ...autoColorControls];
   }
 
   const configuredKeys = new Set(configured.map((entry) => entry.key));
@@ -129,10 +193,35 @@ const groupedControls = computed<ResolvedSection[]>(() => {
 });
 
 function isColorValue(value: unknown): boolean {
+  if (typeof value !== "string") return false;
+  const v = value.trim();
+  if (!v) return false;
+
+  if (
+    /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(v)
+  ) {
+    return true;
+  }
+
+  if (/^(rgb|rgba|hsl|hsla)\(/i.test(v)) return true;
+  if (/^var\(--[^)]+\)$/i.test(v)) return true;
+  if (/^color-mix\(/i.test(v)) return true;
+
+  return resolveCssColorToHex(v) !== null;
+}
+
+function looksColorKey(key: string): boolean {
   return (
-    typeof value === "string" &&
-    /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value)
+    /(color|colour)/i.test(key) ||
+    /(bg|background|foreground|fg|fill|stroke|accent|tint|shade|hue|ink|overlay|glow|ring|caret|placeholder|border|outline)$/i.test(
+      key,
+    )
   );
+}
+
+function isColorControlCandidate(key: string): boolean {
+  if (detectedColorTargetMap.value.has(key)) return true;
+  return looksColorKey(key) || isColorValue(props.parsedProps[key]);
 }
 
 function looksBooleanKey(key: string): boolean {
@@ -148,8 +237,11 @@ function getEditorType(
   key: string,
 ): "boolean" | "number" | "color" | "json" | "text" | "textarea" | "select" {
   const configured = getControl(key);
-  if (configured?.editor) {
+  if (configured?.editor && configured.editor !== "text") {
     return configured.editor;
+  }
+  if (configured?.editor === "text" && isColorControlCandidate(key)) {
+    return "color";
   }
   if (configured?.options?.length) {
     return "select";
@@ -172,7 +264,7 @@ function getEditorType(
   if (typeof value === "number") return "number";
   if (Array.isArray(value)) return "json";
   if (value && typeof value === "object") return "json";
-  if (isColorValue(value) || /color$/i.test(key)) return "color";
+  if (isColorControlCandidate(key)) return "color";
   if (value === undefined && looksBooleanKey(key)) return "boolean";
   return "text";
 }
@@ -215,7 +307,10 @@ function isOptionSelected(key: string, optionValue: unknown): boolean {
 
 function getTextValue(key: string): string {
   const value = props.parsedProps[key];
-  if (value === undefined || value === null) return "";
+  if (value === undefined || value === null) {
+    const detected = detectedColorTargetMap.value.get(key);
+    return detected?.defaultValue ?? "";
+  }
   if (typeof value === "string") return value;
   return String(value);
 }
@@ -232,8 +327,54 @@ function getBooleanValue(key: string): boolean {
 
 function getColorValue(key: string): string {
   const value = props.parsedProps[key];
-  if (isColorValue(value)) return value as string;
+  if (typeof value === "string") {
+    const direct = value.trim();
+    if (/^#([0-9a-fA-F]{6})$/.test(direct)) return direct;
+
+    if (/^#([0-9a-fA-F]{3})$/.test(direct)) {
+      const hex = direct.slice(1);
+      return `#${hex[0]}${hex[0]}${hex[1]}${hex[1]}${hex[2]}${hex[2]}`;
+    }
+
+    const resolved = resolveCssColorToHex(direct);
+    if (resolved) return resolved;
+  }
   return "#000000";
+}
+
+function resolveCssColorToHex(value: string): string | null {
+  if (typeof document === "undefined") return null;
+
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+
+  ctx.fillStyle = "#000000";
+  const before = ctx.fillStyle;
+  ctx.fillStyle = value;
+  const normalized = String(ctx.fillStyle).trim();
+
+  if (normalized === before && value.toLowerCase() !== "#000000") {
+    return null;
+  }
+
+  if (/^#([0-9a-fA-F]{6})$/.test(normalized)) return normalized;
+  if (/^#([0-9a-fA-F]{3})$/.test(normalized)) {
+    const hex = normalized.slice(1);
+    return `#${hex[0]}${hex[0]}${hex[1]}${hex[1]}${hex[2]}${hex[2]}`;
+  }
+
+  const rgbMatch = normalized.match(
+    /^rgba?\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*[0-9.]+)?\)$/i,
+  );
+  if (!rgbMatch) return null;
+
+  const [r, g, b] = rgbMatch.slice(1, 4).map((n) => Number(n));
+  if ([r, g, b].some((n) => !Number.isFinite(n))) return null;
+
+  return `#${[r, g, b]
+    .map((n) => Math.max(0, Math.min(255, n)).toString(16).padStart(2, "0"))
+    .join("")}`;
 }
 
 function getJsonValue(key: string): string {
@@ -303,6 +444,14 @@ function updateJson(key: string, raw: string): void {
 function getRows(key: string): number {
   return getControl(key)?.rows ?? 4;
 }
+
+function getFieldId(key: string): string {
+  return `auto-prop-${key.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+}
+
+function getFieldName(key: string): string {
+  return key;
+}
 </script>
 
 <template>
@@ -332,13 +481,17 @@ function getRows(key: string): number {
           :key="entry.key"
           class="prop-row"
         >
-          <label class="prop-label">{{ getLabel(entry.key) }}</label>
+          <label :for="getFieldId(entry.key)" class="prop-label">{{
+            getLabel(entry.key)
+          }}</label>
 
           <label
             v-if="getEditorType(entry.key) === 'boolean'"
             class="prop-boolean"
           >
             <input
+              :id="getFieldId(entry.key)"
+              :name="getFieldName(entry.key)"
               type="checkbox"
               :checked="getBooleanValue(entry.key)"
               @change="
@@ -375,6 +528,8 @@ function getRows(key: string): number {
 
           <input
             v-else-if="getEditorType(entry.key) === 'number'"
+            :id="getFieldId(entry.key)"
+            :name="getFieldName(entry.key)"
             class="prop-input w-full text-xs"
             type="number"
             :value="getNumberValue(entry.key)"
@@ -389,6 +544,8 @@ function getRows(key: string): number {
           >
             <input
               type="color"
+              :id="`${getFieldId(entry.key)}-swatch`"
+              :name="`${getFieldName(entry.key)}Swatch`"
               class="color-swatch"
               :value="getColorValue(entry.key)"
               @input="
@@ -396,6 +553,8 @@ function getRows(key: string): number {
               "
             />
             <input
+              :id="getFieldId(entry.key)"
+              :name="getFieldName(entry.key)"
               class="prop-input w-full text-xs"
               :value="getTextValue(entry.key)"
               @input="
@@ -406,6 +565,8 @@ function getRows(key: string): number {
 
           <textarea
             v-else-if="getEditorType(entry.key) === 'json'"
+            :id="getFieldId(entry.key)"
+            :name="getFieldName(entry.key)"
             class="prop-input w-full text-xs font-mono"
             :rows="getRows(entry.key)"
             :value="getJsonValue(entry.key)"
@@ -419,6 +580,8 @@ function getRows(key: string): number {
 
           <textarea
             v-else-if="getEditorType(entry.key) === 'textarea'"
+            :id="getFieldId(entry.key)"
+            :name="getFieldName(entry.key)"
             class="prop-input w-full text-xs"
             :rows="getRows(entry.key)"
             :value="getTextValue(entry.key)"
@@ -432,6 +595,8 @@ function getRows(key: string): number {
 
           <input
             v-else
+            :id="getFieldId(entry.key)"
+            :name="getFieldName(entry.key)"
             class="prop-input w-full text-xs"
             :value="getTextValue(entry.key)"
             @input="

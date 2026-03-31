@@ -98,8 +98,10 @@ const buttonDisabled = computed<boolean>(
       Style Settings
     </h3>
 
-    <label class="prop-label">Label</label>
+    <label class="prop-label" for="button-controls-label">Label</label>
     <input
+      id="button-controls-label"
+      name="label"
       class="prop-input w-full text-xs"
       :value="buttonLabel"
       @input="
@@ -111,8 +113,10 @@ const buttonDisabled = computed<boolean>(
 
     <div class="grid grid-cols-2 gap-2">
       <div>
-        <label class="prop-label">Size</label>
+        <label class="prop-label" for="button-controls-size">Size</label>
         <select
+          id="button-controls-size"
+          name="size"
           class="prop-input w-full text-xs"
           :value="selectedButtonSize"
           @change="
@@ -128,8 +132,10 @@ const buttonDisabled = computed<boolean>(
         </select>
       </div>
       <div>
-        <label class="prop-label">Variant</label>
+        <label class="prop-label" for="button-controls-variant">Variant</label>
         <select
+          id="button-controls-variant"
+          name="variant"
           class="prop-input w-full text-xs"
           :value="selectedButtonVariant"
           @change="
@@ -152,10 +158,12 @@ const buttonDisabled = computed<boolean>(
 
     <div class="grid grid-cols-2 gap-2">
       <div>
-        <label class="prop-label">Color</label>
+        <label class="prop-label" for="button-controls-color">Color</label>
         <div class="color-input-wrap">
           <input
             type="color"
+            id="button-controls-color-swatch"
+            name="colorSwatch"
             class="color-swatch"
             :value="buttonColor"
             @input="
@@ -166,6 +174,8 @@ const buttonDisabled = computed<boolean>(
             "
           />
           <input
+            id="button-controls-color"
+            name="color"
             class="prop-input w-full text-xs"
             :value="buttonColor"
             @input="
@@ -178,10 +188,14 @@ const buttonDisabled = computed<boolean>(
         </div>
       </div>
       <div>
-        <label class="prop-label">Text Color</label>
+        <label class="prop-label" for="button-controls-text-color"
+          >Text Color</label
+        >
         <div class="color-input-wrap">
           <input
             type="color"
+            id="button-controls-text-color-swatch"
+            name="textColorSwatch"
             class="color-swatch"
             :value="buttonTextColor"
             @input="
@@ -192,6 +206,8 @@ const buttonDisabled = computed<boolean>(
             "
           />
           <input
+            id="button-controls-text-color"
+            name="textColor"
             class="prop-input w-full text-xs"
             :value="buttonTextColor"
             @input="
@@ -207,8 +223,10 @@ const buttonDisabled = computed<boolean>(
 
     <div class="grid grid-cols-2 gap-2">
       <div>
-        <label class="prop-label">Shadow</label>
+        <label class="prop-label" for="button-controls-shadow">Shadow</label>
         <select
+          id="button-controls-shadow"
+          name="shadow"
           class="prop-input w-full text-xs"
           :value="selectedButtonShadow"
           @change="
@@ -230,8 +248,10 @@ const buttonDisabled = computed<boolean>(
         </select>
       </div>
       <div>
-        <label class="prop-label">Rounded</label>
+        <label class="prop-label" for="button-controls-rounded">Rounded</label>
         <select
+          id="button-controls-rounded"
+          name="rounded"
           class="prop-input w-full text-xs"
           :value="selectedButtonRounded"
           @change="
@@ -256,6 +276,8 @@ const buttonDisabled = computed<boolean>(
 
     <label class="inline-flex items-center gap-2 text-xs">
       <input
+        id="button-controls-disabled"
+        name="disabled"
         type="checkbox"
         :checked="buttonDisabled"
         @change="
@@ -276,8 +298,12 @@ const buttonDisabled = computed<boolean>(
 
     <div class="grid grid-cols-2 gap-2">
       <div>
-        <label class="prop-label">Animation</label>
+        <label class="prop-label" for="button-controls-animation"
+          >Animation</label
+        >
         <select
+          id="button-controls-animation"
+          name="animation"
           class="prop-input w-full text-xs"
           :value="selectedButtonAnimation"
           @change="
@@ -299,8 +325,12 @@ const buttonDisabled = computed<boolean>(
         </select>
       </div>
       <div>
-        <label class="prop-label">Anim Intensity</label>
+        <label class="prop-label" for="button-controls-animation-intensity"
+          >Anim Intensity</label
+        >
         <select
+          id="button-controls-animation-intensity"
+          name="animationIntensity"
           class="prop-input w-full text-xs"
           :value="selectedButtonAnimationIntensity"
           @change="
@@ -325,8 +355,10 @@ const buttonDisabled = computed<boolean>(
 
     <div class="grid grid-cols-2 gap-2">
       <div>
-        <label class="prop-label">Effect</label>
+        <label class="prop-label" for="button-controls-effect">Effect</label>
         <select
+          id="button-controls-effect"
+          name="effect"
           class="prop-input w-full text-xs"
           :value="selectedButtonEffect"
           @change="
@@ -348,8 +380,12 @@ const buttonDisabled = computed<boolean>(
         </select>
       </div>
       <div>
-        <label class="prop-label">Effect Intensity</label>
+        <label class="prop-label" for="button-controls-effect-intensity"
+          >Effect Intensity</label
+        >
         <select
+          id="button-controls-effect-intensity"
+          name="effectIntensity"
           class="prop-input w-full text-xs"
           :value="selectedButtonEffectIntensity"
           @change="

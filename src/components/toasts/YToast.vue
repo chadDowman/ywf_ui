@@ -93,6 +93,20 @@ const outlineBorderMap: Record<string, string> = {
   info: "border-blue-500",
 };
 
+const brutalBorderMap: Record<string, string> = {
+  success: "border-green-600",
+  error: "border-red-600",
+  warning: "border-amber-500",
+  info: "border-blue-600",
+};
+
+const minimalAccentMap: Record<string, string> = {
+  success: "border-l-green-500",
+  error: "border-l-red-500",
+  warning: "border-l-amber-500",
+  info: "border-l-blue-500",
+};
+
 const iconColorMap: Record<string, string> = {
   success: "text-green-600",
   error: "text-red-600",
@@ -121,6 +135,16 @@ const wrapperClasses = computed(() => {
       return `${base} border-2 ${outlineBorderMap[t.value]} ${dk.value ? "bg-gray-900" : "bg-white"} shadow-sm`;
     case "glass":
       return `${base} backdrop-blur-md ${dk.value ? "bg-gray-900/80" : "bg-white/80"} border border-white/30 shadow-xl`;
+    case "aurora":
+      return `${base} ytoast-aurora`;
+    case "neon":
+      return `${base} ytoast-neon ytoast-neon-${t.value}`;
+    case "brutalist":
+      return `${base} ytoast-brutalist border-[3px] ${brutalBorderMap[t.value]} bg-white rounded-none`;
+    case "terminal":
+      return `${base} ytoast-terminal rounded-none`;
+    case "minimal":
+      return `${base} border-l-4 ${minimalAccentMap[t.value]} ${dk.value ? "bg-slate-900 border-y border-r border-slate-800" : "bg-white border-y border-r border-gray-100"} shadow-md`;
     default:
       return `${base} shadow-lg`;
   }
@@ -144,7 +168,11 @@ const wrapperStyle = computed(() => {
     <svg
       v-if="showIcon"
       class="mt-0.5 h-5 w-5 shrink-0"
-      :class="variant === 'solid' ? 'text-white' : iconColorMap[t]"
+      :class="
+        variant === 'solid' || variant === 'aurora' || variant === 'neon' || variant === 'terminal'
+          ? 'text-white'
+          : iconColorMap[t]
+      "
       fill="none"
       stroke="currentColor"
       stroke-width="2"
@@ -157,14 +185,26 @@ const wrapperStyle = computed(() => {
       <p
         v-if="title"
         class="text-sm font-semibold leading-tight"
-        :class="variant === 'solid' ? 'text-white' : ''"
+        :class="
+          variant === 'solid' || variant === 'aurora' || variant === 'neon' || variant === 'terminal'
+            ? 'text-white'
+            : variant === 'brutalist'
+              ? 'text-black font-black uppercase tracking-wide'
+              : ''
+        "
       >
         {{ title }}
       </p>
       <p
         v-if="message"
         class="mt-0.5 text-sm"
-        :class="variant === 'solid' ? 'text-white/90' : 'opacity-80'"
+        :class="
+          variant === 'solid' || variant === 'aurora' || variant === 'neon' || variant === 'terminal'
+            ? 'text-white/85'
+            : variant === 'brutalist'
+              ? 'text-black font-medium'
+              : 'opacity-80'
+        "
       >
         {{ message }}
       </p>
@@ -193,3 +233,81 @@ const wrapperStyle = computed(() => {
     </button>
   </div>
 </template>
+
+<style scoped>
+/* ── Aurora ──────────────────────────────────────────────── */
+.ytoast-aurora {
+  background: linear-gradient(135deg, #0f0f2e, #0a1a2e);
+  color: #e2e8f0;
+  position: relative;
+  box-shadow: 0 8px 32px rgba(124, 58, 237, 0.3);
+}
+.ytoast-aurora::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(135deg, #7c3aed, #2563eb, #06b6d4, #7c3aed);
+  background-size: 300% 300%;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: ytoast-aurora-spin 4s linear infinite;
+  pointer-events: none;
+}
+@keyframes ytoast-aurora-spin {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ── Neon ────────────────────────────────────────────────── */
+.ytoast-neon {
+  background: #0d0d1a;
+  color: #e2e8f0;
+}
+.ytoast-neon-success {
+  border: 1px solid rgba(74, 222, 128, 0.5);
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.25), inset 0 0 20px rgba(74, 222, 128, 0.04);
+}
+.ytoast-neon-error {
+  border: 1px solid rgba(248, 113, 113, 0.5);
+  box-shadow: 0 0 20px rgba(248, 113, 113, 0.25), inset 0 0 20px rgba(248, 113, 113, 0.04);
+}
+.ytoast-neon-warning {
+  border: 1px solid rgba(251, 191, 36, 0.5);
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.25), inset 0 0 20px rgba(251, 191, 36, 0.04);
+}
+.ytoast-neon-info {
+  border: 1px solid rgba(96, 165, 250, 0.5);
+  box-shadow: 0 0 20px rgba(96, 165, 250, 0.25), inset 0 0 20px rgba(96, 165, 250, 0.04);
+}
+
+/* ── Brutalist ───────────────────────────────────────────── */
+.ytoast-brutalist {
+  box-shadow: 5px 5px 0 #000;
+  font-family: inherit;
+}
+
+/* ── Terminal ────────────────────────────────────────────── */
+.ytoast-terminal {
+  background: #0a0a0a;
+  border: 1px solid rgba(74, 222, 128, 0.4);
+  color: #4ade80;
+  font-family: "Courier New", Courier, monospace;
+  box-shadow: 0 0 16px rgba(74, 222, 128, 0.15);
+}
+.ytoast-terminal :deep(p) {
+  color: #86efac;
+}
+.ytoast-terminal :deep(p:first-child) {
+  color: #4ade80;
+  text-shadow: 0 0 6px rgba(74, 222, 128, 0.5);
+}
+</style>

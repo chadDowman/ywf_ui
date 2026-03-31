@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, onBeforeUnmount, ref, watch, watchEffect } from "vue";
 import AutoPropsControls from "./controls/AutoPropsControls.vue";
+import { resolveColorHex } from "./tailwind-colors";
 import type {
   PlaygroundInspectorConfig,
   PlaygroundQuickConfig,
@@ -15,16 +16,42 @@ type ComponentEntry = {
   id: string;
   label: string;
   category: string;
+  sourcePath: string;
   component: VueComponent;
   props: string[];
   defaults: Record<string, unknown>;
   propTypes: Record<string, string[]>;
 };
 
+type ColorCssProperty =
+  | "color"
+  | "background-color"
+  | "border-color"
+  | "outline-color"
+  | "caret-color"
+  | "fill"
+  | "stroke"
+  | "--tw-ring-color"
+  | "placeholder-color";
+
+type ComponentColorTarget = {
+  key: string;
+  label: string;
+  className: string;
+  cssProperty: ColorCssProperty;
+  defaultValue: string;
+  cssVarName: string;
+};
+
 const modules = import.meta.glob("../src/components/*/*.vue", {
   eager: true,
   import: "default",
 }) as Record<string, VueComponent>;
+
+const sourceModules = import.meta.glob("../src/components/*/*.vue?raw", {
+  eager: true,
+  import: "default",
+}) as Record<string, string>;
 
 const configModules = import.meta.glob("./config/*.ts", {
   eager: true,
@@ -119,6 +146,49 @@ function readProps(component: VueComponent): {
   return { names, defaults, types };
 }
 
+function sanitizeColorKey(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
+
+function getColorCssProperty(prefix: string): ColorCssProperty | null {
+  if (prefix === "text") return "color";
+  if (prefix === "bg") return "background-color";
+  if (prefix === "border") return "border-color";
+  if (prefix === "outline") return "outline-color";
+  if (prefix === "caret") return "caret-color";
+  if (prefix === "fill") return "fill";
+  if (prefix === "stroke") return "stroke";
+  if (prefix === "ring") return "--tw-ring-color";
+  if (prefix === "placeholder") return "placeholder-color";
+  return null;
+}
+
+function normalizeHex(value: string): string | null {
+  const hex = value.trim();
+  if (/^#[0-9a-fA-F]{6}$/.test(hex)) return hex;
+  if (/^#[0-9a-fA-F]{3}$/.test(hex)) {
+    const v = hex.slice(1);
+    return `#${v[0]}${v[0]}${v[1]}${v[1]}${v[2]}${v[2]}`;
+  }
+  if (/^#[0-9a-fA-F]{8}$/.test(hex)) return `#${hex.slice(1, 7)}`;
+  if (/^#[0-9a-fA-F]{4}$/.test(hex)) {
+    const v = hex.slice(1);
+    return `#${v[0]}${v[0]}${v[1]}${v[1]}${v[2]}${v[2]}`;
+  }
+  return null;
+}
+
+function escapeCssClassName(className: string): string {
+  if (typeof CSS !== "undefined" && typeof CSS.escape === "function") {
+    return CSS.escape(className);
+  }
+  return className.replace(/([^a-zA-Z0-9_-])/g, "\\$1");
+}
+
 const components = computed<ComponentEntry[]>(() => {
   return Object.entries(modules)
     .map(([path, component]) => {
@@ -138,6 +208,7 @@ const components = computed<ComponentEntry[]>(() => {
         id,
         label: normalizedLabel,
         category: titleCase(category),
+        sourcePath: path,
         component,
         props: propInfo.names,
         defaults: propInfo.defaults,
@@ -408,11 +479,194 @@ const parsedProps = computed<Record<string, unknown>>(() => {
   }
 });
 
+const activeComponentSource = computed(() => {
+  if (!activeComponent.value) return "";
+  return sourceModules[`${activeComponent.value.sourcePath}?raw`] ?? "";
+});
+
+const detectedColorTargets = computed<ComponentColorTarget[]>(() => {
+  const source = activeComponentSource.value;
+  if (!source) return [];
+
+  const targets: ComponentColorTarget[] = [];
+  const seen = new Set<string>();
+
+  const utilityRegex =
+    /\b((?:[a-z-]+:)*)((text|bg|border|ring|outline|placeholder|caret|fill|stroke)-((?:[a-z]+(?:-[a-z]+)?(?:-\d{2,3})?|black|white))(?:\/\d{1,3})?)\b/g;
+  for (const match of source.matchAll(utilityRegex)) {
+    const fullClass = match[0];
+    const prefix = match[3];
+    const paletteKey = match[4];
+    const cssProperty = getColorCssProperty(prefix);
+    const seenKey = `${fullClass}|${cssProperty}`;
+    if (!cssProperty || seen.has(seenKey)) continue;
+
+    let defaultValue = "#000000";
+    try {
+      defaultValue = resolveColorHex(paletteKey);
+    } catch {
+      defaultValue = "#000000";
+    }
+
+    const key = `__pc_${sanitizeColorKey(fullClass)}`;
+    const cssVarName = `--${sanitizeColorKey(`pg-${fullClass}`)}`;
+    targets.push({
+      key,
+      label: fullClass,
+      className: fullClass,
+      cssProperty,
+      defaultValue,
+      cssVarName,
+    });
+    seen.add(seenKey);
+  }
+
+  const arbitraryHexRegex =
+    /\b((?:[a-z-]+:)*)((text|bg|border|ring|outline|placeholder|caret|fill|stroke)-\[(#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8}))\])\b/g;
+  for (const match of source.matchAll(arbitraryHexRegex)) {
+    const fullClass = match[0];
+    const prefix = match[3];
+    const rawHex = match[4];
+    const cssProperty = getColorCssProperty(prefix);
+    const seenKey = `${fullClass}|${cssProperty}`;
+    if (!cssProperty || seen.has(seenKey)) continue;
+
+    const normalized = normalizeHex(rawHex);
+    if (!normalized) continue;
+
+    const key = `__pc_${sanitizeColorKey(fullClass)}`;
+    const cssVarName = `--${sanitizeColorKey(`pg-${fullClass}`)}`;
+    targets.push({
+      key,
+      label: fullClass,
+      className: fullClass,
+      cssProperty,
+      defaultValue: normalized,
+      cssVarName,
+    });
+    seen.add(seenKey);
+  }
+
+  const cssBlockRegex = /([^{}]+)\{([^{}]+)\}/g;
+  const cssColorDeclRegex =
+    /(color|background(?:-color)?|border(?:-color)?|outline-color|fill|stroke)\s*:\s*(#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8}))/g;
+  for (const blockMatch of source.matchAll(cssBlockRegex)) {
+    const selectorText = blockMatch[1] ?? "";
+    const declarations = blockMatch[2] ?? "";
+
+    const classMatches = [...selectorText.matchAll(/\.([_a-zA-Z0-9\\:-]+)/g)];
+    if (!classMatches.length) continue;
+
+    for (const declMatch of declarations.matchAll(cssColorDeclRegex)) {
+      const rawProperty = (declMatch[1] ?? "").trim();
+      const rawHex = declMatch[2] ?? "";
+      const normalized = normalizeHex(rawHex);
+      if (!normalized) continue;
+
+      const cssProperty: ColorCssProperty =
+        rawProperty === "background"
+          ? "background-color"
+          : (rawProperty as ColorCssProperty);
+
+      for (const classMatch of classMatches) {
+        const className = (classMatch[1] ?? "").replace(/\\:/g, ":");
+        const seenKey = `${className}|${cssProperty}`;
+        if (!className || seen.has(seenKey)) continue;
+
+        const key = `__pc_${sanitizeColorKey(`${className}-${cssProperty}`)}`;
+        const cssVarName = `--${sanitizeColorKey(`pg-${className}-${cssProperty}`)}`;
+        targets.push({
+          key,
+          label: `${className} (${cssProperty})`,
+          className,
+          cssProperty,
+          defaultValue: normalized,
+          cssVarName,
+        });
+        seen.add(seenKey);
+      }
+    }
+  }
+
+  return targets;
+});
+
+const previewOverrideStyle = computed<Record<string, string>>(() => {
+  const style: Record<string, string> = {};
+  for (const target of detectedColorTargets.value) {
+    const raw = parsedProps.value[target.key];
+    if (typeof raw !== "string") continue;
+    const value = raw.trim();
+    if (!value) continue;
+    style[target.cssVarName] = value;
+  }
+  return style;
+});
+
+const hasPreviewColorOverrides = computed(
+  () => Object.keys(previewOverrideStyle.value).length > 0,
+);
+
+const componentColorOverrideCss = computed(() => {
+  if (!detectedColorTargets.value.length) return "";
+
+  return detectedColorTargets.value
+    .map((target) => {
+      const selector = `.preview-color-overrides .${escapeCssClassName(target.className)}`;
+      const value = `var(${target.cssVarName})`;
+
+      if (target.cssProperty === "placeholder-color") {
+        return `${selector}::placeholder { color: ${value} !important; }`;
+      }
+      if (target.cssProperty === "--tw-ring-color") {
+        return `${selector} { --tw-ring-color: ${value} !important; }`;
+      }
+      return `${selector} { ${target.cssProperty}: ${value} !important; }`;
+    })
+    .join("\n");
+});
+
+let componentColorStyleEl: HTMLStyleElement | null = null;
+
+watchEffect(() => {
+  if (typeof document === "undefined") return;
+  const css = componentColorOverrideCss.value;
+
+  if (!css) {
+    if (componentColorStyleEl) {
+      componentColorStyleEl.remove();
+      componentColorStyleEl = null;
+    }
+    return;
+  }
+
+  if (!componentColorStyleEl) {
+    componentColorStyleEl = document.createElement("style");
+    componentColorStyleEl.setAttribute("data-ywf-preview-overrides", "true");
+    document.head.appendChild(componentColorStyleEl);
+  }
+
+  if (componentColorStyleEl.textContent !== css) {
+    componentColorStyleEl.textContent = css;
+  }
+});
+
+onBeforeUnmount(() => {
+  if (!componentColorStyleEl) return;
+  componentColorStyleEl.remove();
+  componentColorStyleEl = null;
+});
+
 /** Merge the playground dark-mode toggle into every component render. */
-const finalProps = computed<Record<string, unknown>>(() => ({
-  ...parsedProps.value,
-  dark: darkMode.value,
-}));
+const finalProps = computed<Record<string, unknown>>(() => {
+  const allowedProps = new Set(activeComponent.value?.props ?? []);
+  const next: Record<string, unknown> = Object.fromEntries(
+    Object.entries(parsedProps.value).filter(([key]) => allowedProps.has(key)),
+  );
+
+  next.dark = darkMode.value;
+  return next;
+});
 
 const hasPropsError = computed(() => {
   try {
@@ -448,7 +702,7 @@ const isSidebarActive = computed(
 const previewSnippet = computed(() => {
   if (!activeComponent.value) return "";
   const name = activeComponent.value.component.name ?? activeComponent.value.id;
-  const props = Object.entries(parsedProps.value)
+  const props = Object.entries(finalProps.value)
     .map(([k, v]) => {
       if (typeof v === "string") return `  ${k}=${JSON.stringify(v)}`;
       return `  :${k}='${JSON.stringify(v)}'`;
@@ -513,9 +767,12 @@ function copySnippet(): void {
       <div v-if="!navCollapsed" class="px-3 pb-2">
         <input
           v-model="search"
+          id="playground-component-search"
+          name="componentSearch"
           type="text"
           class="search-input w-full rounded-lg px-3 py-2 text-xs"
           placeholder="Search components or props"
+          aria-label="Search components or props"
         />
 
         <div class="nav-toolbar mt-2 flex items-center justify-between gap-2">
@@ -695,7 +952,9 @@ function copySnippet(): void {
               activeComponent?.id === 'YModal'
                 ? 'relative overflow-hidden'
                 : '',
+              hasPreviewColorOverrides ? 'preview-color-overrides' : '',
             ]"
+            :style="previewOverrideStyle"
           >
             <div v-if="!activeComponent" class="text-sm opacity-70">
               No components found. Add one under
@@ -786,6 +1045,7 @@ function copySnippet(): void {
           :prop-names="activeComponent.props"
           :prop-types="activeComponent.propTypes"
           :parsed-props="parsedProps"
+          :detected-color-targets="detectedColorTargets"
           :inspector-config="activeInspectorConfig"
           :update-props-json="updatePropsJson"
         />
@@ -795,6 +1055,9 @@ function copySnippet(): void {
         <h3 class="props-section-title">Props JSON</h3>
         <textarea
           v-model="propsJson"
+          id="playground-props-json"
+          name="propsJson"
+          aria-label="Props JSON"
           class="prop-input min-h-64 w-full font-mono text-xs"
           :class="hasPropsError ? 'border-red-500' : ''"
           spellcheck="false"
@@ -808,6 +1071,9 @@ function copySnippet(): void {
         <h3 class="props-section-title">Default Slot HTML</h3>
         <textarea
           v-model="slotContent"
+          id="playground-slot-html"
+          name="slotContent"
+          aria-label="Default slot HTML"
           class="prop-input min-h-32 w-full font-mono text-xs"
           spellcheck="false"
         />

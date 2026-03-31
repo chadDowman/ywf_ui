@@ -1,7 +1,17 @@
 import type { PlaygroundQuickConfig } from "./types";
 
 export const toastTypes = ["success", "error", "warning", "info"] as const;
-export const toastVariants = ["solid", "soft", "outlined", "glass"] as const;
+export const toastVariants = [
+  "solid",
+  "soft",
+  "outlined",
+  "glass",
+  "aurora",
+  "neon",
+  "brutalist",
+  "terminal",
+  "minimal",
+] as const;
 export const toastPositions = [
   "top-left",
   "top-center",

@@ -7,6 +7,11 @@ export const skeletonVariants = [
   "text",
   "avatar",
   "block",
+  "button",
+  "badge",
+  "image",
+  "card",
+  "list-item",
 ] as const;
 export const skeletonRadii = ["none", "sm", "md", "lg", "full"] as const;
 

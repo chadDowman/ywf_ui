@@ -1,4 +1,13 @@
-export type YInputVariant = "outlined" | "filled" | "ghost" | "underline";
+export type YInputVariant =
+  | "outlined"
+  | "filled"
+  | "ghost"
+  | "underline"
+  | "glass"
+  | "brutalist"
+  | "aurora"
+  | "neon"
+  | "terminal";
 export type YInputSize = "sm" | "md" | "lg";
 export type YInputType =
   | "text"

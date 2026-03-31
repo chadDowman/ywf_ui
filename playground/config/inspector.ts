@@ -43,6 +43,13 @@ import {
   inputStates,
 } from "./inputInspect";
 import {
+  textareaVariants,
+  textareaSizes,
+  textareaRadii,
+  textareaStates,
+  textareaResizes,
+} from "./textareaInspect";
+import {
   playgroundModalSizes,
   playgroundModalVariants,
   playgroundModalPositions,
@@ -69,6 +76,8 @@ import { selectSizes, selectVariants, selectRadii } from "./selectInspect";
 import { spinnerSizes, spinnerVariants, spinnerSpeeds } from "./spinnerInspect";
 import { skeletonVariants, skeletonRadii } from "./skeletonInspect";
 import { tableVariants, tableSizes } from "./tableInspect";
+import { paginationVariants, paginationSizes } from "./paginationInspect";
+import { progressVariants, progressSizes } from "./progressInspect";
 import { toastTypes, toastVariants, toastRadii } from "./toastInspect";
 import { accordionVariants, accordionRadii } from "./accordionInspect";
 import type { PlaygroundInspectorConfig } from "./types";
@@ -1069,6 +1078,94 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
       },
     },
     {
+      componentId: "YTextarea",
+      strict: true,
+      sections: [
+        { id: "content", title: "Content" },
+        { id: "appearance", title: "Appearance" },
+        { id: "state", title: "State" },
+      ],
+      controls: [
+        {
+          key: "modelValue",
+          label: "Value",
+          section: "content",
+          editor: "textarea",
+          rows: 4,
+        },
+        { key: "label", section: "content" },
+        { key: "placeholder", section: "content" },
+        { key: "hint", section: "content" },
+        { key: "error", section: "content" },
+        { key: "warning", section: "content" },
+        { key: "success", section: "content" },
+        {
+          key: "variant",
+          section: "appearance",
+          editor: "select",
+          options: textareaVariants,
+        },
+        {
+          key: "size",
+          section: "appearance",
+          editor: "select",
+          options: textareaSizes,
+        },
+        {
+          key: "radius",
+          section: "appearance",
+          editor: "select",
+          options: textareaRadii,
+        },
+        {
+          key: "state",
+          section: "appearance",
+          editor: "select",
+          options: textareaStates,
+        },
+        {
+          key: "resize",
+          section: "appearance",
+          editor: "select",
+          options: textareaResizes,
+        },
+        { key: "rows", section: "appearance", editor: "number" },
+        {
+          key: "fullWidth",
+          label: "Full Width",
+          section: "appearance",
+          editor: "boolean",
+        },
+        {
+          key: "showCount",
+          label: "Show Count",
+          section: "appearance",
+          editor: "boolean",
+        },
+        {
+          key: "maxLength",
+          label: "Max Length",
+          section: "appearance",
+          editor: "number",
+          visibleWhen: { key: "showCount", truthy: true },
+        },
+        { key: "autoResize", section: "state", editor: "boolean" },
+        { key: "disabled", section: "state", editor: "boolean" },
+        { key: "readonly", section: "state", editor: "boolean" },
+      ],
+      init(next) {
+        if (next.placeholder === undefined)
+          next.placeholder = "Write your message...";
+        if (next.variant === undefined) next.variant = "outlined";
+        if (next.size === undefined) next.size = "md";
+        if (next.radius === undefined) next.radius = "md";
+        if (next.state === undefined) next.state = "default";
+        if (next.rows === undefined) next.rows = 4;
+        if (next.resize === undefined) next.resize = "vertical";
+        if (next.fullWidth === undefined) next.fullWidth = true;
+      },
+    },
+    {
       componentId: "YModal",
       strict: true,
       sections: [
@@ -1835,6 +1932,121 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
             { name: "Bob Smith", role: "Engineer", status: "Active" },
             { name: "Carol White", role: "Manager", status: "On leave" },
           ];
+      },
+    },
+    {
+      componentId: "YPagination",
+      strict: true,
+      sections: [
+        { id: "appearance", title: "Appearance" },
+        { id: "behavior", title: "Behavior" },
+        { id: "state", title: "State" },
+      ],
+      controls: [
+        {
+          key: "variant",
+          section: "appearance",
+          editor: "select",
+          options: paginationVariants,
+        },
+        {
+          key: "size",
+          section: "appearance",
+          editor: "select",
+          options: paginationSizes,
+        },
+        {
+          key: "modelValue",
+          label: "Current Page",
+          section: "behavior",
+          editor: "number",
+        },
+        {
+          key: "totalPages",
+          label: "Total Pages",
+          section: "behavior",
+          editor: "number",
+        },
+        {
+          key: "sibling",
+          label: "Sibling Count",
+          section: "behavior",
+          editor: "number",
+        },
+        {
+          key: "showPrevNext",
+          label: "Show Prev/Next",
+          section: "behavior",
+          editor: "boolean",
+        },
+        {
+          key: "showFirstLast",
+          label: "Show First/Last",
+          section: "behavior",
+          editor: "boolean",
+        },
+        { key: "disabled", section: "state", editor: "boolean" },
+      ],
+      init(next) {
+        if (next.variant === undefined) next.variant = "simple";
+        if (next.size === undefined) next.size = "md";
+        if (next.modelValue === undefined) next.modelValue = 4;
+        if (next.totalPages === undefined) next.totalPages = 12;
+        if (next.sibling === undefined) next.sibling = 1;
+        if (next.showPrevNext === undefined) next.showPrevNext = true;
+        if (next.showFirstLast === undefined) next.showFirstLast = false;
+      },
+    },
+    {
+      componentId: "YProgress",
+      strict: true,
+      sections: [
+        { id: "value", title: "Value" },
+        { id: "appearance", title: "Appearance" },
+        { id: "state", title: "State" },
+      ],
+      controls: [
+        { key: "label", section: "value" },
+        {
+          key: "modelValue",
+          label: "Value",
+          section: "value",
+          editor: "number",
+        },
+        { key: "max", section: "value", editor: "number" },
+        {
+          key: "variant",
+          section: "appearance",
+          editor: "select",
+          options: progressVariants,
+        },
+        {
+          key: "size",
+          section: "appearance",
+          editor: "select",
+          options: progressSizes,
+        },
+        { key: "rounded", section: "appearance", editor: "boolean" },
+        {
+          key: "showLabel",
+          label: "Show Label",
+          section: "appearance",
+          editor: "boolean",
+        },
+        { key: "striped", section: "state", editor: "boolean" },
+        { key: "animated", section: "state", editor: "boolean" },
+        { key: "indeterminate", section: "state", editor: "boolean" },
+      ],
+      init(next) {
+        if (next.variant === undefined) next.variant = "solid";
+        if (next.size === undefined) next.size = "md";
+        if (next.modelValue === undefined) next.modelValue = 64;
+        if (next.max === undefined) next.max = 100;
+        if (next.rounded === undefined) next.rounded = true;
+        if (next.showLabel === undefined) next.showLabel = true;
+        if (next.striped === undefined) next.striped = false;
+        if (next.animated === undefined) next.animated = true;
+        if (next.indeterminate === undefined) next.indeterminate = false;
       },
     },
     {

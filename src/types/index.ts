@@ -70,6 +70,14 @@ export type {
   YInputVariantTokens,
 } from "./input";
 export type {
+  YTextareaVariant,
+  YTextareaSize,
+  YTextareaRadius,
+  YTextareaState,
+  YTextareaResize,
+  YTextareaProps,
+} from "./textarea";
+export type {
   YAlertType,
   YAlertVariant,
   YAlertSize,
@@ -124,6 +132,16 @@ export type {
   YTableColumn,
   YTableProps,
 } from "./table";
+export type {
+  YPaginationVariant,
+  YPaginationSize,
+  YPaginationProps,
+} from "./pagination";
+export type {
+  YProgressVariant,
+  YProgressSize,
+  YProgressProps,
+} from "./progress";
 export type {
   YToastType,
   YToastVariant,

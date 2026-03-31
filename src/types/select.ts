@@ -1,7 +1,16 @@
 import type { ComponentSize } from "./common";
 
 export type YSelectSize = ComponentSize;
-export type YSelectVariant = "outlined" | "filled" | "ghost" | "underline";
+export type YSelectVariant =
+  | "outlined"
+  | "filled"
+  | "ghost"
+  | "underline"
+  | "aurora"
+  | "glass"
+  | "brutalist"
+  | "terminal"
+  | "neon";
 export type YSelectRadius = "none" | "sm" | "md" | "lg" | "full";
 
 export interface YSelectOption {

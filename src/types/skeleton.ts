@@ -4,7 +4,12 @@ export type YSkeletonVariant =
   | "circle"
   | "text"
   | "avatar"
-  | "block";
+  | "block"
+  | "button"
+  | "badge"
+  | "image"
+  | "card"
+  | "list-item";
 export type YSkeletonRadius = "none" | "sm" | "md" | "lg" | "full";
 
 export interface YSkeletonProps {

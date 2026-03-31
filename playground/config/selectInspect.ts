@@ -6,6 +6,11 @@ export const selectVariants = [
   "filled",
   "ghost",
   "underline",
+  "aurora",
+  "glass",
+  "brutalist",
+  "terminal",
+  "neon",
 ] as const;
 export const selectRadii = ["none", "sm", "md", "lg", "full"] as const;
 

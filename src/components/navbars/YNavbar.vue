@@ -633,6 +633,8 @@ const subtitleClass = computed(() => {
         <div v-if="showSearch" class="hidden md:block">
           <input
             v-model="searchQuery"
+            name="navbarSearch"
+            aria-label="Search navigation"
             :class="searchInputClass"
             :placeholder="searchPlaceholder"
             @keydown.enter="handleSearch"
@@ -744,6 +746,8 @@ const subtitleClass = computed(() => {
         <div v-if="showSearch" class="mb-3">
           <input
             v-model="searchQuery"
+            name="navbarSearch"
+            aria-label="Search navigation"
             :class="searchInputClass"
             class="w-full"
             :placeholder="searchPlaceholder"

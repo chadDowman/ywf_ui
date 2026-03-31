@@ -5,6 +5,11 @@ export const inputVariants = [
   "filled",
   "ghost",
   "underline",
+  "glass",
+  "brutalist",
+  "aurora",
+  "neon",
+  "terminal",
 ] as const;
 export const inputSizes = ["sm", "md", "lg"] as const;
 export const inputRadii = ["none", "sm", "md", "lg", "full"] as const;

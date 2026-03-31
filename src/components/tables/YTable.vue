@@ -48,6 +48,20 @@ const sortedRows = computed(() => {
 });
 
 const rowClasses = computed(() => {
+  switch (props.variant) {
+    case "aurora":
+      return props.hoverable ? "ytable-aurora-row transition-colors" : "";
+    case "glass":
+      return props.hoverable ? "ytable-glass-row transition-colors" : "";
+    case "brutalist":
+      return props.hoverable
+        ? "ytable-brutalist-row transition-colors"
+        : "ytable-brutalist-row";
+    case "terminal":
+      return props.hoverable ? "ytable-terminal-row transition-colors" : "";
+    case "neon":
+      return props.hoverable ? "ytable-neon-row transition-colors" : "";
+  }
   const hover = props.hoverable
     ? dk.value
       ? "hover:bg-slate-800/50 transition-colors"
@@ -60,11 +74,42 @@ const rowClasses = computed(() => {
   return hover;
 });
 
+const bodyClass = computed(() => {
+  const base =
+    props.variant === "aurora"
+      ? "ytable-aurora-body"
+      : props.variant === "glass"
+        ? "ytable-glass-body divide-y divide-white/10"
+        : props.variant === "brutalist"
+          ? ""
+          : props.variant === "terminal"
+            ? "ytable-terminal-body divide-y divide-green-500/20"
+            : props.variant === "neon"
+              ? "ytable-neon-body divide-y divide-violet-400/20"
+              : dk.value
+                ? "divide-y divide-slate-700"
+                : "divide-y divide-gray-100";
+
+  return props.dividerColor ? `${base} ytable-custom-divider` : base;
+});
+
 const wrapperClasses = computed(() => {
-  if (props.variant === "card")
-    return dk.value
-      ? "rounded-xl border border-slate-700 shadow-sm overflow-hidden"
-      : "rounded-xl border border-gray-200 shadow-sm overflow-hidden";
+  switch (props.variant) {
+    case "card":
+      return dk.value
+        ? "rounded-xl border border-slate-700 shadow-sm overflow-hidden"
+        : "rounded-xl border border-gray-200 shadow-sm overflow-hidden";
+    case "aurora":
+      return "ytable-aurora rounded-xl overflow-hidden";
+    case "glass":
+      return "ytable-glass rounded-xl overflow-hidden border border-white/20";
+    case "brutalist":
+      return "ytable-brutalist border-[3px] border-black";
+    case "terminal":
+      return "ytable-terminal overflow-hidden border border-green-500/40";
+    case "neon":
+      return "ytable-neon rounded-xl overflow-hidden border border-violet-400/40";
+  }
   return "";
 });
 
@@ -79,29 +124,134 @@ function handleSort(col: YTableColumn) {
   emit("sort", sortKey.value!, sortDirection.value);
 }
 
-const cellClass = computed(() =>
-  [
-    sizeMap[props.size ?? "md"],
-    dk.value ? "text-slate-300" : "text-gray-700",
-  ].join(" "),
-);
-const headCellClass = computed(() =>
-  [
-    sizeMap[props.size ?? "md"],
+const cellClass = computed(() => {
+  const size = sizeMap[props.size ?? "md"];
+  switch (props.variant) {
+    case "aurora":
+      return `${size} ytable-aurora-cell`;
+    case "glass":
+      return `${size} ytable-glass-cell`;
+    case "brutalist":
+      return `${size} ytable-brutalist-cell`;
+    case "terminal":
+      return `${size} ytable-terminal-cell`;
+    case "neon":
+      return `${size} ytable-neon-cell`;
+  }
+  return [size, dk.value ? "text-slate-300" : "text-gray-700"].join(" ");
+});
+
+const headCellClass = computed(() => {
+  const size = sizeMap[props.size ?? "md"];
+  switch (props.variant) {
+    case "aurora":
+      return `${size} ytable-aurora-head`;
+    case "glass":
+      return `${size} ytable-glass-head`;
+    case "brutalist":
+      return `${size} ytable-brutalist-head`;
+    case "terminal":
+      return `${size} ytable-terminal-head`;
+    case "neon":
+      return `${size} ytable-neon-head`;
+  }
+  return [
+    size,
     dk.value
       ? "font-semibold text-slate-100 bg-slate-800/80"
       : "font-semibold text-gray-900 bg-gray-50",
-  ].join(" "),
+  ].join(" ");
+});
+
+const wrapperStyle = computed(() => {
+  const style: Record<string, string> = {};
+
+  if (props.textColor) style.color = props.textColor;
+  if (props.backgroundColor) {
+    style.background = props.backgroundColor;
+    style["--ytable-bg"] = props.backgroundColor;
+  }
+  if (props.borderColor) {
+    style.borderColor = props.borderColor;
+    style["--ytable-border"] = props.borderColor;
+  }
+  if (props.headerBackgroundColor) {
+    style["--ytable-header-bg"] = props.headerBackgroundColor;
+  }
+  if (props.headerTextColor) {
+    style["--ytable-header-text"] = props.headerTextColor;
+    style["--ytable-row-hover-text"] =
+      props.rowHoverTextColor ?? props.headerTextColor;
+  }
+  if (props.cellTextColor ?? props.textColor) {
+    style["--ytable-cell-text"] = props.cellTextColor ?? props.textColor!;
+  }
+  if (props.captionColor) {
+    style["--ytable-caption-text"] = props.captionColor;
+  }
+  if (props.rowHoverColor) {
+    style["--ytable-row-hover"] = props.rowHoverColor;
+  }
+  if (props.rowHoverTextColor) {
+    style["--ytable-row-hover-text"] = props.rowHoverTextColor;
+  }
+  if (props.dividerColor) {
+    style["--ytable-divider"] = props.dividerColor;
+  }
+
+  if (
+    dk.value &&
+    !props.backgroundColor &&
+    !["card", "aurora", "glass", "brutalist", "terminal", "neon"].includes(
+      props.variant ?? "simple",
+    )
+  ) {
+    style.background = "#1e293b";
+  }
+
+  return style;
+});
+
+const headCellStyle = computed(() => {
+  const style: Record<string, string> = {};
+  if (props.headerBackgroundColor) {
+    style.background = props.headerBackgroundColor;
+  }
+  if (props.headerTextColor) {
+    style.color = props.headerTextColor;
+  }
+  if (props.borderColor ?? props.dividerColor) {
+    style.borderColor = props.borderColor ?? props.dividerColor!;
+  }
+  return Object.keys(style).length ? style : undefined;
+});
+
+const cellStyle = computed(() => {
+  const style: Record<string, string> = {};
+  if (props.cellTextColor ?? props.textColor) {
+    style.color = props.cellTextColor ?? props.textColor!;
+  }
+  if (props.borderColor ?? props.dividerColor) {
+    style.borderColor = props.borderColor ?? props.dividerColor!;
+  }
+  return Object.keys(style).length ? style : undefined;
+});
+
+const captionStyle = computed(() =>
+  props.captionColor ? { color: props.captionColor } : undefined,
+);
+
+const emptyStateStyle = computed(() =>
+  (props.cellTextColor ?? props.textColor)
+    ? { color: props.cellTextColor ?? props.textColor }
+    : undefined,
 );
 </script>
 
 <template>
   <div
     :class="[wrapperClasses, 'overflow-auto', fullWidth ? 'w-full' : '']"
-    :style="[
-      props.textColor ? { color: props.textColor } : {},
-      dk ? { background: '#1e293b', color: '#f1f5f9' } : {},
-    ]"
+    :style="wrapperStyle"
   >
     <div
       v-if="loading"
@@ -132,6 +282,7 @@ const headCellClass = computed(() =>
           'mb-2 text-left text-sm caption-top',
           dk ? 'text-slate-400' : 'text-gray-500',
         ]"
+        :style="captionStyle"
       >
         {{
           caption
@@ -156,7 +307,7 @@ const headCellClass = computed(() =>
                   : 'border border-gray-200'
                 : '',
             ]"
-            :style="col.width ? { width: col.width } : {}"
+            :style="[col.width ? { width: col.width } : {}, headCellStyle]"
             @click="handleSort(col)"
           >
             <span class="inline-flex items-center gap-1">
@@ -203,9 +354,7 @@ const headCellClass = computed(() =>
           </th>
         </tr>
       </thead>
-      <tbody
-        :class="dk ? 'divide-y divide-slate-700' : 'divide-y divide-gray-100'"
-      >
+      <tbody :class="bodyClass">
         <tr v-for="(row, ri) in sortedRows" :key="ri" :class="rowClasses">
           <td
             v-for="col in columns"
@@ -223,6 +372,7 @@ const headCellClass = computed(() =>
                   : 'border border-gray-200'
                 : '',
             ]"
+            :style="cellStyle"
           >
             {{ row[col.key] }}
           </td>
@@ -231,6 +381,7 @@ const headCellClass = computed(() =>
           <td
             :colspan="(columns ?? []).length"
             class="py-10 text-center text-sm text-gray-400"
+            :style="emptyStateStyle"
           >
             No data available
           </td>
@@ -239,3 +390,179 @@ const headCellClass = computed(() =>
     </table>
   </div>
 </template>
+
+<style scoped>
+/* ── Aurora ──────────────────────────────────────────────── */
+.ytable-aurora {
+  background: var(
+    --ytable-bg,
+    linear-gradient(160deg, #0f0f2e 0%, #0a1a2e 100%)
+  );
+  position: relative;
+}
+.ytable-aurora::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(135deg, #7c3aed, #2563eb, #06b6d4, #7c3aed);
+  background-size: 300% 300%;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: ytable-aurora-spin 5s linear infinite;
+  pointer-events: none;
+}
+@keyframes ytable-aurora-spin {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+.ytable-aurora-head {
+  background: var(--ytable-header-bg, rgba(124, 58, 237, 0.2));
+  color: var(--ytable-header-text, #c4b5fd);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  border-bottom: 1px solid var(--ytable-divider, rgba(124, 58, 237, 0.4));
+}
+.ytable-aurora-cell {
+  color: var(--ytable-cell-text, #cbd5e1);
+}
+.ytable-aurora-body {
+  divide-color: transparent;
+}
+.ytable-aurora-row:hover {
+  background: var(--ytable-row-hover, rgba(255, 255, 255, 0.05));
+}
+
+/* ── Glass ───────────────────────────────────────────────── */
+.ytable-glass {
+  background: var(--ytable-bg, rgba(255, 255, 255, 0.15));
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.ytable-glass-head {
+  background: var(--ytable-header-bg, rgba(255, 255, 255, 0.25));
+  color: var(--ytable-header-text, #1e293b);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.ytable-glass-cell {
+  color: var(--ytable-cell-text, #334155);
+}
+.ytable-glass-row:hover {
+  background: var(--ytable-row-hover, rgba(255, 255, 255, 0.35));
+}
+
+/* ── Brutalist ───────────────────────────────────────────── */
+.ytable-brutalist {
+  background: var(--ytable-bg, #ffffff);
+  box-shadow: 6px 6px 0 var(--ytable-border, #000);
+}
+.ytable-brutalist-head {
+  background: var(--ytable-header-bg, #000000);
+  color: var(--ytable-header-text, #ffffff);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.7rem;
+  border-right: 2px solid var(--ytable-border, #333);
+}
+.ytable-brutalist-cell {
+  color: var(--ytable-cell-text, #000000);
+  font-weight: 500;
+  border-right: 2px solid var(--ytable-border, #000);
+}
+.ytable-brutalist-row {
+  border-bottom: 2px solid var(--ytable-divider, var(--ytable-border, #000));
+}
+.ytable-brutalist-row:hover {
+  background: var(--ytable-row-hover, #fef9c3);
+}
+
+/* ── Terminal ────────────────────────────────────────────── */
+.ytable-terminal {
+  background: var(--ytable-bg, #0a0a0a);
+  font-family: "Courier New", Courier, monospace;
+  box-shadow: 0 0 20px
+    color-mix(in srgb, var(--ytable-header-text, #4ade80) 18%, transparent);
+}
+.ytable-terminal-head {
+  background: var(--ytable-header-bg, #111);
+  color: var(--ytable-header-text, #4ade80);
+  font-family: "Courier New", Courier, monospace;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.7rem;
+  border-bottom: 1px solid var(--ytable-divider, rgba(74, 222, 128, 0.4));
+}
+.ytable-terminal-cell {
+  color: var(--ytable-cell-text, #86efac);
+  font-family: "Courier New", Courier, monospace;
+}
+.ytable-terminal-row:hover {
+  background: var(--ytable-row-hover, rgba(74, 222, 128, 0.07));
+}
+.ytable-terminal-row:hover td {
+  color: var(--ytable-row-hover-text, var(--ytable-header-text, #4ade80));
+  text-shadow: 0 0 6px
+    color-mix(
+      in srgb,
+      var(--ytable-row-hover-text, var(--ytable-header-text, #4ade80)) 50%,
+      transparent
+    );
+}
+
+/* ── Neon ────────────────────────────────────────────────── */
+.ytable-neon {
+  background: var(--ytable-bg, #0d0d1a);
+  box-shadow:
+    0 0 24px
+      color-mix(in srgb, var(--ytable-header-text, #a78bfa) 20%, transparent),
+    0 0 60px
+      color-mix(in srgb, var(--ytable-header-text, #a78bfa) 5%, transparent);
+}
+.ytable-neon-head {
+  background: var(--ytable-header-bg, rgba(109, 40, 217, 0.2));
+  color: var(--ytable-header-text, #a78bfa);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  border-bottom: 1px solid var(--ytable-divider, rgba(167, 139, 250, 0.4));
+  text-shadow: 0 0 8px
+    color-mix(in srgb, var(--ytable-header-text, #a78bfa) 60%, transparent);
+}
+.ytable-neon-cell {
+  color: var(--ytable-cell-text, #c4b5fd);
+}
+.ytable-neon-row:hover {
+  background: var(--ytable-row-hover, rgba(167, 139, 250, 0.07));
+}
+.ytable-neon-row:hover td {
+  color: var(--ytable-row-hover-text, #ddd6fe);
+  text-shadow: 0 0 6px
+    color-mix(in srgb, var(--ytable-row-hover-text, #ddd6fe) 50%, transparent);
+}
+
+.ytable-custom-divider tr + tr td {
+  border-top: 1px solid var(--ytable-divider);
+}
+</style>

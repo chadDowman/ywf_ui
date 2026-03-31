@@ -446,6 +446,8 @@ function setItemRef(el: any, idx: number) {
           <input
             ref="searchInputRef"
             v-model="search"
+            name="dropdownSearch"
+            aria-label="Search dropdown options"
             :placeholder="placeholder"
             :class="[
               'w-full rounded-md border px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-indigo-400/50',

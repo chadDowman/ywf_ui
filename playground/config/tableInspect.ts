@@ -6,6 +6,11 @@ export const tableVariants = [
   "bordered",
   "minimal",
   "card",
+  "aurora",
+  "glass",
+  "brutalist",
+  "terminal",
+  "neon",
 ] as const;
 export const tableSizes = ["xs", "sm", "md", "lg", "xl"] as const;
 

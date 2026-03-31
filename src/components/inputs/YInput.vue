@@ -154,7 +154,9 @@ const radiusMap: Record<YInputRadius, string> = {
 };
 
 const resolvedRadius = computed(() =>
-  props.variant === "underline" ? "rounded-none" : radiusMap[props.radius],
+  props.variant === "underline" || props.variant === "brutalist"
+    ? "rounded-none"
+    : radiusMap[props.radius],
 );
 
 /* ───── Variant token system ───── */
@@ -238,6 +240,91 @@ const lightVariantTokens: Record<YInputVariant, YInputVariantTokens> = {
     affixBorderL: "border-l",
     affixBorderR: "border-r",
   },
+  glass: {
+    idle: "yinput-glass bg-white/60 border border-white/50 shadow-sm text-gray-900 placeholder:text-gray-400",
+    hover: "hover:bg-white/75 hover:border-white/65",
+    focus: "focus-within:bg-white/85 focus-within:border-blue-300/60 focus-within:shadow-md",
+    ring: "focus-within:ring-blue-400/10",
+    error: "bg-red-50/40 border-red-300/60",
+    errorRing: "focus-within:border-red-400/60 focus-within:ring-red-400/10",
+    success: "bg-emerald-50/40 border-emerald-300/60",
+    successRing: "focus-within:border-emerald-400/60 focus-within:ring-emerald-400/10",
+    warning: "bg-amber-50/40 border-amber-300/60",
+    warningRing: "focus-within:border-amber-400/60 focus-within:ring-amber-400/10",
+    disabled: "bg-white/25 border-white/15 text-gray-400 cursor-not-allowed",
+    readonly: "bg-white/35 border-white/25 cursor-default",
+    affix: "bg-white/30 text-gray-500 border-white/30",
+    affixBorderL: "border-l",
+    affixBorderR: "border-r",
+  },
+  brutalist: {
+    idle: "bg-white border-[3px] border-black text-black placeholder:text-gray-500 font-medium",
+    hover: "hover:shadow-[4px_4px_0_0_#000]",
+    focus: "focus-within:shadow-[4px_4px_0_0_#000]",
+    ring: "",
+    error: "bg-white border-red-600",
+    errorRing: "focus-within:shadow-[4px_4px_0_0_#dc2626]",
+    success: "bg-white border-green-600",
+    successRing: "focus-within:shadow-[4px_4px_0_0_#16a34a]",
+    warning: "bg-white border-amber-500",
+    warningRing: "focus-within:shadow-[4px_4px_0_0_#d97706]",
+    disabled: "bg-gray-100 border-gray-400 text-gray-400 cursor-not-allowed shadow-none",
+    readonly: "bg-gray-50 border-black/40 cursor-default",
+    affix: "bg-black text-white border-black",
+    affixBorderL: "border-l-[3px]",
+    affixBorderR: "border-r-[3px]",
+  },
+  aurora: {
+    idle: "yinput-aurora border-0 text-slate-100 placeholder:text-slate-400",
+    hover: "",
+    focus: "",
+    ring: "",
+    error: "",
+    errorRing: "",
+    success: "",
+    successRing: "",
+    warning: "",
+    warningRing: "",
+    disabled: "cursor-not-allowed opacity-50",
+    readonly: "cursor-default",
+    affix: "bg-slate-800/60 text-slate-400 border-slate-700",
+    affixBorderL: "border-l",
+    affixBorderR: "border-r",
+  },
+  neon: {
+    idle: "yinput-neon border border-violet-500/50 text-violet-100 placeholder:text-violet-300/40",
+    hover: "hover:border-violet-400/70",
+    focus: "focus-within:border-violet-400",
+    ring: "",
+    error: "border-red-500/60",
+    errorRing: "focus-within:border-red-400/70",
+    success: "border-emerald-500/60",
+    successRing: "focus-within:border-emerald-400/70",
+    warning: "border-amber-500/60",
+    warningRing: "focus-within:border-amber-400/70",
+    disabled: "border-violet-800/30 cursor-not-allowed opacity-50",
+    readonly: "border-violet-700/30 cursor-default",
+    affix: "bg-violet-900/30 text-violet-400 border-violet-700/50",
+    affixBorderL: "border-l",
+    affixBorderR: "border-r",
+  },
+  terminal: {
+    idle: "yinput-terminal border border-green-500/40 text-green-300 placeholder:text-green-500/40",
+    hover: "hover:border-green-400/60",
+    focus: "focus-within:border-green-400",
+    ring: "",
+    error: "border-red-500/50",
+    errorRing: "focus-within:border-red-400/60",
+    success: "border-green-400/50",
+    successRing: "focus-within:border-green-300/60",
+    warning: "border-amber-500/50",
+    warningRing: "focus-within:border-amber-400/60",
+    disabled: "border-green-800/30 cursor-not-allowed opacity-50",
+    readonly: "border-green-700/30 cursor-default",
+    affix: "bg-black text-green-500 border-green-700/40",
+    affixBorderL: "border-l",
+    affixBorderR: "border-r",
+  },
 };
 
 const darkVariantTokens: Record<YInputVariant, YInputVariantTokens> = {
@@ -318,6 +405,91 @@ const darkVariantTokens: Record<YInputVariant, YInputVariantTokens> = {
     disabled: "border-slate-700 text-slate-500 cursor-not-allowed",
     readonly: "border-slate-700 cursor-default",
     affix: "bg-transparent text-slate-500 border-slate-600",
+    affixBorderL: "border-l",
+    affixBorderR: "border-r",
+  },
+  glass: {
+    idle: "yinput-glass bg-slate-800/40 border border-white/10 shadow-sm text-slate-100 placeholder:text-slate-400",
+    hover: "hover:bg-slate-700/50 hover:border-white/20",
+    focus: "focus-within:bg-slate-700/60 focus-within:border-blue-400/50 focus-within:shadow-md",
+    ring: "focus-within:ring-blue-400/15",
+    error: "bg-red-900/20 border-red-500/60",
+    errorRing: "focus-within:border-red-400/60 focus-within:ring-red-400/15",
+    success: "bg-emerald-900/20 border-emerald-500/60",
+    successRing: "focus-within:border-emerald-400/60 focus-within:ring-emerald-400/15",
+    warning: "bg-amber-900/20 border-amber-500/60",
+    warningRing: "focus-within:border-amber-400/60 focus-within:ring-amber-400/15",
+    disabled: "bg-slate-900/40 border-white/5 text-slate-500 cursor-not-allowed",
+    readonly: "bg-slate-800/30 border-white/8 cursor-default",
+    affix: "bg-slate-700/40 text-slate-400 border-white/10",
+    affixBorderL: "border-l",
+    affixBorderR: "border-r",
+  },
+  brutalist: {
+    idle: "bg-white border-[3px] border-black text-black placeholder:text-gray-500 font-medium",
+    hover: "hover:shadow-[4px_4px_0_0_#000]",
+    focus: "focus-within:shadow-[4px_4px_0_0_#000]",
+    ring: "",
+    error: "bg-white border-red-600",
+    errorRing: "focus-within:shadow-[4px_4px_0_0_#dc2626]",
+    success: "bg-white border-green-600",
+    successRing: "focus-within:shadow-[4px_4px_0_0_#16a34a]",
+    warning: "bg-white border-amber-500",
+    warningRing: "focus-within:shadow-[4px_4px_0_0_#d97706]",
+    disabled: "bg-gray-100 border-gray-400 text-gray-400 cursor-not-allowed shadow-none",
+    readonly: "bg-gray-50 border-black/40 cursor-default",
+    affix: "bg-black text-white border-black",
+    affixBorderL: "border-l-[3px]",
+    affixBorderR: "border-r-[3px]",
+  },
+  aurora: {
+    idle: "yinput-aurora border-0 text-slate-100 placeholder:text-slate-400",
+    hover: "",
+    focus: "",
+    ring: "",
+    error: "",
+    errorRing: "",
+    success: "",
+    successRing: "",
+    warning: "",
+    warningRing: "",
+    disabled: "cursor-not-allowed opacity-50",
+    readonly: "cursor-default",
+    affix: "bg-slate-800/60 text-slate-400 border-slate-700",
+    affixBorderL: "border-l",
+    affixBorderR: "border-r",
+  },
+  neon: {
+    idle: "yinput-neon border border-violet-500/50 text-violet-100 placeholder:text-violet-300/40",
+    hover: "hover:border-violet-400/70",
+    focus: "focus-within:border-violet-400",
+    ring: "",
+    error: "border-red-500/60",
+    errorRing: "focus-within:border-red-400/70",
+    success: "border-emerald-500/60",
+    successRing: "focus-within:border-emerald-400/70",
+    warning: "border-amber-500/60",
+    warningRing: "focus-within:border-amber-400/70",
+    disabled: "border-violet-800/30 cursor-not-allowed opacity-50",
+    readonly: "border-violet-700/30 cursor-default",
+    affix: "bg-violet-900/30 text-violet-400 border-violet-700/50",
+    affixBorderL: "border-l",
+    affixBorderR: "border-r",
+  },
+  terminal: {
+    idle: "yinput-terminal border border-green-500/40 text-green-300 placeholder:text-green-500/40",
+    hover: "hover:border-green-400/60",
+    focus: "focus-within:border-green-400",
+    ring: "",
+    error: "border-red-500/50",
+    errorRing: "focus-within:border-red-400/60",
+    success: "border-green-400/50",
+    successRing: "focus-within:border-green-300/60",
+    warning: "border-amber-500/50",
+    warningRing: "focus-within:border-amber-400/60",
+    disabled: "border-green-800/30 cursor-not-allowed opacity-50",
+    readonly: "border-green-700/30 cursor-default",
+    affix: "bg-black text-green-500 border-green-700/40",
     affixBorderL: "border-l",
     affixBorderR: "border-r",
   },
@@ -777,3 +949,63 @@ function onClear() {
     </div>
   </div>
 </template>
+
+<style scoped>
+/* ── Glass ───────────────────────────────────────────────── */
+.yinput-glass {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ── Aurora ──────────────────────────────────────────────── */
+.yinput-aurora {
+  background: linear-gradient(135deg, #0f0f2e, #0a1a2e);
+  position: relative;
+}
+.yinput-aurora::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(135deg, #7c3aed, #2563eb, #06b6d4, #7c3aed);
+  background-size: 300% 300%;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: yinput-aurora-spin 4s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+@keyframes yinput-aurora-spin {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ── Neon ────────────────────────────────────────────────── */
+.yinput-neon {
+  background: #0d0d1a;
+  box-shadow: 0 0 8px rgba(167, 139, 250, 0.25), inset 0 0 8px rgba(167, 139, 250, 0.04);
+  transition: box-shadow 0.2s;
+}
+.yinput-neon:focus-within {
+  box-shadow: 0 0 16px rgba(167, 139, 250, 0.5), inset 0 0 12px rgba(167, 139, 250, 0.06);
+}
+
+/* ── Terminal ────────────────────────────────────────────── */
+.yinput-terminal {
+  background: #0a0a0a;
+  font-family: "Courier New", Courier, monospace;
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.08);
+  transition: box-shadow 0.2s;
+}
+.yinput-terminal:focus-within {
+  box-shadow: 0 0 14px rgba(74, 222, 128, 0.2);
+}
+</style>

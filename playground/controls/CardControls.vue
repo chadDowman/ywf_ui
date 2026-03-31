@@ -77,9 +77,13 @@ function getColorProp(field: CardColorField): string {
 
     <div v-if="activeCardTextFields.length" class="space-y-2">
       <div v-for="field in activeCardTextFields" :key="field.key">
-        <label class="prop-label">{{ field.label }}</label>
+        <label :for="`card-controls-${field.key}`" class="prop-label">{{
+          field.label
+        }}</label>
         <textarea
           v-if="field.multiline"
+          :id="`card-controls-${field.key}`"
+          :name="field.key"
           class="prop-input w-full text-xs"
           rows="3"
           :value="getStringProp(field.key)"
@@ -94,6 +98,8 @@ function getColorProp(field: CardColorField): string {
         />
         <input
           v-else
+          :id="`card-controls-${field.key}`"
+          :name="field.key"
           class="prop-input w-full text-xs"
           :value="getStringProp(field.key)"
           @input="
@@ -118,10 +124,14 @@ function getColorProp(field: CardColorField): string {
 
     <div v-if="activeCardColorFields.length" class="space-y-2">
       <div v-for="field in activeCardColorFields" :key="field.key">
-        <label class="prop-label">{{ field.label }}</label>
+        <label :for="`card-controls-${field.key}`" class="prop-label">{{
+          field.label
+        }}</label>
         <div class="color-input-wrap">
           <input
             type="color"
+            :id="`card-controls-${field.key}-swatch`"
+            :name="`${field.key}Swatch`"
             class="color-swatch"
             :value="getColorProp(field)"
             @input="
@@ -132,6 +142,8 @@ function getColorProp(field: CardColorField): string {
             "
           />
           <input
+            :id="`card-controls-${field.key}`"
+            :name="field.key"
             class="prop-input w-full text-xs"
             :value="getStringProp(field.key)"
             @input="
