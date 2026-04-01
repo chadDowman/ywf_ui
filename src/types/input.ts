@@ -1,3 +1,5 @@
+import type { YAnimationPreset } from "./animation";
+
 export type YInputVariant =
   | "outlined"
   | "filled"
@@ -22,6 +24,7 @@ export type YInputState = "default" | "error" | "success" | "warning";
 
 export interface YInputProps {
   dark?: boolean;
+  animation?: YAnimationPreset;
   modelValue?: string | number;
   placeholder?: string;
   type?: YInputType;

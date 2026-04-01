@@ -1,3 +1,5 @@
+import type { YAnimationPreset } from "./animation";
+
 export type YAccordionVariant =
   | "default"
   | "bordered"
@@ -22,6 +24,7 @@ export interface YAccordionItem {
 
 export interface YAccordionProps {
   dark?: boolean;
+  animation?: YAnimationPreset;
   items?: YAccordionItem[];
   variant?: YAccordionVariant;
   multiple?: boolean;

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onBeforeUnmount } from "vue";
 import { useDarkMode } from "@/composables/useDarkMode";
+import { useAnimation } from "@/composables/useAnimation";
+import { getPopupAnimationClasses } from "@/types/animation";
 
 defineOptions({ name: "YNavbar" });
 import type {
@@ -23,6 +25,23 @@ const props = withDefaults(defineProps<YNavbarProps>(), {
   align: "right",
   showSearch: false,
   searchPlaceholder: "Search…",
+  animation: undefined,
+});
+
+const anim = useAnimation(() => props.animation);
+const mobileMenuTransition = computed(() => {
+  const a = anim.value;
+  if (a === "auto") {
+    return {
+      enterActive: "transition duration-200 ease-out",
+      enterFrom: "opacity-0 -translate-y-2",
+      enterTo: "opacity-100 translate-y-0",
+      leaveActive: "transition duration-200 ease-out",
+      leaveFrom: "opacity-100 translate-y-0",
+      leaveTo: "opacity-0 -translate-y-2",
+    };
+  }
+  return getPopupAnimationClasses(a);
 });
 
 const emit = defineEmits<{
@@ -727,12 +746,12 @@ const subtitleClass = computed(() => {
 
     <!-- Mobile menu panel -->
     <Transition
-      enter-active-class="transition duration-200 ease-out"
-      enter-from-class="opacity-0 -translate-y-2"
-      enter-to-class="opacity-100 translate-y-0"
-      leave-active-class="transition duration-200 ease-out"
-      leave-from-class="opacity-100 translate-y-0"
-      leave-to-class="opacity-0 -translate-y-2"
+      :enter-active-class="mobileMenuTransition.enterActive"
+      :enter-from-class="mobileMenuTransition.enterFrom"
+      :enter-to-class="mobileMenuTransition.enterTo"
+      :leave-active-class="mobileMenuTransition.leaveActive"
+      :leave-from-class="mobileMenuTransition.leaveFrom"
+      :leave-to-class="mobileMenuTransition.leaveTo"
     >
       <div
         v-if="mobileMenu && mobileOpen && links?.length"

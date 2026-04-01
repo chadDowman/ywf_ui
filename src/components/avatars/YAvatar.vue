@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
 import { useDarkMode } from "@/composables/useDarkMode";
+import { useAnimation } from '@/composables/useAnimation';
+import { getAppearAnimationClasses } from '@/types/animation';
 
 defineOptions({ name: "YAvatar" });
 import type {
@@ -18,9 +20,12 @@ const props = withDefaults(defineProps<YAvatarProps>(), {
   shape: "circle",
   ring: "none",
   initialsFallback: true,
+  animation: undefined,
 });
 
 const dk = useDarkMode(props.dark);
+const anim = useAnimation(() => props.animation);
+const appearTx = computed(() => getAppearAnimationClasses(anim.value));
 
 // --- Built-in default images (abstract/geometric/landscape) ---
 
@@ -387,4 +392,5 @@ const displayBadge = computed(() => {
       {{ displayBadge }}
     </span>
   </span>
+  </Transition>
 </template>

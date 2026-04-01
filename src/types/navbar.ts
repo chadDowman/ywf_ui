@@ -33,8 +33,11 @@ export interface YNavbarLink {
   icon?: string;
 }
 
+import type { YAnimationPreset } from "./animation";
+
 export interface YNavbarProps {
   dark?: boolean;
+  animation?: YAnimationPreset;
   brand?: string;
   links?: YNavbarLink[];
   variant?: YNavbarVariant;

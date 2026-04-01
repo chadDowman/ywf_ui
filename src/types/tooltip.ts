@@ -8,8 +8,11 @@ export type YTooltipVariant =
   | "danger"
   | "gradient";
 
+import type { YAnimationPreset } from "./animation";
+
 export interface YTooltipProps {
   dark?: boolean;
+  animation?: YAnimationPreset;
   text?: string;
   placement?: YTooltipPlacement;
   variant?: YTooltipVariant;

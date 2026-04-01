@@ -1,3 +1,5 @@
+import type { YAnimationPreset } from "./animation";
+
 import type { ComponentSize } from "./common";
 
 export type YSelectSize = ComponentSize;
@@ -21,6 +23,7 @@ export interface YSelectOption {
 
 export interface YSelectProps {
   dark?: boolean;
+  animation?: YAnimationPreset;
   modelValue?: unknown;
   options?: YSelectOption[];
   placeholder?: string;

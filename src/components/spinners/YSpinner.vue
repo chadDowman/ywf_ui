@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useDarkMode } from "@/composables/useDarkMode";
+import { useAnimation } from '@/composables/useAnimation';
+import { getAppearAnimationClasses } from '@/types/animation';
 import type { YSpinnerProps } from "@/types/spinner";
 
 defineOptions({ name: "YSpinner" });
@@ -10,9 +12,12 @@ const props = withDefaults(defineProps<YSpinnerProps>(), {
   variant: "ring",
   speed: "normal",
   visible: true,
+  animation: undefined,
 });
 
 const dk = useDarkMode(props.dark);
+const anim = useAnimation(() => props.animation);
+const appearTx = computed(() => getAppearAnimationClasses(anim.value));
 const resolvedColor = computed(
   () => props.color ?? (dk.value ? "#93c5fd" : "#2563eb"),
 );
@@ -393,6 +398,7 @@ const gridDelay = (i: number) =>
       label
     }}</span>
   </div>
+  </Transition>
 </template>
 
 <style>

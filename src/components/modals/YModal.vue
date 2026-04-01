@@ -9,6 +9,8 @@ import {
   watch,
 } from "vue";
 import { useDarkMode } from "@/composables/useDarkMode";
+import { useAnimation } from "@/composables/useAnimation";
+import { getOverlayAnimationClasses } from "@/types/animation";
 import type {
   YModalProps,
   YModalVariant,
@@ -37,7 +39,10 @@ const props = withDefaults(defineProps<YModalProps>(), {
   scrollable: true,
   loading: false,
   danger: false,
+  animation: undefined,
 });
+
+const anim = useAnimation(() => props.animation);
 
 const emit = defineEmits<{
   close: [];
@@ -374,25 +379,44 @@ const shellHeightClass = computed<string>(() => {
 });
 
 /* ── Enter/leave transitions ── */
-const enterFrom = computed<string>(() => {
+const panelTransition = computed(() => {
+  const a = anim.value;
   const p = props.position;
-  if (p === "center") return "opacity-0 scale-95";
-  if (p === "top") return "opacity-0 -translate-y-4";
-  if (p === "bottom") return "opacity-0 translate-y-4";
-  if (p === "drawer-right") return "opacity-0 translate-x-full";
-  if (p === "drawer-left") return "opacity-0 -translate-x-full";
-  return "opacity-0 scale-95";
+
+  // "auto" or "slide": use the original position-aware behavior
+  if (a === "auto" || a === "slide") {
+    type R = { enterFrom: string; enterTo: string };
+    const map: Record<YModalPosition, R> = {
+      center: { enterFrom: "opacity-0 scale-95", enterTo: "opacity-100 scale-100" },
+      top: { enterFrom: "opacity-0 -translate-y-4", enterTo: "opacity-100 translate-y-0" },
+      bottom: { enterFrom: "opacity-0 translate-y-4", enterTo: "opacity-100 translate-y-0" },
+      "drawer-right": { enterFrom: "opacity-0 translate-x-full", enterTo: "opacity-100 translate-x-0" },
+      "drawer-left": { enterFrom: "opacity-0 -translate-x-full", enterTo: "opacity-100 translate-x-0" },
+    };
+    const { enterFrom, enterTo } = map[p] ?? map.center;
+    return {
+      enterActive: "transition duration-250 ease-out",
+      enterFrom,
+      enterTo,
+      leaveActive: "transition duration-180 ease-in",
+      leaveFrom: enterTo,
+      leaveTo: enterFrom,
+    };
+  }
+
+  // Explicit preset — get direction hint from position for `slide`
+  const dirMap: Partial<Record<YModalPosition, "up" | "down" | "left" | "right">> = {
+    top: "down",
+    bottom: "up",
+    "drawer-right": "right",
+    "drawer-left": "left",
+  };
+  return getOverlayAnimationClasses(a, dirMap[p]);
 });
 
-const enterTo = computed<string>(() => {
-  const p = props.position;
-  if (p === "center") return "opacity-100 scale-100";
-  if (p === "top") return "opacity-100 translate-y-0";
-  if (p === "bottom") return "opacity-100 translate-y-0";
-  if (p === "drawer-right") return "opacity-100 translate-x-0";
-  if (p === "drawer-left") return "opacity-100 translate-x-0";
-  return "opacity-100 scale-100";
-});
+// Keep these aliases so the template stays readable
+const enterFrom = computed(() => panelTransition.value.enterFrom);
+const enterTo = computed(() => panelTransition.value.enterTo);
 
 const slots = useSlots();
 
@@ -417,12 +441,12 @@ const hasHeader = computed(
         @click.self="onBackdropClick"
       >
         <Transition
-          enter-active-class="transition duration-250 ease-out"
-          :enter-from-class="enterFrom"
-          :enter-to-class="enterTo"
-          leave-active-class="transition duration-180 ease-in"
-          :leave-from-class="enterTo"
-          :leave-to-class="enterFrom"
+          :enter-active-class="panelTransition.enterActive"
+          :enter-from-class="panelTransition.enterFrom"
+          :enter-to-class="panelTransition.enterTo"
+          :leave-active-class="panelTransition.leaveActive"
+          :leave-from-class="panelTransition.leaveFrom"
+          :leave-to-class="panelTransition.leaveTo"
           appear
         >
           <div

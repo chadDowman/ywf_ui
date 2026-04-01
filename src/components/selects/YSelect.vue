@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useDarkMode } from "@/composables/useDarkMode";
+import { useAnimation } from "@/composables/useAnimation";
+import { getPopupAnimationClasses } from "@/types/animation";
 
 defineOptions({ name: "YSelect" });
 import type { YSelectProps, YSelectOption } from "@/types/select";
@@ -26,6 +28,21 @@ const open = ref(false);
 const searchQuery = ref("");
 const containerRef = ref<HTMLElement | null>(null);
 const dk = useDarkMode(props.dark);
+const anim = useAnimation(() => props.animation);
+const selectTransition = computed(() => {
+  const a = anim.value;
+  if (a === "auto") {
+    return {
+      enterActive: "transition duration-150 ease-out",
+      enterFrom: "opacity-0 -translate-y-1 scale-[0.98]",
+      enterTo: "opacity-100 translate-y-0 scale-100",
+      leaveActive: "transition duration-100 ease-in",
+      leaveFrom: "opacity-100 translate-y-0 scale-100",
+      leaveTo: "opacity-0 -translate-y-1 scale-[0.98]",
+    };
+  }
+  return getPopupAnimationClasses(a);
+});
 
 const sizeMap: Record<string, string> = {
   xs: "text-xs px-2 py-1",
@@ -226,6 +243,14 @@ onBeforeUnmount(() =>
       </span>
     </button>
 
+    <Transition
+      :enter-active-class="selectTransition.enterActive"
+      :enter-from-class="selectTransition.enterFrom"
+      :enter-to-class="selectTransition.enterTo"
+      :leave-active-class="selectTransition.leaveActive"
+      :leave-from-class="selectTransition.leaveFrom"
+      :leave-to-class="selectTransition.leaveTo"
+    >
     <div
       v-if="open"
       :class="[
@@ -323,6 +348,7 @@ onBeforeUnmount(() =>
         </li>
       </ul>
     </div>
+    </Transition>
 
     <p v-if="error" class="mt-1 text-xs text-red-500">{{ error }}</p>
     <p

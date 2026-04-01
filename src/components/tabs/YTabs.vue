@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, nextTick } from "vue";
 import { useDarkMode } from "@/composables/useDarkMode";
+import { useAnimation } from '@/composables/useAnimation';
+import { getAppearAnimationClasses } from '@/types/animation';
 
 defineOptions({ name: "YTabs" });
 import type { YTabsProps } from "@/types";
@@ -10,12 +12,15 @@ const props = withDefaults(defineProps<YTabsProps>(), {
   tabs: () => ["Overview", "Billing", "Usage"],
   variant: "underline",
   align: "left",
+  animation: undefined,
 });
 
 const active = defineModel<string>({ default: "" });
 const tabRefs = ref<HTMLButtonElement[]>([]);
 
 const dk = useDarkMode(props.dark);
+const anim = useAnimation(() => props.animation);
+const appearTx = computed(() => getAppearAnimationClasses(anim.value));
 
 const effectiveActive = computed(() => active.value || props.tabs?.[0] || "");
 
@@ -396,6 +401,7 @@ const dotColors = ["#818cf8", "#34d399", "#fb923c", "#f472b6", "#60a5fa"];
 
     <slot />
   </div>
+  </Transition>
 </template>
 
 <style scoped>

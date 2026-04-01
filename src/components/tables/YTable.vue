@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { useDarkMode } from "@/composables/useDarkMode";
+import { useAnimation } from '@/composables/useAnimation';
+import { getAppearAnimationClasses } from '@/types/animation';
 
 defineOptions({ name: "YTable" });
 import type { YTableProps, YTableColumn } from "@/types/table";
@@ -13,9 +15,12 @@ const props = withDefaults(defineProps<YTableProps>(), {
   fullWidth: true,
   columns: () => [],
   rows: () => [],
+  animation: undefined,
 });
 
 const dk = useDarkMode(props.dark);
+const anim = useAnimation(() => props.animation);
+const appearTx = computed(() => getAppearAnimationClasses(anim.value));
 
 const emit = defineEmits<{
   sort: [column: string, direction: "asc" | "desc"];
@@ -389,6 +394,7 @@ const emptyStateStyle = computed(() =>
       </tbody>
     </table>
   </div>
+  </Transition>
 </template>
 
 <style scoped>

@@ -24,6 +24,15 @@ export { default as YPagination } from "./components/paginations/YPagination.vue
 export { default as YProgress } from "./components/progresses/YProgress.vue";
 export { default as YToast } from "./components/toasts/YToast.vue";
 export { default as YAccordion } from "./components/accordions/YAccordion.vue";
+export { default as YBreadcrumb } from "./components/breadcrumbs/YBreadcrumb.vue";
+export { default as YDatePicker } from "./components/datepickers/YDatePicker.vue";
+export { default as YForm } from "./components/forms/YForm.vue";
+export { default as YDrawer } from "./components/drawers/YDrawer.vue";
+export { default as YStepper } from "./components/steppers/YStepper.vue";
+export { default as YChip } from "./components/chips/YChip.vue";
+export { default as YDivider } from "./components/dividers/YDivider.vue";
+export { useFormContext } from "./composables/useFormContext";
+export { useAnimation } from "./composables/useAnimation";
 export { YwfUIPlugin } from "./plugin";
 export type { YwfUIPluginOptions } from "./plugin";
 export { YWF_DARK_MODE_KEY, useDarkMode } from "./composables/useDarkMode";
@@ -142,4 +151,39 @@ export type {
   YAccordionRadius,
   YAccordionItem,
   YAccordionProps,
+  YBreadcrumbVariant,
+  YBreadcrumbSize,
+  YBreadcrumbItem,
+  YBreadcrumbProps,
+  YDatePickerVariant,
+  YDatePickerSize,
+  YDatePickerProps,
+  YFormRule,
+  YFormField,
+  YFormContext,
+  YFormValidationResult,
+  YFormProps,
+  YFormExposed,
+  YDrawerSide,
+  YDrawerSize,
+  YDrawerVariant,
+  YDrawerBackdrop,
+  YDrawerPadding,
+  YDrawerProps,
+  YStepperVariant,
+  YStepperSize,
+  YStepperOrientation,
+  YStepperStep,
+  YStepperProps,
+  YChipVariant,
+  YChipSize,
+  YChipColor,
+  YChipProps,
+  YDividerVariant,
+  YDividerOrientation,
+  YDividerThickness,
+  YDividerAlign,
+  YDividerProps,
 } from "./types";
+export type { YAnimationPreset } from "./types";
+export { YWF_ANIMATION_KEY, getOverlayAnimationClasses, getPopupAnimationClasses } from "./types/animation";

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { useDarkMode } from "@/composables/useDarkMode";
+import { useAnimation } from "@/composables/useAnimation";
+import { getPopupAnimationClasses } from "@/types/animation";
 
 defineOptions({ name: "YAlert" });
 import type {
@@ -36,9 +38,25 @@ const props = withDefaults(defineProps<YAlertProps>(), {
   loading: false,
   disabled: false,
   radius: "md",
+  animation: undefined,
 });
 
 const dk = useDarkMode(props.dark);
+const anim = useAnimation(() => props.animation);
+const alertTransition = computed(() => {
+  const a = anim.value;
+  if (a === "auto") {
+    return {
+      enterActive: "transition duration-200 ease-out",
+      enterFrom: "opacity-0 -translate-y-1",
+      enterTo: "opacity-100 translate-y-0",
+      leaveActive: "transition duration-150 ease-in",
+      leaveFrom: "opacity-100 translate-y-0",
+      leaveTo: "opacity-0 -translate-y-1",
+    };
+  }
+  return getPopupAnimationClasses(a);
+});
 
 const emit = defineEmits<{
   dismiss: [];
@@ -98,12 +116,12 @@ const ariaLive = computed(() =>
 
 <template>
   <Transition
-    enter-active-class="transition duration-200 ease-out"
-    enter-from-class="opacity-0 -translate-y-1"
-    enter-to-class="opacity-100 translate-y-0"
-    leave-active-class="transition duration-150 ease-in"
-    leave-from-class="opacity-100 translate-y-0"
-    leave-to-class="opacity-0 -translate-y-1"
+    :enter-active-class="alertTransition.enterActive"
+    :enter-from-class="alertTransition.enterFrom"
+    :enter-to-class="alertTransition.enterTo"
+    :leave-active-class="alertTransition.leaveActive"
+    :leave-from-class="alertTransition.leaveFrom"
+    :leave-to-class="alertTransition.leaveTo"
   >
     <div
       v-if="visible"

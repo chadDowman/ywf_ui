@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useDarkMode } from "@/composables/useDarkMode";
+import { useAnimation } from '@/composables/useAnimation';
+import { getAppearAnimationClasses } from '@/types/animation';
 
 defineOptions({ name: "YSkeleton" });
 import type { YSkeletonProps } from "@/types/skeleton";
@@ -10,9 +12,12 @@ const props = withDefaults(defineProps<YSkeletonProps>(), {
   animated: true,
   count: 1,
   radius: "md",
+  animation: undefined,
 });
 
 const dk = useDarkMode(props.dark);
+const anim = useAnimation(() => props.animation);
+const appearTx = computed(() => getAppearAnimationClasses(anim.value));
 
 const radiusMap: Record<string, string> = {
   none: "rounded-none",
@@ -67,6 +72,15 @@ const variantClasses = computed(() => {
 </script>
 
 <template>
+  <Transition
+    appear
+    :enter-active-class="appearTx.enterActive"
+    :enter-from-class="appearTx.enterFrom"
+    :enter-to-class="appearTx.enterTo"
+    :leave-active-class="appearTx.leaveActive"
+    :leave-from-class="appearTx.leaveFrom"
+    :leave-to-class="appearTx.leaveTo"
+  >
   <div
     class="flex flex-col gap-2"
     :style="props.textColor ? { color: props.textColor } : undefined"
@@ -132,4 +146,5 @@ const variantClasses = computed(() => {
       />
     </template>
   </div>
+  </Transition>
 </template>

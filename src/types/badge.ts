@@ -1,3 +1,5 @@
+import type { YAnimationPreset } from "./animation";
+
 export type BadgeVariant =
   | "solid"
   | "outline"
@@ -35,6 +37,7 @@ export type YBadgeRadius = BadgeRadius;
 
 export interface YBadgeProps {
   dark?: boolean;
+  animation?: YAnimationPreset;
   label?: string;
   variant?: BadgeVariant;
   size?: BadgeSize;

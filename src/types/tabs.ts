@@ -1,3 +1,5 @@
+import type { YAnimationPreset } from "./animation";
+
 export type YTabsVariant =
   | "underline"
   | "pills"
@@ -23,6 +25,7 @@ export type YTabsAlign = "left" | "center" | "right" | "stretch";
 
 export interface YTabsProps {
   dark?: boolean;
+  animation?: YAnimationPreset;
   tabs?: string[];
   variant?: YTabsVariant;
   align?: YTabsAlign;

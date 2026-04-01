@@ -35,8 +35,11 @@ export interface YDropdownItem {
   group?: string;
 }
 
+import type { YAnimationPreset } from "./animation";
+
 export interface YDropdownProps {
   dark?: boolean;
+  animation?: YAnimationPreset;
   label?: string;
   variant?: YDropdownVariant;
   size?: YDropdownSize;

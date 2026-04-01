@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, useAttrs, useId } from "vue";
 import { useDarkMode } from "@/composables/useDarkMode";
+import { useAnimation } from '@/composables/useAnimation';
+import { getAppearAnimationClasses } from '@/types/animation';
 import type {
   YInputProps,
   YInputVariant,
@@ -39,6 +41,7 @@ const props = withDefaults(defineProps<YInputProps>(), {
   required: false,
   maxLength: undefined,
   showCount: false,
+  animation: undefined,
 });
 
 const emit = defineEmits<{
@@ -143,6 +146,8 @@ const sc = computed(() => scales[props.size]);
 
 /* ───── Dark mode ───── */
 const dk = useDarkMode(props.dark);
+const anim = useAnimation(() => props.animation);
+const appearTx = computed(() => getAppearAnimationClasses(anim.value));
 
 /* ───── Radius ───── */
 const radiusMap: Record<YInputRadius, string> = {
@@ -948,6 +953,7 @@ function onClear() {
       </span>
     </div>
   </div>
+  </Transition>
 </template>
 
 <style scoped>

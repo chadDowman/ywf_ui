@@ -1,3 +1,5 @@
+import type { YAnimationPreset } from "./animation";
+
 import type { ComponentSize } from "./common";
 
 export type YCardPreset =
@@ -34,6 +36,7 @@ export type YCardPriority = "low" | "medium" | "high";
 export interface YCardProps {
   // ── Shared ──────────────────────────────────────────────────────────
   dark?: boolean;
+  animation?: YAnimationPreset;
   preset?: YCardPreset;
   bgColor?: string;
   borderColor?: string;

@@ -80,7 +80,38 @@ import { paginationVariants, paginationSizes } from "./paginationInspect";
 import { progressVariants, progressSizes } from "./progressInspect";
 import { toastTypes, toastVariants, toastRadii } from "./toastInspect";
 import { accordionVariants, accordionRadii } from "./accordionInspect";
+import { breadcrumbVariants, breadcrumbSizes } from "./breadcrumbInspect";
+import { datepickerVariants, datepickerSizes } from "./datepickerInspect";
+import {
+  drawerVariants,
+  drawerSizes,
+  drawerSides,
+  drawerBackdrops,
+  drawerPaddings,
+} from "./drawerInspect";
+import {
+  stepperVariants,
+  stepperSizes,
+  stepperOrientations,
+} from "./stepperInspect";
+import { chipVariants, chipColors, chipSizes } from "./chipInspect";
+import {
+  dividerVariants,
+  dividerThicknesses,
+  dividerOrientations,
+  dividerAligns,
+} from "./dividerInspect";
 import type { PlaygroundInspectorConfig } from "./types";
+
+const animationPresets = [
+  "auto",
+  "none",
+  "fade",
+  "scale",
+  "slide",
+  "zoom",
+  "bounce",
+] as const;
 
 const navbarAlignOptions = ["left", "center", "right", "spread"] as const;
 const cardNotificationTypes = ["info", "success", "warning", "error"] as const;
@@ -200,6 +231,8 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         { id: "colors", title: "Colors" },
         { id: "data", title: "Data" },
         { id: "state", title: "State" },
+      
+        { id: "motion", title: "Motion" },
       ],
       controls: [
         {
@@ -747,6 +780,13 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
           editor: "color",
           visibleWhen: { key: "preset", equals: "weather" },
         },
+      
+        {
+          key: "animation",
+          section: "motion",
+          editor: "select",
+          options: animationPresets,
+        },
       ],
     },
     {
@@ -757,6 +797,7 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         { id: "menu", title: "Menu" },
         { id: "behavior", title: "Behavior" },
         { id: "data", title: "Data" },
+        { id: "motion", title: "Motion" },
       ],
       controls: [
         { key: "label", section: "trigger" },
@@ -821,6 +862,12 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
           section: "behavior",
           editor: "boolean",
         },
+        {
+          key: "animation",
+          section: "motion",
+          editor: "select",
+          options: animationPresets,
+        },
       ],
     },
     {
@@ -833,6 +880,7 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         { id: "search", title: "Search" },
         { id: "data", title: "Data" },
         { id: "mobile", title: "Mobile" },
+        { id: "motion", title: "Motion" },
       ],
       controls: [
         { key: "brand", section: "content" },
@@ -901,6 +949,13 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
           section: "mobile",
           editor: "boolean",
         },
+        {
+          key: "animation",
+          label: "Mobile Menu Animation",
+          section: "motion",
+          editor: "select",
+          options: animationPresets,
+        },
       ],
     },
     {
@@ -911,6 +966,7 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         { id: "appearance", title: "Appearance" },
         { id: "actions", title: "Actions" },
         { id: "state", title: "State" },
+        { id: "motion", title: "Motion" },
       ],
       controls: [
         { key: "message", section: "content" },
@@ -975,6 +1031,12 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         { key: "dismissible", section: "state", editor: "boolean" },
         { key: "loading", section: "state", editor: "boolean" },
         { key: "disabled", section: "state", editor: "boolean" },
+        {
+          key: "animation",
+          section: "motion",
+          editor: "select",
+          options: animationPresets,
+        },
       ],
       init(next) {
         if (next.message === undefined)
@@ -994,6 +1056,8 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         { id: "content", title: "Content" },
         { id: "appearance", title: "Appearance" },
         { id: "state", title: "State" },
+      
+        { id: "motion", title: "Motion" },
       ],
       controls: [
         { key: "modelValue", label: "Value", section: "content" },
@@ -1065,6 +1129,13 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         { key: "loading", section: "state", editor: "boolean" },
         { key: "clearable", section: "state", editor: "boolean" },
         { key: "required", section: "state", editor: "boolean" },
+      
+        {
+          key: "animation",
+          section: "motion",
+          editor: "select",
+          options: animationPresets,
+        },
       ],
       init(next) {
         if (next.placeholder === undefined)
@@ -1084,6 +1155,8 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         { id: "content", title: "Content" },
         { id: "appearance", title: "Appearance" },
         { id: "state", title: "State" },
+      
+        { id: "motion", title: "Motion" },
       ],
       controls: [
         {
@@ -1152,6 +1225,13 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         { key: "autoResize", section: "state", editor: "boolean" },
         { key: "disabled", section: "state", editor: "boolean" },
         { key: "readonly", section: "state", editor: "boolean" },
+      
+        {
+          key: "animation",
+          section: "motion",
+          editor: "select",
+          options: animationPresets,
+        },
       ],
       init(next) {
         if (next.placeholder === undefined)
@@ -1173,6 +1253,7 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         { id: "content", title: "Content" },
         { id: "appearance", title: "Appearance" },
         { id: "layout", title: "Layout" },
+        { id: "motion", title: "Motion" },
       ],
       controls: [
         { key: "open", section: "state", editor: "boolean" },
@@ -1220,6 +1301,12 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         },
         { key: "fullHeight", section: "layout", editor: "boolean" },
         { key: "scrollable", section: "layout", editor: "boolean" },
+        {
+          key: "animation",
+          section: "motion",
+          editor: "select",
+          options: animationPresets,
+        },
       ],
       init(next) {
         if (next.open === undefined) next.open = true;
@@ -1244,6 +1331,8 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         { id: "content", title: "Content" },
         { id: "appearance", title: "Appearance" },
         { id: "state", title: "State" },
+      
+        { id: "motion", title: "Motion" },
       ],
       controls: [
         { key: "label", section: "content" },
@@ -1293,6 +1382,13 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         { key: "clickable", section: "state", editor: "boolean" },
         { key: "dismissible", section: "state", editor: "boolean" },
         { key: "disabled", section: "state", editor: "boolean" },
+      
+        {
+          key: "animation",
+          section: "motion",
+          editor: "select",
+          options: animationPresets,
+        },
       ],
       init(next) {
         if (next.label === undefined) next.label = "New";
@@ -1310,6 +1406,8 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         { id: "appearance", title: "Appearance" },
         { id: "colors", title: "Colors" },
         { id: "decoration", title: "Decoration" },
+      
+        { id: "motion", title: "Motion" },
       ],
       controls: [
         { key: "src", label: "Image URL", section: "content" },
@@ -1392,6 +1490,13 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
           section: "decoration",
           editor: "number",
         },
+      
+        {
+          key: "animation",
+          section: "motion",
+          editor: "select",
+          options: animationPresets,
+        },
       ],
       init(next) {
         if (next.name === undefined) next.name = "Ada Lovelace";
@@ -1409,6 +1514,8 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         { id: "layout", title: "Layout" },
         { id: "appearance", title: "Appearance" },
         { id: "state", title: "State" },
+      
+        { id: "motion", title: "Motion" },
       ],
       controls: [
         { key: "logoText", label: "Logo Text", section: "content" },
@@ -1479,6 +1586,13 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
           section: "state",
           editor: "boolean",
         },
+      
+        {
+          key: "animation",
+          section: "motion",
+          editor: "select",
+          options: animationPresets,
+        },
       ],
       init(next) {
         if (next.open === undefined) next.open = true;
@@ -1525,6 +1639,8 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
       sections: [
         { id: "content", title: "Content" },
         { id: "appearance", title: "Appearance" },
+      
+        { id: "motion", title: "Motion" },
       ],
       controls: [
         { key: "tabs", section: "content", editor: "json", rows: 3 },
@@ -1540,6 +1656,13 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
           editor: "select",
           options: tabsAligns,
         },
+      
+        {
+          key: "animation",
+          section: "motion",
+          editor: "select",
+          options: animationPresets,
+        },
       ],
       init(next) {
         if (next.tabs === undefined)
@@ -1554,6 +1677,7 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
       sections: [
         { id: "content", title: "Content" },
         { id: "appearance", title: "Appearance" },
+        { id: "motion", title: "Motion" },
       ],
       controls: [
         { key: "text", section: "content" },
@@ -1570,6 +1694,12 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
           options: tooltipVariants,
         },
         { key: "maxWidth", label: "Max Width", section: "appearance" },
+        {
+          key: "animation",
+          section: "motion",
+          editor: "select",
+          options: animationPresets,
+        },
       ],
       init(next) {
         if (next.text === undefined) next.text = "Helpful tooltip text";
@@ -1584,6 +1714,8 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         { id: "content", title: "Content" },
         { id: "appearance", title: "Appearance" },
         { id: "state", title: "State" },
+      
+        { id: "motion", title: "Motion" },
       ],
       controls: [
         { key: "label", section: "content" },
@@ -1621,6 +1753,13 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
           section: "state",
           editor: "boolean",
         },
+      
+        {
+          key: "animation",
+          section: "motion",
+          editor: "select",
+          options: animationPresets,
+        },
       ],
       init(next) {
         if (next.label === undefined)
@@ -1639,6 +1778,8 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         { id: "content", title: "Content" },
         { id: "appearance", title: "Appearance" },
         { id: "state", title: "State" },
+      
+        { id: "motion", title: "Motion" },
       ],
       controls: [
         { key: "label", section: "content" },
@@ -1665,6 +1806,13 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
           editor: "color",
         },
         { key: "disabled", section: "state", editor: "boolean" },
+      
+        {
+          key: "animation",
+          section: "motion",
+          editor: "select",
+          options: animationPresets,
+        },
       ],
       init(next) {
         if (next.label === undefined) next.label = "Option A";
@@ -1681,6 +1829,8 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         { id: "content", title: "Content" },
         { id: "appearance", title: "Appearance" },
         { id: "state", title: "State" },
+      
+        { id: "motion", title: "Motion" },
       ],
       controls: [
         { key: "label", section: "content" },
@@ -1707,6 +1857,13 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         { key: "modelValue", label: "On", section: "state", editor: "boolean" },
         { key: "disabled", section: "state", editor: "boolean" },
         { key: "loading", section: "state", editor: "boolean" },
+      
+        {
+          key: "animation",
+          section: "motion",
+          editor: "select",
+          options: animationPresets,
+        },
       ],
       init(next) {
         if (next.label === undefined) next.label = "Enable notifications";
@@ -1723,6 +1880,8 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         { id: "appearance", title: "Appearance" },
         { id: "behavior", title: "Behavior" },
         { id: "state", title: "State" },
+      
+        { id: "motion", title: "Motion" },
       ],
       controls: [
         { key: "label", section: "content" },
@@ -1765,6 +1924,13 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         { key: "multiple", section: "behavior", editor: "boolean" },
         { key: "disabled", section: "state", editor: "boolean" },
         { key: "loading", section: "state", editor: "boolean" },
+      
+        {
+          key: "animation",
+          section: "motion",
+          editor: "select",
+          options: animationPresets,
+        },
       ],
       init(next) {
         if (next.placeholder === undefined)
@@ -1788,6 +1954,8 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
       sections: [
         { id: "appearance", title: "Appearance" },
         { id: "state", title: "State" },
+      
+        { id: "motion", title: "Motion" },
       ],
       controls: [
         {
@@ -1822,6 +1990,13 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         },
         { key: "label", section: "appearance" },
         { key: "visible", section: "state", editor: "boolean" },
+      
+        {
+          key: "animation",
+          section: "motion",
+          editor: "select",
+          options: animationPresets,
+        },
       ],
       init(next) {
         if (next.variant === undefined) next.variant = "ring";
@@ -1838,6 +2013,8 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         { id: "appearance", title: "Appearance" },
         { id: "dimensions", title: "Dimensions" },
         { id: "state", title: "State" },
+      
+        { id: "motion", title: "Motion" },
       ],
       controls: [
         {
@@ -1866,6 +2043,13 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
           editor: "number",
         },
         { key: "animated", section: "state", editor: "boolean" },
+      
+        {
+          key: "animation",
+          section: "motion",
+          editor: "select",
+          options: animationPresets,
+        },
       ],
       init(next) {
         if (next.variant === undefined) next.variant = "rect";
@@ -1883,6 +2067,8 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         { id: "data", title: "Data" },
         { id: "appearance", title: "Appearance" },
         { id: "state", title: "State" },
+      
+        { id: "motion", title: "Motion" },
       ],
       controls: [
         { key: "columns", section: "data", editor: "json", rows: 5 },
@@ -1914,6 +2100,13 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
           editor: "boolean",
         },
         { key: "loading", section: "state", editor: "boolean" },
+      
+        {
+          key: "animation",
+          section: "motion",
+          editor: "select",
+          options: animationPresets,
+        },
       ],
       init(next) {
         if (next.variant === undefined) next.variant = "simple";
@@ -1941,6 +2134,8 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         { id: "appearance", title: "Appearance" },
         { id: "behavior", title: "Behavior" },
         { id: "state", title: "State" },
+      
+        { id: "motion", title: "Motion" },
       ],
       controls: [
         {
@@ -1986,6 +2181,13 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
           editor: "boolean",
         },
         { key: "disabled", section: "state", editor: "boolean" },
+      
+        {
+          key: "animation",
+          section: "motion",
+          editor: "select",
+          options: animationPresets,
+        },
       ],
       init(next) {
         if (next.variant === undefined) next.variant = "simple";
@@ -2004,6 +2206,8 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         { id: "value", title: "Value" },
         { id: "appearance", title: "Appearance" },
         { id: "state", title: "State" },
+      
+        { id: "motion", title: "Motion" },
       ],
       controls: [
         { key: "label", section: "value" },
@@ -2036,6 +2240,13 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         { key: "striped", section: "state", editor: "boolean" },
         { key: "animated", section: "state", editor: "boolean" },
         { key: "indeterminate", section: "state", editor: "boolean" },
+      
+        {
+          key: "animation",
+          section: "motion",
+          editor: "select",
+          options: animationPresets,
+        },
       ],
       init(next) {
         if (next.variant === undefined) next.variant = "solid";
@@ -2056,6 +2267,8 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         { id: "content", title: "Content" },
         { id: "appearance", title: "Appearance" },
         { id: "state", title: "State" },
+      
+        { id: "motion", title: "Motion" },
       ],
       controls: [
         { key: "title", section: "content" },
@@ -2092,6 +2305,13 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         },
         { key: "dismissible", section: "state", editor: "boolean" },
         { key: "visible", section: "state", editor: "boolean" },
+      
+        {
+          key: "animation",
+          section: "motion",
+          editor: "select",
+          options: animationPresets,
+        },
       ],
       init(next) {
         if (next.title === undefined) next.title = "Operation successful";
@@ -2112,6 +2332,8 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         { id: "data", title: "Data" },
         { id: "appearance", title: "Appearance" },
         { id: "behavior", title: "Behavior" },
+      
+        { id: "motion", title: "Motion" },
       ],
       controls: [
         { key: "items", section: "data", editor: "json", rows: 6 },
@@ -2136,6 +2358,13 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
         { key: "bordered", section: "appearance", editor: "boolean" },
         { key: "separated", section: "appearance", editor: "boolean" },
         { key: "multiple", section: "behavior", editor: "boolean" },
+      
+        {
+          key: "animation",
+          section: "motion",
+          editor: "select",
+          options: animationPresets,
+        },
       ],
       init(next) {
         if (next.variant === undefined) next.variant = "default";
@@ -2166,6 +2395,364 @@ export const playgroundInspectorConfigs: readonly PlaygroundInspectorConfig[] =
             },
           ];
         if (!Array.isArray(next.defaultOpen)) next.defaultOpen = ["what"];
+      },
+    },
+    {
+      componentId: "YDrawer",
+      strict: true,
+      sections: [
+        { id: "state", title: "State" },
+        { id: "content", title: "Content" },
+        { id: "appearance", title: "Appearance" },
+        { id: "layout", title: "Layout" },
+        { id: "motion", title: "Motion" },
+      ],
+      controls: [
+        { key: "open", section: "state", editor: "boolean" },
+        { key: "persistent", section: "state", editor: "boolean" },
+        { key: "loading", section: "state", editor: "boolean" },
+        { key: "title", section: "content" },
+        { key: "description", section: "content" },
+        {
+          key: "showClose",
+          label: "Show Close",
+          section: "content",
+          editor: "boolean",
+        },
+        {
+          key: "variant",
+          section: "appearance",
+          editor: "select",
+          options: drawerVariants,
+        },
+        {
+          key: "backdrop",
+          section: "appearance",
+          editor: "select",
+          options: drawerBackdrops,
+        },
+        {
+          key: "padding",
+          section: "appearance",
+          editor: "select",
+          options: drawerPaddings,
+        },
+        {
+          key: "side",
+          section: "layout",
+          editor: "select",
+          options: drawerSides,
+        },
+        {
+          key: "size",
+          section: "layout",
+          editor: "select",
+          options: drawerSizes,
+        },
+        { key: "scrollable", section: "layout", editor: "boolean" },
+        {
+          key: "animation",
+          section: "motion",
+          editor: "select",
+          options: animationPresets,
+        },
+      ],
+      init(next) {
+        if (next.open === undefined) next.open = true;
+        next.teleportTo = false;
+        if (next.title === undefined) next.title = "Drawer Title";
+        if (next.description === undefined)
+          next.description = "This is a slide-in drawer panel.";
+        if (next.side === undefined) next.side = "right";
+        if (next.size === undefined) next.size = "md";
+        if (next.variant === undefined) next.variant = "clean";
+        if (next.backdrop === undefined) next.backdrop = "blur";
+        if (next.padding === undefined) next.padding = "md";
+        if (next.showClose === undefined) next.showClose = true;
+        if (next.scrollable === undefined) next.scrollable = true;
+      },
+    },
+    {
+      componentId: "YBreadcrumb",
+      strict: true,
+      sections: [
+        { id: "data", title: "Data" },
+        { id: "appearance", title: "Appearance" },
+      
+        { id: "motion", title: "Motion" },
+      ],
+      controls: [
+        { key: "items", section: "data", editor: "json", rows: 5 },
+        { key: "separator", section: "appearance" },
+        {
+          key: "variant",
+          section: "appearance",
+          editor: "select",
+          options: breadcrumbVariants,
+        },
+        {
+          key: "size",
+          section: "appearance",
+          editor: "select",
+          options: breadcrumbSizes,
+        },
+        {
+          key: "maxItems",
+          label: "Max Items",
+          section: "appearance",
+          editor: "number",
+        },
+      
+        {
+          key: "animation",
+          section: "motion",
+          editor: "select",
+          options: animationPresets,
+        },
+      ],
+      init(next) {
+        if (next.items === undefined)
+          next.items = [
+            { label: "Home", href: "#" },
+            { label: "Products", href: "#" },
+            { label: "Category", href: "#" },
+            { label: "Current Page" },
+          ];
+        if (next.separator === undefined) next.separator = "/";
+        if (next.variant === undefined) next.variant = "simple";
+        if (next.size === undefined) next.size = "md";
+      },
+    },
+    {
+      componentId: "YDatePicker",
+      strict: true,
+      sections: [
+        { id: "appearance", title: "Appearance" },
+        { id: "content", title: "Content" },
+        { id: "state", title: "State" },
+        { id: "validation", title: "Validation" },
+      
+        { id: "motion", title: "Motion" },
+      ],
+      controls: [
+        {
+          key: "variant",
+          section: "appearance",
+          editor: "select",
+          options: datepickerVariants,
+        },
+        {
+          key: "size",
+          section: "appearance",
+          editor: "select",
+          options: datepickerSizes,
+        },
+        { key: "inline", section: "appearance", editor: "boolean" },
+        { key: "label", section: "content" },
+        { key: "placeholder", section: "content" },
+        { key: "hint", section: "content" },
+        { key: "clearable", section: "content", editor: "boolean" },
+        { key: "minDate", label: "Min Date", section: "validation" },
+        { key: "maxDate", label: "Max Date", section: "validation" },
+        { key: "disabled", section: "state", editor: "boolean" },
+        { key: "readonly", section: "state", editor: "boolean" },
+        { key: "error", section: "validation" },
+      
+        {
+          key: "animation",
+          section: "motion",
+          editor: "select",
+          options: animationPresets,
+        },
+      ],
+      init(next) {
+        if (next.variant === undefined) next.variant = "clean";
+        if (next.size === undefined) next.size = "md";
+        if (next.placeholder === undefined) next.placeholder = "Select date";
+        if (next.clearable === undefined) next.clearable = true;
+        if (next.inline === undefined) next.inline = true;
+      },
+    },
+    {
+      componentId: "YStepper",
+      strict: true,
+      sections: [
+        { id: "data", title: "Data" },
+        { id: "appearance", title: "Appearance" },
+        { id: "behavior", title: "Behavior" },
+      
+        { id: "motion", title: "Motion" },
+      ],
+      controls: [
+        { key: "steps", section: "data", editor: "json", rows: 6 },
+        { key: "modelValue", label: "Current Step", section: "data", editor: "number" },
+        {
+          key: "variant",
+          section: "appearance",
+          editor: "select",
+          options: stepperVariants,
+        },
+        {
+          key: "size",
+          section: "appearance",
+          editor: "select",
+          options: stepperSizes,
+        },
+        {
+          key: "orientation",
+          section: "appearance",
+          editor: "select",
+          options: stepperOrientations,
+        },
+        { key: "clickable", section: "behavior", editor: "boolean" },
+        { key: "disabled", section: "behavior", editor: "boolean" },
+      
+        {
+          key: "animation",
+          section: "motion",
+          editor: "select",
+          options: animationPresets,
+        },
+      ],
+      init(next) {
+        if (next.steps === undefined)
+          next.steps = [
+            { label: "Account", description: "Your credentials" },
+            { label: "Profile", description: "Tell us about you" },
+            { label: "Review", description: "Confirm details" },
+            { label: "Done" },
+          ];
+        if (next.modelValue === undefined) next.modelValue = 1;
+        if (next.variant === undefined) next.variant = "simple";
+        if (next.size === undefined) next.size = "md";
+        if (next.orientation === undefined) next.orientation = "horizontal";
+        if (next.clickable === undefined) next.clickable = true;
+      },
+    },
+    {
+      componentId: "YChip",
+      strict: true,
+      sections: [
+        { id: "content", title: "Content" },
+        { id: "appearance", title: "Appearance" },
+        { id: "state", title: "State" },
+      
+        { id: "motion", title: "Motion" },
+      ],
+      controls: [
+        { key: "label", section: "content" },
+        { key: "dismissible", section: "content", editor: "boolean" },
+        {
+          key: "variant",
+          section: "appearance",
+          editor: "select",
+          options: chipVariants,
+        },
+        {
+          key: "color",
+          section: "appearance",
+          editor: "select",
+          options: chipColors,
+        },
+        {
+          key: "size",
+          section: "appearance",
+          editor: "select",
+          options: chipSizes,
+        },
+        { key: "disabled", section: "state", editor: "boolean" },
+      
+        {
+          key: "animation",
+          section: "motion",
+          editor: "select",
+          options: animationPresets,
+        },
+      ],
+      init(next) {
+        if (next.label === undefined) next.label = "Chip Label";
+        if (next.variant === undefined) next.variant = "soft";
+        if (next.color === undefined) next.color = "primary";
+        if (next.size === undefined) next.size = "md";
+        if (next.dismissible === undefined) next.dismissible = true;
+      },
+    },
+    {
+      componentId: "YDivider",
+      strict: true,
+      sections: [
+        { id: "content", title: "Content" },
+        { id: "appearance", title: "Appearance" },
+      
+        { id: "motion", title: "Motion" },
+      ],
+      controls: [
+        { key: "label", section: "content" },
+        {
+          key: "align",
+          section: "content",
+          editor: "select",
+          options: dividerAligns,
+          visibleWhen: { key: "label", truthy: true },
+        },
+        {
+          key: "variant",
+          section: "appearance",
+          editor: "select",
+          options: dividerVariants,
+        },
+        {
+          key: "thickness",
+          section: "appearance",
+          editor: "select",
+          options: dividerThicknesses,
+        },
+        {
+          key: "orientation",
+          section: "appearance",
+          editor: "select",
+          options: dividerOrientations,
+        },
+        { key: "color", section: "appearance", editor: "color" },
+      
+        {
+          key: "animation",
+          section: "motion",
+          editor: "select",
+          options: animationPresets,
+        },
+      ],
+      init(next) {
+        if (next.label === undefined) next.label = "OR";
+        if (next.variant === undefined) next.variant = "solid";
+        if (next.thickness === undefined) next.thickness = "base";
+        if (next.orientation === undefined) next.orientation = "horizontal";
+        if (next.align === undefined) next.align = "center";
+      },
+    },
+    {
+      componentId: "YForm",
+      strict: true,
+      sections: [
+        { id: "state", title: "State" },
+        { id: "motion", title: "Motion" },
+      ],
+      controls: [
+        { key: "disabled", section: "state", editor: "boolean" },
+        { key: "loading", section: "state", editor: "boolean" },
+        { key: "novalidate", section: "state", editor: "boolean" },
+      
+        {
+          key: "animation",
+          section: "motion",
+          editor: "select",
+          options: animationPresets,
+        },
+      ],
+      init(next) {
+        if (next.disabled === undefined) next.disabled = false;
+        if (next.loading === undefined) next.loading = false;
+        if (next.novalidate === undefined) next.novalidate = true;
       },
     },
   ];

@@ -20,8 +20,11 @@ export interface YAlertAction {
   variant?: "link" | "outline" | "solid";
 }
 
+import type { YAnimationPreset } from "./animation";
+
 export interface YAlertProps {
   dark?: boolean;
+  animation?: YAnimationPreset;
   type?: AlertType;
   variant?: AlertVariant;
   size?: AlertSize;

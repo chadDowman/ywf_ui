@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted } from "vue";
 import { useDarkMode } from "@/composables/useDarkMode";
+import { useAnimation } from '@/composables/useAnimation';
+import { getAppearAnimationClasses } from '@/types/animation';
 
 defineOptions({ name: "YRadio" });
 import type { YRadioProps } from "@/types/radio";
@@ -10,6 +12,7 @@ const props = withDefaults(defineProps<YRadioProps>(), {
   size: "md",
   variant: "default",
   disabled: false,
+  animation: undefined,
 });
 
 const emit = defineEmits<{
@@ -43,6 +46,8 @@ const labelSizeMap: Record<string, string> = {
 const isSelected = computed(() => props.modelValue === props.value);
 
 const dk = useDarkMode(props.dark);
+const anim = useAnimation(() => props.animation);
+const appearTx = computed(() => getAppearAnimationClasses(anim.value));
 const resolvedColor = computed(() => props.color ?? "var(--ywf-interactive)");
 
 onMounted(() => {
@@ -390,6 +395,7 @@ function select() {
       </span>
     </label>
   </div>
+  </Transition>
 </template>
 
 <style scoped>

@@ -1,3 +1,5 @@
+import type { YAnimationPreset } from "./animation";
+
 import type { ComponentSize } from "./common";
 
 export type YSpinnerSize = ComponentSize;
@@ -18,6 +20,7 @@ export type YSpinnerSpeed = "slow" | "normal" | "fast";
 
 export interface YSpinnerProps {
   dark?: boolean;
+  animation?: YAnimationPreset;
   size?: YSpinnerSize;
   variant?: YSpinnerVariant;
   color?: string;

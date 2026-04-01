@@ -1,3 +1,5 @@
+import type { YAnimationPreset } from "./animation";
+
 export type YSkeletonVariant =
   | "rect"
   | "line"
@@ -14,6 +16,7 @@ export type YSkeletonRadius = "none" | "sm" | "md" | "lg" | "full";
 
 export interface YSkeletonProps {
   dark?: boolean;
+  animation?: YAnimationPreset;
   variant?: YSkeletonVariant;
   width?: string | number;
   height?: string | number;

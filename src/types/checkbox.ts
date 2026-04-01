@@ -1,3 +1,5 @@
+import type { YAnimationPreset } from "./animation";
+
 import type { ComponentSize } from "./common";
 
 export type YCheckboxSize = ComponentSize;
@@ -16,6 +18,7 @@ export type YCheckboxRadius = "none" | "sm" | "md" | "lg" | "full";
 
 export interface YCheckboxProps {
   dark?: boolean;
+  animation?: YAnimationPreset;
   modelValue?: boolean;
   label?: string;
   description?: string;

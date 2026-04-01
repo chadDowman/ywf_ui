@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from "vue";
 import { useDarkMode } from "@/composables/useDarkMode";
+import { useAnimation } from "@/composables/useAnimation";
+import { getPopupAnimationClasses } from "@/types/animation";
 
 defineOptions({ name: "YDropdown" });
 import type {
@@ -23,6 +25,23 @@ const props = withDefaults(defineProps<YDropdownProps>(), {
   searchable: false,
   multiSelect: false,
   splitLabel: "Action",
+  animation: undefined,
+});
+
+const anim = useAnimation(() => props.animation);
+const dropdownTransition = computed(() => {
+  const a = anim.value;
+  if (a === "auto") {
+    return {
+      enterActive: "transition duration-150 ease-out",
+      enterFrom: "opacity-0 -translate-y-1 scale-[0.98]",
+      enterTo: "opacity-100 translate-y-0 scale-100",
+      leaveActive: "transition duration-100 ease-in",
+      leaveFrom: "opacity-100 translate-y-0 scale-100",
+      leaveTo: "opacity-0 -translate-y-1 scale-[0.98]",
+    };
+  }
+  return getPopupAnimationClasses(a);
 });
 
 const emit = defineEmits<{
@@ -421,12 +440,12 @@ function setItemRef(el: any, idx: number) {
 
     <!-- Dropdown panel -->
     <Transition
-      enter-active-class="transition duration-150 ease-out"
-      enter-from-class="opacity-0 -translate-y-1 scale-[0.98]"
-      enter-to-class="opacity-100 translate-y-0 scale-100"
-      leave-active-class="transition duration-100 ease-in"
-      leave-from-class="opacity-100 translate-y-0 scale-100"
-      leave-to-class="opacity-0 -translate-y-1 scale-[0.98]"
+      :enter-active-class="dropdownTransition.enterActive"
+      :enter-from-class="dropdownTransition.enterFrom"
+      :enter-to-class="dropdownTransition.enterTo"
+      :leave-active-class="dropdownTransition.leaveActive"
+      :leave-from-class="dropdownTransition.leaveFrom"
+      :leave-to-class="dropdownTransition.leaveTo"
     >
       <div
         v-if="open"

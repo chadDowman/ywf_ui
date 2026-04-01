@@ -1,3 +1,5 @@
+import type { YAnimationPreset } from "./animation";
+
 export type YToastType = "success" | "error" | "warning" | "info";
 export type YToastVariant =
   | "solid"
@@ -20,6 +22,7 @@ export type YToastRadius = "none" | "sm" | "md" | "lg" | "full";
 
 export interface YToastProps {
   dark?: boolean;
+  animation?: YAnimationPreset;
   message?: string;
   title?: string;
   type?: YToastType;

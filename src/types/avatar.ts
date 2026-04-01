@@ -1,3 +1,5 @@
+import type { YAnimationPreset } from "./animation";
+
 export type YAvatarPreset =
   | "default"
   | "glass"
@@ -26,6 +28,7 @@ export type YAvatarRing = "none" | "solid" | "dashed" | "double" | "gradient";
 
 export interface YAvatarProps {
   dark?: boolean;
+  animation?: YAnimationPreset;
   src?: string;
   name?: string;
   /** Numeric pixel size — overrides the size scale if provided */

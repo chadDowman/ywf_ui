@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted } from "vue";
 import { useDarkMode } from "@/composables/useDarkMode";
+import { useAnimation } from '@/composables/useAnimation';
+import { getAppearAnimationClasses } from '@/types/animation';
 
 defineOptions({ name: "YSwitch" });
 import type { YSwitchProps } from "@/types/switch";
@@ -11,6 +13,7 @@ const props = withDefaults(defineProps<YSwitchProps>(), {
   variant: "default",
   disabled: false,
   loading: false,
+  animation: undefined,
 });
 
 const emit = defineEmits<{
@@ -98,6 +101,8 @@ const slimThumbTranslateMap: Record<string, string> = {
 const isOn = computed(() => !!props.modelValue);
 
 const dk = useDarkMode(props.dark);
+const anim = useAnimation(() => props.animation);
+const appearTx = computed(() => getAppearAnimationClasses(anim.value));
 const resolvedColor = computed(() => props.color ?? "var(--ywf-interactive)");
 
 onMounted(() => {
@@ -338,4 +343,5 @@ function toggle() {
       >
     </span>
   </label>
+  </Transition>
 </template>

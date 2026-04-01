@@ -1,3 +1,5 @@
+import type { YAnimationPreset } from "./animation";
+
 import type { ComponentSize } from "./common";
 
 export type YTableSize = ComponentSize;
@@ -23,6 +25,7 @@ export interface YTableColumn {
 
 export interface YTableProps {
   dark?: boolean;
+  animation?: YAnimationPreset;
   columns?: YTableColumn[];
   rows?: Record<string, unknown>[];
   variant?: YTableVariant;

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted } from "vue";
 import { useDarkMode } from "@/composables/useDarkMode";
+import { useAnimation } from '@/composables/useAnimation';
+import { getAppearAnimationClasses } from '@/types/animation';
 
 defineOptions({ name: "YCheckbox" });
 import type { YCheckboxProps } from "@/types/checkbox";
@@ -12,6 +14,7 @@ const props = withDefaults(defineProps<YCheckboxProps>(), {
   radius: "md",
   disabled: false,
   indeterminate: false,
+  animation: undefined,
 });
 
 const emit = defineEmits<{
@@ -68,6 +71,8 @@ const toggleThumbTranslate: Record<string, string> = {
 const isChecked = computed(() => !!props.modelValue);
 
 const dk = useDarkMode(props.dark);
+const anim = useAnimation(() => props.animation);
+const appearTx = computed(() => getAppearAnimationClasses(anim.value));
 const resolvedColor = computed(() => props.color ?? "var(--ywf-interactive)");
 
 onMounted(() => {
@@ -558,6 +563,7 @@ function toggle() {
       </span>
     </label>
   </div>
+  </Transition>
 </template>
 
 <style scoped>

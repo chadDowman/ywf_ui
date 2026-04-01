@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, onUnmounted, watch } from "vue";
 import { useDarkMode } from "@/composables/useDarkMode";
+import { useAnimation } from "@/composables/useAnimation";
+import { getPopupAnimationClasses } from "@/types/animation";
 
 defineOptions({ name: "YToast" });
 import type { YToastProps } from "@/types/toast";
@@ -14,9 +16,25 @@ const props = withDefaults(defineProps<YToastProps>(), {
   visible: true,
   showIcon: true,
   radius: "md",
+  animation: undefined,
 });
 
 const dk = useDarkMode(props.dark);
+const anim = useAnimation(() => props.animation);
+const toastTransition = computed(() => {
+  const a = anim.value;
+  if (a === "auto") {
+    return {
+      enterActive: "transition duration-300 ease-out",
+      enterFrom: "opacity-0 translate-y-2 scale-95",
+      enterTo: "opacity-100 translate-y-0 scale-100",
+      leaveActive: "transition duration-200 ease-in",
+      leaveFrom: "opacity-100 translate-y-0 scale-100",
+      leaveTo: "opacity-0 translate-y-2 scale-95",
+    };
+  }
+  return getPopupAnimationClasses(a);
+});
 
 const emit = defineEmits<{
   dismiss: [];
@@ -158,6 +176,14 @@ const wrapperStyle = computed(() => {
 </script>
 
 <template>
+  <Transition
+    :enter-active-class="toastTransition.enterActive"
+    :enter-from-class="toastTransition.enterFrom"
+    :enter-to-class="toastTransition.enterTo"
+    :leave-active-class="toastTransition.leaveActive"
+    :leave-from-class="toastTransition.leaveFrom"
+    :leave-to-class="toastTransition.leaveTo"
+  >
   <div
     v-if="visible"
     :class="wrapperClasses"
@@ -232,6 +258,7 @@ const wrapperStyle = computed(() => {
       </svg>
     </button>
   </div>
+  </Transition>
 </template>
 
 <style scoped>

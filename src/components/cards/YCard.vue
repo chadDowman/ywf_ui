@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useDarkMode } from "@/composables/useDarkMode";
+import { useAnimation } from '@/composables/useAnimation';
+import { getAppearAnimationClasses } from '@/types/animation';
 
 defineOptions({ name: "YCard" });
 import type { YCardProps, ComponentSize } from "@/types";
@@ -138,12 +140,15 @@ const props = withDefaults(defineProps<YCardProps>(), {
   wxIcon: "⛅",
   wxBg1: "#0ea5e9",
   wxBg2: "#38bdf8",
+  animation: undefined,
 });
 
 // ── Utility maps (imported from ./cardConstants) ─────────────────────
 
 // ── Dark-mode aware color helpers ────────────────────────────────────
 const dk = useDarkMode(props.dark);
+const anim = useAnimation(() => props.animation);
+const appearTx = computed(() => getAppearAnimationClasses(anim.value));
 const defaultBg = computed(() => (dk.value ? "#1e293b" : "var(--ywf-bg)"));
 const defaultText = computed(() => (dk.value ? "#f1f5f9" : "var(--ywf-text)"));
 const defaultBorder = computed(() =>
@@ -205,6 +210,15 @@ const tlProgress = computed(() => {
 </script>
 
 <template>
+  <Transition
+    appear
+    :enter-active-class="appearTx.enterActive"
+    :enter-from-class="appearTx.enterFrom"
+    :enter-to-class="appearTx.enterTo"
+    :leave-active-class="appearTx.leaveActive"
+    :leave-from-class="appearTx.leaveFrom"
+    :leave-to-class="appearTx.leaveTo"
+  >
   <!-- ══════════════════════════════════════════════════════════════════
        1. BASIC
   ══════════════════════════════════════════════════════════════════ -->
@@ -768,4 +782,5 @@ const tlProgress = computed(() => {
       <span>↓ {{ wxLow }}</span>
     </div>
   </div>
+  </Transition>
 </template>

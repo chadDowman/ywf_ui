@@ -17,8 +17,11 @@ export type YModalPosition =
 export type YModalBackdrop = "blur" | "dim" | "none" | "frosted";
 export type YModalPadding = "none" | "sm" | "md" | "lg";
 
+import type { YAnimationPreset } from "./animation";
+
 export interface YModalProps {
   dark?: boolean;
+  animation?: YAnimationPreset;
   open?: boolean;
   /** Teleport target selector; set to false to render inline in parent container */
   teleportTo?: string | false;

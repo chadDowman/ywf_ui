@@ -1,3 +1,5 @@
+import type { YAnimationPreset } from "./animation";
+
 import type { ComponentSize } from "./common";
 
 export type YRadioSize = ComponentSize;
@@ -14,6 +16,7 @@ export type YRadioVariant =
 
 export interface YRadioProps {
   dark?: boolean;
+  animation?: YAnimationPreset;
   modelValue?: unknown;
   value?: unknown;
   label?: string;

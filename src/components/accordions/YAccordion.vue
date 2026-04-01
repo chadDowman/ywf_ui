@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useDarkMode } from "@/composables/useDarkMode";
+import { useAnimation } from "@/composables/useAnimation";
+import { getPopupAnimationClasses } from "@/types/animation";
 import type { YAccordionProps, YAccordionItem } from "@/types/accordion";
 
 defineOptions({ name: "YAccordion" });
@@ -13,12 +15,28 @@ const props = withDefaults(defineProps<YAccordionProps>(), {
   radius: "md",
   items: () => [],
   defaultOpen: () => [],
+  animation: undefined,
 });
 
 const openItems = ref<string[]>([...(props.defaultOpen ?? [])]);
 const accordionRef = ref<HTMLElement | null>(null);
 
 const dk = useDarkMode(props.dark);
+const anim = useAnimation(() => props.animation);
+const accordionTransition = computed(() => {
+  const a = anim.value;
+  if (a === "auto") {
+    return {
+      enterActive: "transition duration-200 ease-out",
+      enterFrom: "opacity-0 -translate-y-1",
+      enterTo: "opacity-100 translate-y-0",
+      leaveActive: "transition duration-150 ease-in",
+      leaveFrom: "opacity-100 translate-y-0",
+      leaveTo: "opacity-0 -translate-y-1",
+    };
+  }
+  return getPopupAnimationClasses(a);
+});
 
 const normalizedItems = computed<YAccordionItem[]>(() => {
   const source = props.items ?? [];
@@ -312,9 +330,18 @@ function chevronClass(open: boolean): string {
                 {{ isOpen(item.id) ? "−" : "+" }}
               </span>
             </button>
-            <div v-show="isOpen(item.id)" :class="contentClass()">
-              <slot :name="item.id" :item="item">{{ item.content }}</slot>
-            </div>
+            <Transition
+              :enter-active-class="accordionTransition.enterActive"
+              :enter-from-class="accordionTransition.enterFrom"
+              :enter-to-class="accordionTransition.enterTo"
+              :leave-active-class="accordionTransition.leaveActive"
+              :leave-from-class="accordionTransition.leaveFrom"
+              :leave-to-class="accordionTransition.leaveTo"
+            >
+              <div v-if="isOpen(item.id)" :class="contentClass()">
+                <slot :name="item.id" :item="item">{{ item.content }}</slot>
+              </div>
+            </Transition>
           </div>
         </div>
       </template>
@@ -352,9 +379,18 @@ function chevronClass(open: boolean): string {
           </svg>
         </button>
 
-        <div v-show="isOpen(item.id)" :class="contentClass()">
-          <slot :name="item.id" :item="item">{{ item.content }}</slot>
-        </div>
+        <Transition
+          :enter-active-class="accordionTransition.enterActive"
+          :enter-from-class="accordionTransition.enterFrom"
+          :enter-to-class="accordionTransition.enterTo"
+          :leave-active-class="accordionTransition.leaveActive"
+          :leave-from-class="accordionTransition.leaveFrom"
+          :leave-to-class="accordionTransition.leaveTo"
+        >
+          <div v-if="isOpen(item.id)" :class="contentClass()">
+            <slot :name="item.id" :item="item">{{ item.content }}</slot>
+          </div>
+        </Transition>
       </template>
     </div>
   </div>

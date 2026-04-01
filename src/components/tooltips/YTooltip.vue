@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref } from "vue";
 import { useDarkMode } from "@/composables/useDarkMode";
+import { useAnimation } from "@/composables/useAnimation";
+import { getPopupAnimationClasses } from "@/types/animation";
 
 defineOptions({ name: "YTooltip" });
 import type { YTooltipProps } from "@/types/tooltip";
@@ -8,9 +10,25 @@ import type { YTooltipProps } from "@/types/tooltip";
 const props = withDefaults(defineProps<YTooltipProps>(), {
   placement: "top",
   variant: "dark",
+  animation: undefined,
 });
 
 const dk = useDarkMode(props.dark);
+const anim = useAnimation(() => props.animation);
+const tooltipTransition = computed(() => {
+  const a = anim.value;
+  if (a === "auto") {
+    return {
+      enterActive: "transition duration-120 ease-out",
+      enterFrom: "opacity-0 scale-95",
+      enterTo: "opacity-100 scale-100",
+      leaveActive: "transition duration-100 ease-in",
+      leaveFrom: "opacity-100 scale-100",
+      leaveTo: "opacity-0 scale-95",
+    };
+  }
+  return getPopupAnimationClasses(a);
+});
 
 const positionClasses: Record<string, string> = {
   top: "bottom-full left-1/2 -translate-x-1/2 mb-2",
@@ -97,12 +115,12 @@ onBeforeUnmount(() => clearHideTimer());
   >
     <slot />
     <Transition
-      enter-active-class="transition duration-120 ease-out"
-      enter-from-class="opacity-0 scale-95"
-      enter-to-class="opacity-100 scale-100"
-      leave-active-class="transition duration-100 ease-in"
-      leave-from-class="opacity-100 scale-100"
-      leave-to-class="opacity-0 scale-95"
+      :enter-active-class="tooltipTransition.enterActive"
+      :enter-from-class="tooltipTransition.enterFrom"
+      :enter-to-class="tooltipTransition.enterTo"
+      :leave-active-class="tooltipTransition.leaveActive"
+      :leave-from-class="tooltipTransition.leaveFrom"
+      :leave-to-class="tooltipTransition.leaveTo"
     >
       <span
         v-if="open"

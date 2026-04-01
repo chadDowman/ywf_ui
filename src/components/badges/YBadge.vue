@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { useDarkMode } from "@/composables/useDarkMode";
+import { useAnimation } from "@/composables/useAnimation";
+import { getAppearAnimationClasses } from "@/types/animation";
 
 defineOptions({ name: "YBadge" });
 import type {
@@ -25,9 +27,12 @@ const props = withDefaults(defineProps<YBadgeProps>(), {
   disabled: false,
   clickable: false,
   countMax: 99,
+  animation: undefined,
 });
 
 const dk = useDarkMode(props.dark);
+const anim = useAnimation(() => props.animation);
+const badgeTransition = computed(() => getAppearAnimationClasses(anim.value));
 
 const emit = defineEmits<{
   dismiss: [];
@@ -358,12 +363,12 @@ const tag = computed(() => (props.clickable ? "button" : "span"));
 
 <template>
   <Transition
-    enter-active-class="transition duration-150 ease-out"
-    enter-from-class="opacity-0 scale-90"
-    enter-to-class="opacity-100 scale-100"
-    leave-active-class="transition duration-100 ease-in"
-    leave-from-class="opacity-100 scale-100"
-    leave-to-class="opacity-0 scale-90"
+    :enter-active-class="badgeTransition.enterActive || 'transition duration-150 ease-out'"
+    :enter-from-class="badgeTransition.enterFrom || 'opacity-0 scale-90'"
+    :enter-to-class="badgeTransition.enterTo || 'opacity-100 scale-100'"
+    :leave-active-class="badgeTransition.leaveActive || 'transition duration-100 ease-in'"
+    :leave-from-class="badgeTransition.leaveFrom || 'opacity-100 scale-100'"
+    :leave-to-class="badgeTransition.leaveTo || 'opacity-0 scale-90'"
   >
     <component
       :is="tag"
