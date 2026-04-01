@@ -243,14 +243,17 @@ const lightVariantTokens: Record<YInputVariant, YInputVariantTokens> = {
   glass: {
     idle: "yinput-glass bg-white/60 border border-white/50 shadow-sm text-gray-900 placeholder:text-gray-400",
     hover: "hover:bg-white/75 hover:border-white/65",
-    focus: "focus-within:bg-white/85 focus-within:border-blue-300/60 focus-within:shadow-md",
+    focus:
+      "focus-within:bg-white/85 focus-within:border-blue-300/60 focus-within:shadow-md",
     ring: "focus-within:ring-blue-400/10",
     error: "bg-red-50/40 border-red-300/60",
     errorRing: "focus-within:border-red-400/60 focus-within:ring-red-400/10",
     success: "bg-emerald-50/40 border-emerald-300/60",
-    successRing: "focus-within:border-emerald-400/60 focus-within:ring-emerald-400/10",
+    successRing:
+      "focus-within:border-emerald-400/60 focus-within:ring-emerald-400/10",
     warning: "bg-amber-50/40 border-amber-300/60",
-    warningRing: "focus-within:border-amber-400/60 focus-within:ring-amber-400/10",
+    warningRing:
+      "focus-within:border-amber-400/60 focus-within:ring-amber-400/10",
     disabled: "bg-white/25 border-white/15 text-gray-400 cursor-not-allowed",
     readonly: "bg-white/35 border-white/25 cursor-default",
     affix: "bg-white/30 text-gray-500 border-white/30",
@@ -268,7 +271,8 @@ const lightVariantTokens: Record<YInputVariant, YInputVariantTokens> = {
     successRing: "focus-within:shadow-[4px_4px_0_0_#16a34a]",
     warning: "bg-white border-amber-500",
     warningRing: "focus-within:shadow-[4px_4px_0_0_#d97706]",
-    disabled: "bg-gray-100 border-gray-400 text-gray-400 cursor-not-allowed shadow-none",
+    disabled:
+      "bg-gray-100 border-gray-400 text-gray-400 cursor-not-allowed shadow-none",
     readonly: "bg-gray-50 border-black/40 cursor-default",
     affix: "bg-black text-white border-black",
     affixBorderL: "border-l-[3px]",
@@ -411,15 +415,19 @@ const darkVariantTokens: Record<YInputVariant, YInputVariantTokens> = {
   glass: {
     idle: "yinput-glass bg-slate-800/40 border border-white/10 shadow-sm text-slate-100 placeholder:text-slate-400",
     hover: "hover:bg-slate-700/50 hover:border-white/20",
-    focus: "focus-within:bg-slate-700/60 focus-within:border-blue-400/50 focus-within:shadow-md",
+    focus:
+      "focus-within:bg-slate-700/60 focus-within:border-blue-400/50 focus-within:shadow-md",
     ring: "focus-within:ring-blue-400/15",
     error: "bg-red-900/20 border-red-500/60",
     errorRing: "focus-within:border-red-400/60 focus-within:ring-red-400/15",
     success: "bg-emerald-900/20 border-emerald-500/60",
-    successRing: "focus-within:border-emerald-400/60 focus-within:ring-emerald-400/15",
+    successRing:
+      "focus-within:border-emerald-400/60 focus-within:ring-emerald-400/15",
     warning: "bg-amber-900/20 border-amber-500/60",
-    warningRing: "focus-within:border-amber-400/60 focus-within:ring-amber-400/15",
-    disabled: "bg-slate-900/40 border-white/5 text-slate-500 cursor-not-allowed",
+    warningRing:
+      "focus-within:border-amber-400/60 focus-within:ring-amber-400/15",
+    disabled:
+      "bg-slate-900/40 border-white/5 text-slate-500 cursor-not-allowed",
     readonly: "bg-slate-800/30 border-white/8 cursor-default",
     affix: "bg-slate-700/40 text-slate-400 border-white/10",
     affixBorderL: "border-l",
@@ -436,7 +444,8 @@ const darkVariantTokens: Record<YInputVariant, YInputVariantTokens> = {
     successRing: "focus-within:shadow-[4px_4px_0_0_#16a34a]",
     warning: "bg-white border-amber-500",
     warningRing: "focus-within:shadow-[4px_4px_0_0_#d97706]",
-    disabled: "bg-gray-100 border-gray-400 text-gray-400 cursor-not-allowed shadow-none",
+    disabled:
+      "bg-gray-100 border-gray-400 text-gray-400 cursor-not-allowed shadow-none",
     readonly: "bg-gray-50 border-black/40 cursor-default",
     affix: "bg-black text-white border-black",
     affixBorderL: "border-l-[3px]",
@@ -983,19 +992,29 @@ function onClear() {
   z-index: 0;
 }
 @keyframes yinput-aurora-spin {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 /* ── Neon ────────────────────────────────────────────────── */
 .yinput-neon {
   background: #0d0d1a;
-  box-shadow: 0 0 8px rgba(167, 139, 250, 0.25), inset 0 0 8px rgba(167, 139, 250, 0.04);
+  box-shadow:
+    0 0 8px rgba(167, 139, 250, 0.25),
+    inset 0 0 8px rgba(167, 139, 250, 0.04);
   transition: box-shadow 0.2s;
 }
 .yinput-neon:focus-within {
-  box-shadow: 0 0 16px rgba(167, 139, 250, 0.5), inset 0 0 12px rgba(167, 139, 250, 0.06);
+  box-shadow:
+    0 0 16px rgba(167, 139, 250, 0.5),
+    inset 0 0 12px rgba(167, 139, 250, 0.06);
 }
 
 /* ── Terminal ────────────────────────────────────────────── */

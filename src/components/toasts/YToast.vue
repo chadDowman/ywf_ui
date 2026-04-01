@@ -169,7 +169,10 @@ const wrapperStyle = computed(() => {
       v-if="showIcon"
       class="mt-0.5 h-5 w-5 shrink-0"
       :class="
-        variant === 'solid' || variant === 'aurora' || variant === 'neon' || variant === 'terminal'
+        variant === 'solid' ||
+        variant === 'aurora' ||
+        variant === 'neon' ||
+        variant === 'terminal'
           ? 'text-white'
           : iconColorMap[t]
       "
@@ -186,7 +189,10 @@ const wrapperStyle = computed(() => {
         v-if="title"
         class="text-sm font-semibold leading-tight"
         :class="
-          variant === 'solid' || variant === 'aurora' || variant === 'neon' || variant === 'terminal'
+          variant === 'solid' ||
+          variant === 'aurora' ||
+          variant === 'neon' ||
+          variant === 'terminal'
             ? 'text-white'
             : variant === 'brutalist'
               ? 'text-black font-black uppercase tracking-wide'
@@ -199,7 +205,10 @@ const wrapperStyle = computed(() => {
         v-if="message"
         class="mt-0.5 text-sm"
         :class="
-          variant === 'solid' || variant === 'aurora' || variant === 'neon' || variant === 'terminal'
+          variant === 'solid' ||
+          variant === 'aurora' ||
+          variant === 'neon' ||
+          variant === 'terminal'
             ? 'text-white/85'
             : variant === 'brutalist'
               ? 'text-black font-medium'
@@ -262,9 +271,15 @@ const wrapperStyle = computed(() => {
   pointer-events: none;
 }
 @keyframes ytoast-aurora-spin {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 /* ── Neon ────────────────────────────────────────────────── */
@@ -274,19 +289,27 @@ const wrapperStyle = computed(() => {
 }
 .ytoast-neon-success {
   border: 1px solid rgba(74, 222, 128, 0.5);
-  box-shadow: 0 0 20px rgba(74, 222, 128, 0.25), inset 0 0 20px rgba(74, 222, 128, 0.04);
+  box-shadow:
+    0 0 20px rgba(74, 222, 128, 0.25),
+    inset 0 0 20px rgba(74, 222, 128, 0.04);
 }
 .ytoast-neon-error {
   border: 1px solid rgba(248, 113, 113, 0.5);
-  box-shadow: 0 0 20px rgba(248, 113, 113, 0.25), inset 0 0 20px rgba(248, 113, 113, 0.04);
+  box-shadow:
+    0 0 20px rgba(248, 113, 113, 0.25),
+    inset 0 0 20px rgba(248, 113, 113, 0.04);
 }
 .ytoast-neon-warning {
   border: 1px solid rgba(251, 191, 36, 0.5);
-  box-shadow: 0 0 20px rgba(251, 191, 36, 0.25), inset 0 0 20px rgba(251, 191, 36, 0.04);
+  box-shadow:
+    0 0 20px rgba(251, 191, 36, 0.25),
+    inset 0 0 20px rgba(251, 191, 36, 0.04);
 }
 .ytoast-neon-info {
   border: 1px solid rgba(96, 165, 250, 0.5);
-  box-shadow: 0 0 20px rgba(96, 165, 250, 0.25), inset 0 0 20px rgba(96, 165, 250, 0.04);
+  box-shadow:
+    0 0 20px rgba(96, 165, 250, 0.25),
+    inset 0 0 20px rgba(96, 165, 250, 0.04);
 }
 
 /* ── Brutalist ───────────────────────────────────────────── */
